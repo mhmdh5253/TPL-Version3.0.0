@@ -1,0 +1,354 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BE.LetterAutomation.UserOrganization
+
+<div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-primary text-white">
+        <div class="d-flex align-items-center">
+            <div class="header-icon me-3">
+                <i class="fas fa-user-edit fa-2x"></i>
+            </div>
+            <div>
+                <h3 class="card-title mb-1">@(Model.Id == 0 ? "افزودن" : "ویرایش") کاربر به سازمان</h3>
+                <p class="mb-0 opacity-75">
+                    <i class="fas fa-info-circle me-1"></i>@(Model.Id == 0 ? "تعریف کاربر جدید" : "ویرایش اطلاعات کاربر") در ساختار سازمانی
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>توجه:</strong> با اختصاص کاربر به سازمان، فیلدهای نام شرکت، نام اداره و سمت در پروفایل کاربر به‌روزرسانی می‌شوند.
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="UserId" class="form-label fw-bold">
+                            <i class="fas fa-user me-2"></i>کاربر
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-user text-primary"></i>
+                            </span>
+                            <select asp-for="UserId" class="form-control select2" asp-items="ViewBag.Users">
+                                <option value="">-- انتخاب کاربر --</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="UserId" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="OrganizationId" class="form-label fw-bold">
+                            <i class="fas fa-building me-2"></i>سازمان
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-building text-primary"></i>
+                            </span>
+                            <select asp-for="OrganizationId" class="form-control select2" asp-items="ViewBag.Organizations">
+                                <option value="">-- انتخاب سازمان --</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Position" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Position" class="form-label fw-bold">
+                            <i class="fas fa-id-badge me-2"></i>سمت
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-id-badge text-primary"></i>
+                            </span>
+                            <input asp-for="Position" class="form-control" placeholder="مثال: کارشناس IT" />
+                        </div>
+                        <span asp-validation-for="Position" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-2"></i>تاریخ
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                            </span>
+                            <input type="text" class="form-control" value="@DateTime.Now.ToString("yyyy/MM/dd")" disabled />
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>@(Model.Id == 0 ? "تاریخ ایجاد" : "تاریخ آخرین ویرایش")
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <div class="form-check custom-checkbox">
+                            <input class="form-check-input" type="checkbox" asp-for="IsHead" id="isHeadCheck" />
+                            <label class="form-check-label fw-bold" for="isHeadCheck">
+                                <i class="fas fa-crown me-2 text-warning"></i>@Html.DisplayNameFor(model => model.IsHead)
+                            </label>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-info-circle me-1"></i>مسئول این سازمان
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <div class="form-check custom-checkbox">
+                            <input class="form-check-input" type="checkbox" asp-for="IsDeputy" id="isDeputyCheck" />
+                            <label class="form-check-label fw-bold" for="isDeputyCheck">
+                                <i class="fas fa-user-tie me-2 text-info"></i>@Html.DisplayNameFor(model => model.IsDeputy)
+                            </label>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-info-circle me-1"></i>جانشین مسئول
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <div class="form-check custom-checkbox">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive" id="isActiveCheck" />
+                            <label class="form-check-label fw-bold" for="isActiveCheck">
+                                <i class="fas fa-check-circle me-2 text-success"></i>@Html.DisplayNameFor(model => model.IsActive)
+                            </label>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-info-circle me-1"></i>فعال بودن کاربر
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-save me-2"></i> ذخیره
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-arrow-left me-2"></i> بازگشت
+                        </a>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-clock me-1"></i>
+                        <span>@(Model.Id == 0 ? "تاریخ ایجاد: " : "آخرین ویرایش: ")@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section pagecss {
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2-bootstrap4-theme/select2-bootstrap4.css" />
+    
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .header-icon {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 2rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .form-label {
+            color: #495057;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .input-group-text {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .input-group .form-control {
+            border-radius: 0 12px 12px 0;
+            border-left: none;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .custom-checkbox {
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-checkbox:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .row > div {
+            animation: fadeInUp 0.6s ease;
+            animation-delay: calc(var(--animation-order) * 0.1s);
+        }
+        
+        .row > div:nth-child(1) { --animation-order: 1; }
+        .row > div:nth-child(2) { --animation-order: 2; }
+        .row > div:nth-child(3) { --animation-order: 3; }
+        .row > div:nth-child(4) { --animation-order: 4; }
+    </style>
+}
+
+@section pagejs {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script src="~/assets/vendor/libs/select2/select2.full.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                placeholder: "لطفا انتخاب کنید",
+                allowClear: true,
+                width: '100%',
+                theme: 'bootstrap4'
+            });
+
+            // Prevent selecting both IsHead and IsDeputy
+            $('#IsHead').change(function() {
+                if(this.checked) {
+                    $('#IsDeputy').prop('checked', false);
+                }
+            });
+
+            $('#IsDeputy').change(function() {
+                if(this.checked) {
+                    $('#IsHead').prop('checked', false);
+                }
+            });
+
+            // Form validation
+            $('#userOrgForm').validate({
+                rules: {
+                    UserId: "required",
+                    OrganizationId: "required",
+                    Position: "required"
+                },
+                messages: {
+                    UserId: "لطفا کاربر را انتخاب کنید",
+                    OrganizationId: "لطفا سازمان را انتخاب کنید",
+                    Position: "لطفا سمت سازمانی را وارد کنید"
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,225 @@
+﻿@using Newtonsoft.Json
+@model BE.Ticketing.SupportTicketSystem.Models.Report
+
+@{
+    ViewData["Title"] = "نتایج گزارش";
+
+    // ایجاد یک لیست خالی به عنوان مقدار پیش‌فرض
+    var statusReportData = new List<StatusReportItem>();
+
+    if (Model != null && !string.IsNullOrEmpty(Model.ReportData))
+    {
+        try
+        {
+            statusReportData = JsonConvert.DeserializeObject<List<StatusReportItem>>(Model.ReportData)
+                               ?? new List<StatusReportItem>();
+        }
+        catch
+        {
+            statusReportData = new List<StatusReportItem>();
+        }
+    }
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">@(Model?.Title ?? "گزارش بدون عنوان")</h5>
+        <div>
+            <a href="@Url.Action("Dashboard")" class="btn btn-sm btn-light">
+                <i class="bi bi-arrow-right"></i> داشبورد
+            </a>
+            <a href="@Url.Action("ManageTickets")" class="btn btn-sm btn-light">
+                <i class="bi bi-arrow-right"></i> مدیریت تیکت ها
+            </a>
+            <a href="@Url.Action("Reports")" class="btn btn-sm btn-light">
+                <i class="bi bi-arrow-right"></i> بازگشت
+            </a>
+            <button onclick="window.print()" class="btn btn-sm btn-light ms-2">
+                <i class="bi bi-printer"></i> چاپ
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body print-only">
+        @if (Model == null)
+        {
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> گزارش یافت نشد!
+            </div>
+        }
+        else if (!statusReportData.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-info-circle-fill"></i> هیچ داده‌ای برای نمایش وجود ندارد.
+            </div>
+        }
+        else
+        {
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h6>خلاصه گزارش</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong dir="rtl">تاریخ شروع:</strong> @(ViewBag.StartDate?.ToString("yyyy/MM/dd") ?? "-")</p>
+                                    <p><strong dir="rtl">تاریخ پایان:</strong> @(ViewBag.EndDate?.ToString("yyyy/MM/dd") ?? "-")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong dir="rtl">تاریخ تولید:</strong> @Model.GeneratedDate.ToString("yyyy/MM/dd HH:mm")</p>
+                                    <p><strong>تعداد کل تیکت‌ها:</strong> @statusReportData.Sum(x => x.Count)</p>
+                                </div>
+                            </div>
+                            <p class="mt-2"><strong>توضیحات:</strong> @Model.Description</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h6>نمودار وضعیت تیکت‌ها</h6>
+                        </div>
+                        <div class="card-body d-flex align-items-center">
+                            <canvas id="statusChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h6>جزئیات آماری</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>وضعیت</th>
+                                    <th>تعداد</th>
+                                    <th>درصد</th>
+                                    <th>رنگ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in statusReportData)
+                                {
+                                    <tr>
+                                        <td>@GetStatusname(item.Status!)</td>
+                                        <td>@item.Count</td>
+                                        <td>@item.Percentage %</td>
+                                        <td style="background-color: @GetStatusColor(item.Status!);">
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section pagejs {
+    @if (statusReportData.Any())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // نمودار وضعیت تیکت‌ها
+            var ctx = document.getElementById('statusChart').getContext('2d');
+            var statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(JsonConvert.SerializeObject(statusReportData.Select(x => x.Status))),
+                    datasets: [{
+                        data: @Html.Raw(JsonConvert.SerializeObject(statusReportData.Select(x => x.Count))),
+                        backgroundColor: @Html.Raw(JsonConvert.SerializeObject(statusReportData.Select(x => GetStatusColor(x.Status!)))),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            rtl: true
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.raw || 0;
+                                    var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    var percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    }
+
+    <style>
+        .table-bordered {
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+        }
+
+        @@media print {
+            .card-header {
+                background-color: #fff !important;
+                color: #000 !important;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .btn {
+                display: none !important;
+            }
+        }
+    </style>
+}
+
+@functions {
+    public class StatusReportItem
+    {
+        public string? Status { get; set; }
+        public int Count { get; set; }
+        public double Percentage { get; set; }
+    }
+
+    public static string GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "0" => "#9CA3AF",  // خاکستری ملایم
+            "1" => "#60A5FA",  // آبی روشن
+            "2" => "#22D3EE",  // فیروزه‌ای شاد
+            "3" => "#34D399",  // سبز ملایم
+            "4" => "#A78BFA",  // بنفش لطیف
+            _ => "#9CA3AF"     // خاکستری ملایم (پیش‌فرض)
+        };
+    }
+    public static string GetStatusname(string status)
+    {
+        return status switch
+        {
+            "0" => "جدید",
+            "1" => "باز",
+            "2" => "در دست اقدام",
+            "3" => "حل شده",
+            "4" => "بسته شده",
+            _ => "نامشخص"
+        };
+    
+    }
+}

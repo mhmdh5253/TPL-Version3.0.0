@@ -1,0 +1,70 @@
+﻿@model BE.Tokening.Token
+@{
+    ViewData["Title"] = "جزئیات توکن";
+}
+<partial name="Admin/_ProfileParitial" />
+<div class="container mt-5">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>توکن شماره @Model.Id</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+             <dt class="col-sm-3">مقدار توکن:</dt>
+                <dd class="col-sm-9">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="tokenValue" value="@Model.Value" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToken()">
+                            <i class="fas fa-copy"></i> کپی
+                        </button>
+                    </div>
+                </dd>
+
+                <dt class="col-sm-3">تاریخ ایجاد:</dt>
+                <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")</dd>
+
+                <dt class="col-sm-3">تاریخ انقضا:</dt>
+                <dd class="col-sm-9">@Model.ExpiresAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")</dd>
+
+                <dt class="col-sm-3">وضعیت:</dt>
+                <dd class="col-sm-9">
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">فعال</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">غیرفعال</span>
+                    }
+                </dd>
+                <dt class="col-sm-3">توضیحات:</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> بازگشت به لیست
+            </a>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    <script>
+        function copyToken() {
+            const tokenInput = document.getElementById('tokenValue');
+            tokenInput.select();
+            document.execCommand('copy');
+
+            // نمایش پیام
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-check"></i> کپی شد';
+
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+            }, 2000);
+        }
+    </script>
+}

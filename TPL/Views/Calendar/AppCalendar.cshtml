@@ -1,0 +1,285 @@
+@model BLL.Calendar.CalendarDashboardViewModel
+@{
+    ViewData["Title"] = "تقویم";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section vendorcss {
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/node-waves/node-waves.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/typeahead-js/typeahead.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/fullcalendar/fullcalendar.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/quill/editor.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/formvalidation/dist/css/formValidation.min.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+
+}
+
+@section pagecss {
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/css/pages/app-calendar.css" />
+    <style>
+      /* Subtle background for list view rows */
+      .fc .fc-list-event {
+        background-color: rgba(0,0,0,0.04);
+      }
+      /* Improve visibility of colored badges in filters */
+      .app-calendar-events-filter .form-check-input:checked + .form-check-label .badge {
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+      }
+    </style>
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="card app-calendar-wrapper">
+        <div class="row g-0">
+            <!-- Calendar Sidebar -->
+            <div class="col app-calendar-sidebar" id="app-calendar-sidebar">
+                <div class="border-bottom p-4 my-sm-0 mb-3">
+                    <div class="d-grid">
+                        <button class="btn btn-primary btn-toggle-sidebar" data-bs-toggle="offcanvas" data-bs-target="#addEventSidebar" aria-controls="addEventSidebar">
+                            <i class="bx bx-plus"></i>
+                            <span class="align-middle">افزودن رویداد</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <!-- inline calendar (flatpicker) -->
+                    <div class="ms-n2">
+                        <div class="inline-calendar"></div>
+                    </div>
+
+                    <hr class="container-m-nx my-4">
+
+                    <!-- Filter -->
+                    <div class="mb-4">
+                        <small class="text-small text-muted text-uppercase align-middle">فیلتر</small>
+                    </div>
+
+                    <div class="form-check mb-2 pb-1">
+                        <input class="form-check-input select-all" type="checkbox" id="selectAll" data-value="all" checked>
+                        <label class="form-check-label" for="selectAll">مشاهده همه</label>
+                    </div>
+
+                    <div class="app-calendar-events-filter">
+                        <div class="form-check form-check-danger mb-2 pb-1">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-personal" data-value="Personal" checked>
+                            <label class="form-check-label" for="select-personal">شخصی</label>
+                        </div>
+                        <div class="form-check mb-2 pb-1">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-business" data-value="Business" checked>
+                            <label class="form-check-label" for="select-business">کسب و کار</label>
+                        </div>
+                        <div class="form-check form-check-warning mb-2 pb-1">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-family" data-value="Family" checked>
+                            <label class="form-check-label" for="select-family">خانواده</label>
+                        </div>
+                        <div class="form-check form-check-success mb-2 pb-1">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-holiday" data-value="Holiday" checked>
+                            <label class="form-check-label" for="select-holiday">تعطیلات</label>
+                        </div>
+                        <div class="form-check form-check-info">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-etc" data-value="ETC" checked>
+                            <label class="form-check-label" for="select-etc">سایر</label>
+                        </div>
+                        <div class="form-check form-check-danger">
+                            <input class="form-check-input input-filter" type="checkbox" id="select-management" data-value="اعلان مدیریتی" checked>
+                            <label class="form-check-label" for="select-management">اعلان مدیریتی</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /Calendar Sidebar -->
+
+            <!-- Calendar & Modal -->
+            <div class="col app-calendar-content">
+                <div class="card shadow-none border-0">
+                    <div class="card-body pb-0">
+                        <!-- FullCalendar -->
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+                <div class="app-overlay"></div>
+                <!-- FullCalendar Offcanvas -->
+                <div class="offcanvas offcanvas-end event-sidebar" tabindex="-1" id="addEventSidebar" aria-labelledby="addEventSidebarLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h6 class="offcanvas-title" id="addEventSidebarLabel">افزودن رویداد</h6>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form class="event-form pt-0" id="eventForm" onsubmit="return false">
+                            <div class="mb-3">
+                                <label class="form-label" for="eventTitle">عنوان</label>
+                                <input type="text" class="form-control" id="eventTitle" name="eventTitle" placeholder="عنوان رویداد">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventLabel">برچسب</label>
+                                <select class="select2 select-event-label form-select" id="eventLabel" name="eventLabel">
+                                    <option data-label="primary" value="Business" selected>کسب و کار</option>
+                                    <option data-label="danger" value="Personal">شخصی</option>
+                                    <option data-label="warning" value="Family">خانواده</option>
+                                    <option data-label="success" value="Holiday">تعطیلات</option>
+                                    <option data-label="info" value="ETC">سایر</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventStartDate">تاریخ شروع</label>
+                                <input type="text" class="form-control" id="eventStartDate" name="eventStartDate" placeholder="تاریخ شروع">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventEndDate">تاریخ پایان</label>
+                                <input type="text" class="form-control" id="eventEndDate" name="eventEndDate" placeholder="تاریخ پایان">
+                            </div>
+                            <div class="mb-3">
+                                <label class="switch">
+                                    <input type="checkbox" class="switch-input allDay-switch">
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">تمام روز</span>
+                                </label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventURL">آدرس URL رویداد</label>
+                                <input type="url" class="form-control" id="eventURL" name="eventURL" placeholder="https://www.google.com/">
+                            </div>
+                            <div class="mb-3 select2-primary">
+                                <label class="form-label" for="eventGuests">افزودن مهمانان</label>
+                                <div class="mb-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllUsers">
+                                        <i class="bx bx-check-double"></i>
+                                        انتخاب همه کاربران
+                                    </button>
+                                </div>
+                                <select class="select2 select-event-guests form-select" id="eventGuests" name="eventGuests" multiple>
+                                    <!-- Users will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label d-block">وضعیت رویداد</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="eventStatus" id="statusPending" value="pending" checked>
+                                    <label class="form-check-label" for="statusPending">در انتظار</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="eventStatus" id="statusDone" value="done">
+                                    <label class="form-check-label" for="statusDone">انجام شد</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="eventStatus" id="statusOverdue" value="overdue">
+                                    <label class="form-check-label" for="statusOverdue">گذشته</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventLocation">مکان</label>
+                                <input type="text" class="form-control" id="eventLocation" name="eventLocation" placeholder="مکان رویداد">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="eventDescription">شرح</label>
+                                <textarea class="form-control" name="eventDescription" id="eventDescription"></textarea>
+                            </div>
+                            <div class="mb-3" id="managerAnnouncementSection" style="display: none;">
+                                <label class="switch">
+                                    <input type="checkbox" class="switch-input" id="isManagerAnnouncement">
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">اعلان مدیریتی برای همه کاربران</span>
+                                </label>
+                                <small class="form-text text-muted">این گزینه فقط برای مدیران و سوپر ادمین‌ها فعال است</small>
+                            </div>
+                            <div class="mb-3 d-flex justify-content-sm-between justify-content-start my-4">
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-add-event me-sm-3 me-1">افزودن</button>
+                                    <button type="submit" class="btn btn-primary btn-update-event d-none me-sm-3 me-1">
+                                        به‌روزرسانی
+                                    </button>
+                                    <button type="reset" class="btn btn-label-secondary btn-cancel me-sm-0 me-1" data-bs-dismiss="offcanvas">
+                                        انصراف
+                                    </button>
+                                </div>
+                                <div><button class="btn btn-label-danger btn-delete-event d-none">حذف</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- /Calendar & Modal -->
+        </div>
+    </div>
+</div>
+
+@section vendorjs {
+    <!-- Vendors JS -->
+    <script src="~/assets/vendor/libs/fullcalendar/fullcalendar.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js"></script>
+    <script src="~/assets/vendor/libs/select2/select2.js"></script>
+    <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/fa-jdate.js"></script>
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+}
+
+@section pagejs {
+    <!-- Page JS -->
+    <script src="~/assets/js/app-calendar-events.js"></script>
+    <script src="~/assets/js/app-calendar.js"></script>
+    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="~/dist/libs/sweetalert2/sweetalert2.js" type="module"></script>
+    <script>
+        // Add functionality for select all users button
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllUsersBtn = document.getElementById('selectAllUsers');
+            const eventGuestsSelect = document.getElementById('eventGuests');
+            
+            if (selectAllUsersBtn && eventGuestsSelect) {
+                selectAllUsersBtn.addEventListener('click', function() {
+                    // Get all available options
+                    const options = Array.from(eventGuestsSelect.options);
+                    
+                    // Select all options
+                    options.forEach(option => {
+                        option.selected = true;
+                    });
+                    
+                    // Trigger change event for Select2
+                    $(eventGuestsSelect).trigger('change');
+                });
+            }
+            
+            // Check if user is admin/super admin and show/hide management notification option
+            fetch('/Calendar/GetCurrentUserRole')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.isAdmin) {
+                        // Show management notification option for admin users
+                        const managerAnnouncementSection = document.getElementById('managerAnnouncementSection');
+                        if (managerAnnouncementSection) {
+                            managerAnnouncementSection.style.display = 'block';
+                        }
+                    } else {
+                        // Hide management notification option for non-admin users
+                        const managerAnnouncementSection = document.getElementById('managerAnnouncementSection');
+                        if (managerAnnouncementSection) {
+                            managerAnnouncementSection.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Could not determine user role, hiding management notification option');
+                    const managerAnnouncementSection = document.getElementById('managerAnnouncementSection');
+                    if (managerAnnouncementSection) {
+                        managerAnnouncementSection.style.display = 'none';
+                    }
+                });
+        });
+    </script>
+}
+

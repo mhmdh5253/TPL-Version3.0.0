@@ -1,0 +1,99 @@
+﻿@model BE.LetterAutomation.Kelasehnameh
+
+@{
+    ViewData["Title"] = "حذف کلاس";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h3 class="card-title mb-0 text-white">
+            <i class="fas fa-exclamation-triangle ml-2"></i> حذف کلاس
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <h5 class="alert-heading">
+                <i class="fas fa-exclamation-circle ml-2"></i> آیا از حذف این کلاس اطمینان دارید؟
+            </h5>
+            <p class="mb-0">این عمل غیرقابل بازگشت است و اطلاعات کلاس به طور کامل حذف خواهد شد.</p>
+        </div>
+
+        <div class="details-container">
+            <div class="detail-item">
+                <span class="detail-label">کد کلاس:</span>
+                <span class="detail-value">@Html.DisplayFor(model => model.CodeKelaseh)</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">نام کلاس:</span>
+                <span class="detail-value">@Html.DisplayFor(model => model.NameKelaseh)</span>
+            </div>
+        </div>
+
+        <form asp-action="Delete" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <div class="form-actions d-flex justify-content-between">
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="fas fa-trash-alt ml-2"></i> حذف قطعی
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                    <i class="fas fa-times ml-2"></i> انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section pagecss {
+    <style>
+        .card {
+            border-radius: 15px;
+            border: none;
+            margin-top: 1.5rem;
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .details-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .detail-item:last-child {
+                border-bottom: none;
+            }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+            font-weight: 500;
+            min-width: 150px;
+        }
+
+        .alert {
+            border-radius: 10px;
+        }
+    </style>
+}

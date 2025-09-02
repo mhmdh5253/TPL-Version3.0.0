@@ -1,0 +1,231 @@
+﻿@using System.Text.RegularExpressions
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!-- Menu -->
+@{
+    var currentUrl = Context.Request.Path.Value!.ToLower();
+
+    string GetActiveClass(string url)
+    {
+        return currentUrl.Equals(url.ToLower()) ? "active" : "";
+
+    }
+
+    string GetMenuOpenClass(params string[] urls)
+    {
+        return urls.Any(url => currentUrl.Contains(url.ToLower())) ? "open" : "";
+    }
+}
+
+<style>
+    [dir=rtl] .me-4 {
+        margin-left: 1px !important;
+    }
+</style>
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+    <br />
+    <div class="app-brand">
+        <a href="#" class="app-brand-link d-flex align-items-center">
+            <span class="app-brand-logo demo me-2">
+                <img alt="TPLLogo" style="height: 40px; width: 57px;" src="~/CompanyVariables/favicon/favicon.svg" />
+            </span>
+            <span class="app-brand-text demo menu-text fw-bold" style="font-size: 1rem;">شیلنگ های مسلح قم</span>
+        </a>
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.4854 4.88844C11.0081 4.41121 10.2344 4.41121 9.75715 4.88844L4.51028 10.1353C4.03297 10.6126 4.03297 11.3865 4.51028 11.8638L9.75715 17.1107C10.2344 17.5879 11.0081 17.5879 11.4854 17.1107C11.9626 16.6334 11.9626 15.8597 11.4854 15.3824L7.96672 11.8638C7.48942 11.3865 7.48942 10.6126 7.96672 10.1353L11.4854 6.61667C11.9626 6.13943 11.9626 5.36568 11.4854 4.88844Z" fill="currentColor" fill-opacity="0.6"></path>
+                <path d="M15.8683 4.88844L10.6214 10.1353C10.1441 10.6126 10.1441 11.3865 10.6214 11.8638L15.8683 17.1107C16.3455 17.5879 17.1192 17.5879 17.5965 17.1107C18.0737 16.6334 18.0737 15.8597 17.5965 15.3824L14.0778 11.8638C13.6005 11.3865 13.6005 10.6126 14.0778 10.1353L17.5965 6.61667C18.0737 6.13943 18.0737 5.36568 17.5965 4.88844C17.1192 4.41121 16.3455 4.41121 15.8683 4.88844Z" fill="currentColor" fill-opacity="0.38"></path>
+            </svg>
+        </a>
+    </div>
+
+    <div class="menu-inner-shadow"></div>
+    <ul class="menu-inner py-1">
+        <li class="menu-item @GetMenuOpenClass(Url.Action("ProfilePage", "Account")!, Url.Action("Deposit", "Wallet")!, Url.Action("Index", "Token")!, Url.Action("ResetPass", "Account")!, Url.Action("Dashboard", "AdminTicket")!, Url.Action("Dashboard", "TicketUser")!)">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon fas fa-tachometer-alt"></i>
+                <div>داشبورد</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item @GetActiveClass(Url.Action("ProfilePage", "Account")!)">
+                    <a href="@Url.Action("ProfilePage", "Account")" class="menu-link">
+                        <div><i class="fas fa-user me-2"></i>پروفایل</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("ResetPass", "Account")!)">
+                    <a href="@Url.Action("ResetPass", "Account")" class="menu-link">
+                        <div><i class="fas fa-key me-2"></i>تغییر رمز عبور</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("Deposit", "Wallet")!)">
+                    <a href="@Url.Action("Deposit", "Wallet")" class="menu-link">
+                        <div><i class="fas fa-wallet me-2"></i>کیف پول</div>
+                    </a>
+                </li>
+                @if (User.IsInRole("User"))
+                {
+                    <li class="menu-item @GetActiveClass(Url.Action("Dashboard", "TicketUser")!)">
+                        <a href="@Url.Action("Dashboard", "TicketUser")" class="menu-link">
+                            <div><i class="fas fa-headset me-2"></i>پشتیبانی</div>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="menu-item @GetActiveClass(Url.Action("Dashboard", "AdminTicket")!)">
+                        <a href="@Url.Action("Dashboard", "AdminTicket")" class="menu-link">
+                            <div><i class="fas fa-users-cog me-2"></i>پشتیبانی کاربران</div>
+                        </a>
+                    </li>
+                }
+                <li class="menu-item @GetActiveClass(Url.Action("Index", "Token")!)">
+                    <a href="@Url.Action("Index", "Token")" class="menu-link">
+                        <div><i class="fas fa-key me-2"></i>توکن های Api</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-item @GetMenuOpenClass(Url.Action("TabloElanat", "Letter")!, Url.Action("LetterView", "Letter")!, Url.Action("AdvancedSearch", "Letter")!, Url.Action("Index", "LetterApproval")!, Url.Action("Index", "UserOrganization")!, Url.Action("KartableVaredeh", "Letter")!, Url.Action("Create", "Letter")!, Url.Action("Index", "Kelasehnamehs")!, Url.Action("Index", "Organization")!, Url.Action("KartableSadereh", "Letter")!, Url.Action("Create", "Organization")!)">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon fas fa-file-alt"></i>
+                <div>سامانه مکاتبات</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item @GetActiveClass(Url.Action("Create", "Letter")!)">
+                    <a href="@Url.Action("Create", "Letter")" class="menu-link">
+                        <div><i class="fas fa-plus-circle me-2"></i>ثبت نامه جدید</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("Index", "LetterApproval")!)">
+                    <a href="@Url.Action("Index", "LetterApproval")" class="menu-link">
+                        <div><i class="fas fa-paper-plane me-2"></i>کارتابل ارسال</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("KartableSadereh", "Letter")!)">
+                    <a href="@Url.Action("KartableSadereh", "Letter")" class="menu-link">
+                        <div><i class="fas fa-envelope-open-text me-2"></i>کارتابل نامه های صادره</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("KartableVaredeh", "Letter")!)">
+                    <a href="@Url.Action("KartableVaredeh", "Letter")" class="menu-link">
+                        <div><i class="fas fa-inbox me-2"></i>کارتابل نامه های وارده</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("AdvancedSearch", "Letter")!)">
+                    <a href="@Url.Action("AdvancedSearch", "Letter")" class="menu-link">
+                        <div><i class="fas fa-search me-2"></i>جستجوی پیشرفته</div>
+                    </a>
+                </li>
+                <li class="menu-item @GetActiveClass(Url.Action("TabloElanat", "Letter")!)">
+                    <a href="@Url.Action("TabloElanat", "Letter")" class="menu-link">
+                        <div><i class="fas fa-bell me-2"></i>تابلو اعلانات</div>
+                    </a>
+                </li>
+
+                <li class="menu-item @GetActiveClass(Url.Action("Index", "Kelasehnamehs")!)">
+                    <a href="@Url.Action("Index", "Kelasehnamehs")" class="menu-link">
+                        <div><i class="fas fa-folder-open me-2"></i>کلاسه نامه ها</div>
+                    </a>
+                </li>
+
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                {
+                    <li class="menu-item @GetActiveClass(Url.Action("", "Organization")!)">
+                        <a href="@Url.Action("Index", "Organization")" class="menu-link">
+                            <div><i class="fas fa-sitemap me-2"></i>تعریف گیرندگان</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @GetActiveClass(Url.Action("Index", "UserOrganization")!)">
+                        <a href="@Url.Action("Index", "UserOrganization")" class="menu-link">
+                            <div><i class="fas fa-users-cog me-2"></i>چارت سازمانی کاربران</div>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </li>
+
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+        {
+            <li class="menu-item @GetMenuOpenClass(Url.Action("Index", "ManageUser")!, Url.Action("Index", "EnhancedSettings")!, Url.Action("Index", "ManageRole")!, Url.Action("Index", "SmsSettings")!, Url.Action("Index", "EmailSettings")!)">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon fas fa-cogs"></i>
+                    <div>امکانات مدیریتی</div>
+                </a>
+                <ul class="menu-sub">
+                    <li class="menu-item @GetActiveClass(Url.Action("Index", "ManageUser")!)">
+                        <a href="@Url.Action("Index", "ManageUser")" class="menu-link">
+                            <div><i class="fas fa-users me-2"></i>لیست کاربران</div>
+                        </a>
+                    </li>
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <li class="menu-item @GetActiveClass(Url.Action("Index", "ManageRole")!)">
+                            <a href="@Url.Action("Index", "ManageRole")" class="menu-link">
+                                <div><i class="fas fa-user-shield me-2"></i>مدیریت نقش ها</div>
+                            </a>
+                        </li>
+                        <li class="menu-item @GetActiveClass(Url.Action("Index", "EnhancedSettings")!)">
+                            <a href="@Url.Action("Index", "EnhancedSettings")" class="menu-link">
+                                <div><i class="fas fa-cogs me-2"></i> سامانه پیامکی</div>
+                            </a>
+                        </li>
+
+                    }
+                </ul>
+            </li>
+        }
+
+        <!-- Calendar & Communication -->
+        <li class="menu-header fw-light mt-4">
+            <span class="menu-header-text">برنامه‌ها و ارتباطات</span>
+        </li>
+
+        <!-- Chat System -->
+        <li class="menu-item @GetMenuOpenClass(Url.Action("Index", "Chat")!, Url.Action("Index", "AdminChat")!)">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon fas fa-comments"></i>
+                <div>سیستم چت</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item @GetActiveClass(Url.Action("Index", "Chat")!)">
+                    <a href="@Url.Action("Index", "Chat")" class="menu-link">
+                        <div><i class="fas fa-comments me-2"></i>چت و ارسال فایل</div>
+                    </a>
+                </li>
+                @if (User.IsInRole("SuperAdmin"))
+                {
+                    <li class="menu-item @GetActiveClass(Url.Action("Index", "AdminChat")!)">
+                        <a href="@Url.Action("Index", "AdminChat")" class="menu-link">
+                            <div><i class="fas fa-eye me-2"></i>مانیتورینگ چت</div>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </li>
+
+        <li class="menu-item @GetMenuOpenClass(Url.Action("Index", "Calendar")!, Url.Action("Create", "Calendar")!, Url.Action("CreateAnnouncement", "Calendar")!)">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon fas fa-calendar-alt"></i>
+                <div>تقویم و برنامه‌ریزی</div>
+            </a>
+            <ul class="menu-sub">
+
+                <li class="menu-item @GetActiveClass(Url.Action("AppCalendar", "Calendar")!)">
+                    <a href="@Url.Action("AppCalendar", "Calendar")" class="menu-link">
+                        <div><i class="fas fa-calendar-week me-2"></i>تقویم پیشرفته</div>
+                    </a>
+                </li>
+                @if (User.IsInRole("Manager") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                {
+                    <li class="menu-item @GetActiveClass(Url.Action("Categories", "Calendar")!)">
+                        <a href="@Url.Action("Categories", "Calendar")" class="menu-link">
+                            <div><i class="fas fa-tags me-2"></i>مدیریت دسته‌بندی‌ها</div>
+                        </a>
+                    </li>
+                }
+
+            </ul>
+        </li>
+    </ul>
+</aside>
+<!-- / Menu -->

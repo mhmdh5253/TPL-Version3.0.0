@@ -1,0 +1,71 @@
+﻿@using BE
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<header class="navbar-main-sec index2-navbar-sec w-100 float-left" dir="rtl">
+    <p hidden="">
+        « بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ » یا اللهُ یا رَبِّ یا حَیُّ یا قَیّوم یا ذَالجَلالِ وَ الاکرام اَسئَلُکَ بِاسمِکَ اَلعَظیم اَلاَعظَم اَن تَرزُقَنی رَزقاً
+        حَلالاً طَیِّباً بِرَحمَتِکَ الواسِعَه یا اَرحَمَ الرّاحِمِین
+    </p>
+    <div class="wrapper">
+        <nav class="navbar navbar-expand-lg navbar-light p-0 shadow-sm" style="height: 80px; background-color:transparent;">
+            <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <img src="~/CompanyVariables/favicon/logo.png" class="img-fluid" alt="لوگو" style="height: 80px;">
+            </a>
+            <div class="collapse navbar-collapse text-center" id="navbarToggle">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">خانه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#service-slider-sec">محصولات</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#footer">تماس با ما</a>
+                    </li>
+                   
+                    @if (User!.Identity!.IsAuthenticated)
+                    {
+                        var user = UserManager.Users.SingleOrDefault(u => u.UserName == User.Identity.Name);
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("ProfilePage", "Account")">@user!.FirstName @user!.LastName</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="@Url.Action("Logout", "Account")">خروج</a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-right-box list-unstyled d-flex align-items-center mb-0">
+                    @if (User!.Identity!.IsAuthenticated)
+                    {
+                        var user = UserManager.Users.SingleOrDefault(u => u.UserName == User.Identity.Name);
+                        <li class="nav-item text-center">
+                            <a class="nav-link d-flex flex-column align-items-center" href="@Url.Action("ProfilePage", "Account")">
+                                @if (!string.IsNullOrWhiteSpace(user!.Avatar))
+                                {
+                                    <img class="user-avatar mb-2 img-fluid rounded-circle" src="~/CompanyVariables/avatars/@user!.Avatar" alt="User Avatar" style="width: 60px; height: 60px;">
+                                }
+                                else
+                                {
+                                    <img class="user-avatar mb-2 img-fluid rounded-circle" src="~/Firstpage/images/team-img1.png" alt="User Avatar" style="width: 60px; height: 60px;">
+                                }
+                                @user!.FirstName @user!.LastName
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item text-center">
+                            <a class="login-btn nav-link btn btn-primary text-white px-3 py-2 rounded-pill" href="@Url.Action("Login", "Account")">
+                                ورود یا ثبت نام
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>

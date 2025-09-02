@@ -1,0 +1,398 @@
+﻿@using BLL.LetterAutomation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<BE.LetterAutomation.UserOrganization>
+@inject BlRecivers Recivers
+
+@section pagecss
+{
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .header-icon {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border-radius: 16px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 2rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-outline-warning:hover {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+        
+        .btn-outline-info:hover {
+            background: #17a2b8;
+            border-color: #17a2b8;
+            color: #fff;
+        }
+        
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+        }
+        
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .card {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .status-badge {
+            transition: all 0.3s ease;
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.1);
+        }
+    </style>
+}
+<div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-primary text-white">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="header-icon me-3">
+                    <i class="fas fa-users-cog fa-2x"></i>
+                </div>
+                <div>
+                    <h3 class="card-title mb-1">چارت کاربران سازمانی</h3>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-info-circle me-1"></i>مدیریت کاربران و مسئولان سازمان‌ها
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-light text-dark fs-6">
+                    <i class="fas fa-users me-1"></i>@Model.Count() کاربر
+                </span>
+                <a asp-action="Create" class="btn btn-light btn-lg px-4">
+                    <i class="fas fa-plus me-2"></i>افزودن کاربر جدید
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- جستجوی ساده -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="جستجو در نام کاربر، سازمان یا سمت...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" title="پاک کردن جستجو">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="badge bg-info fs-6">
+                    <i class="fas fa-users me-1"></i>@Model.Count() کاربر
+                </span>
+            </div>
+        </div>
+        
+        <table id="dataTable" class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>نام کاربر</th>
+                <th>سازمان</th>
+                <th>سمت</th>
+                <th>مسئول؟</th>
+                <th>جانشین؟</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item?.User?.FirstName @item?.User?.LastName</td>
+                    <td>@await Recivers.GetReceiverFullPath(@item!.OrganizationId.ToString())</td>
+                    <td>@item?.Position</td>
+                    <td>
+                        @if (item!.IsHead)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-crown me-1"></i>مسئول
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">کارمند</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.IsDeputy)
+                        {
+                            <span class="badge bg-info">
+                                <i class="fas fa-user-tie me-1"></i>جانشین
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-dark">-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>فعال
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i>غیرفعال
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning" 
+                               data-bs-toggle="tooltip" title="ویرایش">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info"
+                               data-bs-toggle="tooltip" title="جزئیات">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm toggle-status-btn @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                    data-id="@item.Id" data-bs-toggle="tooltip" 
+                                    title="@(item.IsActive ? "غیرفعال کردن" : "فعال کردن")">
+                                <i class="fas @(item.IsActive ? "fa-user-slash" : "fa-user-check")"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        
+        <!-- پیام عدم وجود نتیجه -->
+        <div id="noResults" class="text-center py-4" style="display: none;">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">نتیجه‌ای یافت نشد</h5>
+            <p class="text-muted">لطفاً عبارت جستجوی دیگری امتحان کنید</p>
+        </div>
+    </div>
+</div>
+
+@section vendorjs {
+    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+}
+
+@section vendorcss {
+    <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+}
+
+@section PageJs {
+    <script>
+        $(document).ready(function(){
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Simple search functionality with debouncing
+            let searchTimeout;
+            $('#searchInput').on('keyup', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const searchTerm = $(this).val().toLowerCase();
+                    let visibleCount = 0;
+                    
+                    $('#dataTable tbody tr').each(function() {
+                        const $row = $(this);
+                        const text = $row.text().toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            $row.show();
+                            visibleCount++;
+                        } else {
+                            $row.hide();
+                        }
+                    });
+                    
+                    // Update results counter
+                    if (searchTerm) {
+                        $('.badge.bg-info').html(`<i class="fas fa-search me-1"></i>${visibleCount} نتیجه از ${@Model.Count()} کاربر`);
+                    } else {
+                        $('.badge.bg-info').html(`<i class="fas fa-users me-1"></i>${@Model.Count()} کاربر`);
+                    }
+
+                    // Show/hide no results message
+                    if (visibleCount === 0) {
+                        $('#noResults').show();
+                    } else {
+                        $('#noResults').hide();
+                    }
+                }, 300); // 300ms delay
+            });
+
+            // Clear search functionality
+            $('#clearSearch').on('click', function() {
+                $('#searchInput').val('').trigger('keyup'); // Clear input and trigger search
+            });
+
+            // Toggle status functionality
+            $('.toggle-status-btn').on('click', function() {
+                const $btn = $(this);
+                const userId = $btn.data('id');
+                const originalHtml = $btn.html();
+                const originalClasses = $btn.attr('class');
+                const $statusBadge = $btn.closest('tr').find('td:nth-child(6) .badge');
+                
+                // Show loading state
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+                $btn.prop('disabled', true);
+                
+                // Make AJAX call to toggle status
+                $.post('/UserOrganization/ToggleStatus', { id: userId })
+                    .done(function(response) {
+                        if (response.success) {
+                            // Update button appearance based on new status
+                            if (response.isActive) {
+                                $btn.removeClass('btn-outline-warning').addClass('btn-outline-success');
+                                $btn.html('<i class="fas fa-user-slash"></i>');
+                                $btn.attr('title', 'غیرفعال کردن');
+                            } else {
+                                $btn.removeClass('btn-outline-success').addClass('btn-outline-warning');
+                                $btn.html('<i class="fas fa-user-check"></i>');
+                                $btn.attr('title', 'فعال کردن');
+                            }
+                            
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'موفقیت!',
+                                text: response.message || (response.isActive ? 'کاربر فعال شد' : 'کاربر غیرفعال شد'),
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                            
+                            // Reload page after delay to ensure consistency
+                            setTimeout(function() {
+                                location.reload();
+                            }, 3000);
+                        } else {
+                            throw new Error(response.message || 'خطا در تغییر وضعیت');
+                        }
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error:', error);
+                        
+                        // Show error state
+                        $btn.removeClass('btn-outline-warning btn-outline-success btn-success').addClass('btn-danger');
+                        $btn.html('<i class="fas fa-times"></i>');
+                        
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطا!',
+                            text: 'مشکلی در تغییر وضعیت پیش آمد. لطفاً دوباره تلاش کنید.',
+                            confirmButtonText: 'باشه'
+                        });
+                        
+                        // Reset button after delay
+                        setTimeout(function() {
+                            $btn.attr('class', originalClasses);
+                            $btn.html(originalHtml);
+                            $btn.prop('disabled', false);
+                        }, 3000);
+                    });
+            });
+
+            // Add row hover effects
+            $('#dataTable tbody tr').addClass('status-badge');
+            
+            // Add animation to status badges
+            setInterval(function() {
+                $('.status-badge').addClass('animate__pulse');
+                setTimeout(function() {
+                    $('.status-badge').removeClass('animate__pulse');
+                }, 1000);
+            }, 3000);
+            
+            // Add fade-in animation to table rows
+            $('#dataTable tbody tr').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+            });
+        });
+    </script>
+}

@@ -1,0 +1,26 @@
+.misc-wrapper {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.25rem;
+    position: relative;
+}
+
+.misc-bg {
+    bottom: 0;
+    inline-size: 100%;
+    inset-inline-start: 0;
+    position: absolute;
+}
+
+.misc-object {
+    bottom: 8%;
+    position: absolute;
+    z-index: 1;
+}
+
+html:not([dir=rtl]) .misc-object { left: 16%; }
+
+[dir=rtl] .misc-object { right: 10%; }

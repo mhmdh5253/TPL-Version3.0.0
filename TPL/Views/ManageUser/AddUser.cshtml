@@ -1,0 +1,492 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using TPLWeb.Models
+@using TPLWeb.Models.ManageUser
+@model TPLWeb.Models.ManageUser.AddViewModel
+
+@{
+    ViewData["Title"] = "افزودن کاربر جدید";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section pagecss {
+    <style>
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            z-index: 5;
+        }
+
+        .password-input-container {
+            position: relative;
+        }
+
+        /* Signature preview styles */
+        .signature-container {
+            display: none;
+            margin-top: 15px;
+            border: 1px dashed #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .signature-preview {
+            max-width: 100%;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .signature-placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Improved card styling */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .form-floating-outline .form-control {
+            border-radius: 8px;
+            padding: 12px 15px;
+        }
+
+        .form-floating-outline label {
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Role checkboxes styling */
+        .role-checkbox-container {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-check-input:checked {
+            background-color: #7367f0;
+            border-color: #7367f0;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-user-plus me-2"></i>افزودن کاربر جدید
+                </div>
+                <div>
+                    <a href="/UserOrganization" class="btn btn-light btn-sm">
+                        <i class="fas fa-building me-2"></i>مدیریت سازمان کاربران
+                    </a>
+                </div>
+            </h5>
+            <div class="card-body">
+                <form asp-controller="ManageUser" asp-action="AddUser" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="row">
+                        <!-- اطلاعات شخصی -->
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" maxlength="30" asp-for="FirstName" class="form-control" placeholder="نام" />
+                                <label asp-for="FirstName">نام</label>
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" maxlength="30" asp-for="LastName" class="form-control" placeholder="نام خانوادگی" />
+                                <label asp-for="LastName">نام خانوادگی</label>
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <select asp-for="Ostan" class="form-select">
+                                    <option value="" disabled selected>لطفا انتخاب کنید</option>
+                                    <option value="آذربایجان شرقی">آذربایجان شرقی</option>
+                                    <option value="آذربایجان غربی">آذربایجان غربی</option>
+                                    <option value="اردبیل">اردبیل</option>
+                                    <option value="اصفهان">اصفهان</option>
+                                    <option value="البرز">البرز</option>
+                                    <option value="ایلام">ایلام</option>
+                                    <option value="بوشهر">بوشهر</option>
+                                    <option value="تهران">تهران</option>
+                                    <option value="چهارمحال و بختیاری">چهارمحال و بختیاری</option>
+                                    <option value="خراسان جنوبی">خراسان جنوبی</option>
+                                    <option value="خراسان رضوی">خراسان رضوی</option>
+                                    <option value="خراسان شمالی">خراسان شمالی</option>
+                                    <option value="خوزستان">خوزستان</option>
+                                    <option value="زنجان">زنجان</option>
+                                    <option value="سمنان">سمنان</option>
+                                    <option value="سیستان و بلوچستان">سیستان و بلوچستان</option>
+                                    <option value="فارس">فارس</option>
+                                    <option value="قزوین">قزوین</option>
+                                    <option value="قم">قم</option>
+                                    <option value="کردستان">کردستان</option>
+                                    <option value="کرمان">کرمان</option>
+                                    <option value="کرمانشاه">کرمانشاه</option>
+                                    <option value="کهگیلویه و بویراحمد">کهگیلویه و بویراحمد</option>
+                                    <option value="گلستان">گلستان</option>
+                                    <option value="گیلان">گیلان</option>
+                                    <option value="لرستان">لرستان</option>
+                                    <option value="مازندران">مازندران</option>
+                                    <option value="مرکزی">مرکزی</option>
+                                    <option value="هرمزگان">هرمزگان</option>
+                                    <option value="همدان">همدان</option>
+                                    <option value="یزد">یزد</option>
+                                </select>
+                                <label asp-for="Ostan">استان</label>
+                            </div>
+                        </div>
+
+                        <!-- اطلاعات حساب کاربری -->
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" maxlength="30" asp-for="UserName" class="form-control" placeholder="نام کاربری" 
+                                       data-val="true" 
+                                       data-val-remote="نام کاربری مورد نظر از قبل ثبت شده است" 
+                                       data-val-remote-url="/Account/IsAnyUserName" 
+                                       data-val-remote-type="POST"
+                                       data-val-remote-additionalfields="__RequestVerificationToken" />
+                                <label asp-for="UserName">نام کاربری</label>
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="email" maxlength="60" asp-for="Email" class="form-control" placeholder="ایمیل" 
+                                       data-val="true" 
+                                       data-val-remote="ایمیل مورد نظر از قبل ثبت شده است" 
+                                       data-val-remote-url="/Account/IsAnyEmail" 
+                                       data-val-remote-type="POST"
+                                       data-val-remote-additionalfields="__RequestVerificationToken" />
+                                <label asp-for="Email">ایمیل</label>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" maxlength="30" asp-for="Phone" class="form-control" placeholder="موبایل" 
+                                       data-val="true" 
+                                       data-val-remote="شماره تلفن مورد نظر از قبل ثبت شده است" 
+                                       data-val-remote-url="/Account/IsAnyPhone" 
+                                       data-val-remote-type="POST"
+                                       data-val-remote-additionalfields="__RequestVerificationToken" />
+                                <label asp-for="Phone">موبایل</label>
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3 password-input-container">
+                                <input type="password" maxlength="30" asp-for="Password" class="form-control" placeholder="رمز عبور" id="passwordField" required />
+                                <label asp-for="Password">رمز عبور</label>
+                                <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- نوع حساب و آدرس -->
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <select class="form-select" asp-for="AccountType">
+                                    <option value="">لطفا انتخاب نمایید</option>
+                                    <option value="شخصی">شخصی</option>
+                                    <option value="سازمانی">سازمانی</option>
+                                </select>
+                                <label asp-for="AccountType">نوع حساب</label>
+                                <span asp-validation-for="AccountType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" class="form-control" placeholder="آدرس" asp-for="Address" />
+                                <label asp-for="Address">آدرس</label>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- اطلاعات سازمانی (اختیاری) -->
+                        <div class="col-12 mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>توجه:</strong> فیلدهای سازمانی اختیاری هستند و می‌توانند بعداً از طریق مدیریت سازمان تنظیم شوند.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" class="form-control" asp-for="CompanyName" placeholder="شرکت فناوری ..." />
+                                <label asp-for="CompanyName">نام شرکت (اختیاری)</label>
+                                <small class="text-muted">می‌تواند بعداً تنظیم شود</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" class="form-control" asp-for="NameEdareh" placeholder="اداره فناوری" />
+                                <label asp-for="NameEdareh">نام اداره (اختیاری)</label>
+                                <small class="text-muted">می‌تواند بعداً تنظیم شود</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="text" class="form-control" asp-for="Semat" placeholder="مدیرعامل" />
+                                <label asp-for="Semat">سمت (اختیاری)</label>
+                                <small class="text-muted">می‌تواند بعداً تنظیم شود</small>
+                            </div>
+                        </div>
+
+                        <!-- حق امضا -->
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="HaqEmza" id="flexSwitchCheckDefault">
+                                <label class="form-check-label" asp-for="HaqEmza">حق امضا نامه</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input type="file" accept="image/*" class="form-control" asp-for="EmzaPic" id="signatureUpload" />
+                                <label asp-for="EmzaPic">تصویر امضا</label>
+                                <span asp-validation-for="EmzaPic" class="text-danger"></span>
+
+                                <!-- Signature preview container -->
+                                <div class="signature-container" id="signaturePreviewContainer">
+                                    <div class="signature-placeholder" id="noSignatureText">هیچ تصویر امضایی انتخاب نشده است</div>
+                                    <img src="" class="signature-preview" id="signaturePreview" style="display: none;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- نقش‌های کاربر -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-user-tag me-2"></i>نقش‌های کاربر</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @{
+                                            var Roles = ViewBag.Roles as List<RolesViewModel>;
+                                        }
+                                        @foreach (var role in Roles!)
+                                        {
+                                            <div class="col-md-3 col-sm-6 mb-2">
+                                                <div class="role-checkbox-container">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                               id="role_@role.roleName"
+                                                               name="SelectedRoles"
+                                                               value="@role.roleName" />
+                                                        <label class="form-check-label" for="role_@role.roleName">
+                                                            @role.roleName
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- دکمه‌های اقدام -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 text-end">
+                            <a class="btn btn-outline-secondary" asp-action="Index" asp-controller="ManageUser">
+                                <i class="fas fa-list me-2"></i>لیست کاربران
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <button type="submit" class="btn btn-success" name="Create">
+                                <i class="fas fa-user-plus me-2"></i>ایجاد کاربر
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageJs {
+    <script>
+        $(document).ready(function() {
+            // نمایش/مخفی کردن رمز عبور
+            $('#togglePassword').click(function() {
+                const passwordField = $('#passwordField');
+                const icon = $(this).find('i');
+
+                if (passwordField.attr('type') === 'password') {
+                    passwordField.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+            // اطمینان از عملکرد remote validation
+            $.validator.unobtrusive.adapters.add('remote', ['url', 'type', 'data'], function (options) {
+                options.rules['remote'] = {
+                    url: options.params.url,
+                    type: options.params.type || 'GET',
+                    data: options.params.data
+                };
+                options.messages['remote'] = options.message;
+            });
+
+            // اضافه کردن anti-forgery token به تمام درخواست‌های AJAX
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    if (token) {
+                        xhr.setRequestHeader('RequestVerificationToken', token);
+                    }
+                }
+            });
+
+            // تست remote validation برای نام کاربری
+            $('#UserName').on('blur', function() {
+                var userName = $(this).val();
+                if (userName && userName.length > 0) {
+                    $.ajax({
+                        url: '/Account/IsAnyUserName',
+                        type: 'POST',
+                        data: { userName: userName },
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response !== true) {
+                                // نام کاربری تکراری است
+                                var errorSpan = $('#UserName').siblings('.text-danger');
+                                errorSpan.text(response);
+                            }
+                        },
+                        error: function() {
+                            console.log('خطا در بررسی نام کاربری');
+                        }
+                    });
+                }
+            });
+
+            // تست remote validation برای ایمیل
+            $('#Email').on('blur', function() {
+                var email = $(this).val();
+                if (email && email.length > 0) {
+                    $.ajax({
+                        url: '/Account/IsAnyEmail',
+                        type: 'POST',
+                        data: { email: email },
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response !== true) {
+                                // ایمیل تکراری است
+                                var errorSpan = $('#Email').siblings('.text-danger');
+                                errorSpan.text(response);
+                            }
+                        },
+                        error: function() {
+                            console.log('خطا در بررسی ایمیل');
+                        }
+                    });
+                }
+            });
+
+            // تست remote validation برای موبایل
+            $('#Phone').on('blur', function() {
+                var phone = $(this).val();
+                if (phone && phone.length > 0) {
+                    $.ajax({
+                        url: '/Account/IsAnyPhone',
+                        type: 'POST',
+                        data: { phone: phone },
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response !== true) {
+                                // موبایل تکراری است
+                                var errorSpan = $('#Phone').siblings('.text-danger');
+                                errorSpan.text(response);
+                            }
+                        },
+                        error: function() {
+                            console.log('خطا در بررسی موبایل');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <script>
+        // Signature preview functionality
+        document.getElementById('signatureUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const previewContainer = document.getElementById('signaturePreviewContainer');
+            const previewImage = document.getElementById('signaturePreview');
+            const noSignatureText = document.getElementById('noSignatureText');
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    noSignatureText.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = '';
+                previewImage.style.display = 'none';
+                noSignatureText.style.display = 'block';
+            }
+        });
+
+        // Show signature container if there's already a signature
+        window.addEventListener('DOMContentLoaded', function() {
+            const signatureUpload = document.getElementById('signatureUpload');
+            if (signatureUpload.files.length > 0) {
+                signatureUpload.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

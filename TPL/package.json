@@ -1,0 +1,46 @@
+{
+  "name": "tpl-web",
+  "version": "1.0.0",
+  "description": "TPL Web Application",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "build:dev": "webpack --mode=development",
+    "watch": "webpack --mode=development --watch",
+    "clean": "rimraf wwwroot/dist",
+    "gulp": "gulp",
+    "gulp:css": "gulp css",
+    "gulp:js": "gulp js",
+    "gulp:watch": "gulp watch",
+    "gulp:build": "gulp build"
+  },
+  "keywords": [
+    "aspnetcore",
+    "webpack",
+    "bundle"
+  ],
+  "author": "TPL Team",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^5.3.7",
+    "gulp-autoprefixer": "^9.0.0",
+    "jquery": "^3.7.1",
+    "perfect-scrollbar": "^1.5.6",
+    "quill": "^2.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/preset-env": "^7.28.3",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "mini-css-extract-plugin": "^2.9.4",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.1.1",
+    "rimraf": "^6.0.1",
+    "terser-webpack-plugin": "^5.3.14",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
+  }
+}
+

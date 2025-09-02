@@ -1,0 +1,54 @@
+*, body, html { font-family: Shabnam !important }
+
+@font-face {
+    font-display: fallback;
+    font-family: Shabnam;
+    font-style: normal;
+    font-weight: normal;
+    src: url("Shabnam/Shabnam.eot");
+    src: url("Shabnam/Shabnamd41d.eot?#iefix") format("embedded-opentype"), url("Shabnam/Shabnam.woff2") format("woff2"), url("Shabnam/Shabnam.woff") format("woff"), url("Shabnam/Shabnam.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: fallback;
+    font-family: Shabnam;
+    font-style: normal;
+    font-weight: bold;
+    src: url("Shabnam/Shabnam-Bold.eot");
+    src: url("Shabnam/Shabnam-Boldd41d.eot?#iefix") format("embedded-opentype"), url("Shabnam/Shabnam-Bold.woff2") format("woff2"), url("Shabnam/Shabnam-Bold.woff") format("woff"), url("Shabnam/Shabnam-Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: fallback;
+    font-family: Shabnam;
+    font-style: normal;
+    font-weight: 100;
+    src: url("Shabnam/Shabnam-Thin.eot");
+    src: url("Shabnam/Shabnam-Thind41d.eot?#iefix") format("embedded-opentype"), url("Shabnam/Shabnam-Thin.woff2") format("woff2"), url("Shabnam/Shabnam-Thin.woff") format("woff"), url("Shabnam/Shabnam-Thin.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: fallback;
+    font-family: Shabnam;
+    font-style: normal;
+    font-weight: 300;
+    src: url("Shabnam/Shabnam-Light.eot");
+    src: url("Shabnam/Shabnam-Lightd41d.eot?#iefix") format("embedded-opentype"), url("Shabnam/Shabnam-Light.woff2") format("woff2"), url("Shabnam/Shabnam-Light.woff") format("woff"), url("Shabnam/Shabnam-Light.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: fallback;
+    font-family: Shabnam;
+    font-style: normal;
+    font-weight: 500;
+    src: url("Shabnam/Shabnam-Medium.eot");
+    src: url("Shabnam/Shabnam-Mediumd41d.eot?#iefix") format("embedded-opentype"), url("Shabnam/Shabnam-Medium.woff2") format("woff2"), url("Shabnam/Shabnam-Medium.woff") format("woff"), url("Shabnam/Shabnam-Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: fallback;
+    font-family: DimaMolsaq;
+    font-style: normal;
+    font-weight: 500;
+    src: url("DimaMolsaq/DimaMolsaq.html") format("woff");
+}

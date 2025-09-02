@@ -1,0 +1,192 @@
+﻿@model BE.LetterAutomation.UserOrganization
+@{
+    ViewData["Title"] = "حذف دسترسی کاربر از سازمان";
+}
+
+<div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-danger text-white">
+        <div class="d-flex align-items-center">
+            <div class="header-icon me-3">
+                <i class="fas fa-user-times fa-2x"></i>
+            </div>
+            <div>
+                <h3 class="card-title mb-1">حذف دسترسی کاربر از سازمان</h3>
+                <p class="mb-0 opacity-75">
+                    <i class="fas fa-exclamation-triangle me-1"></i>این عملیات غیرقابل بازگشت است
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle me-2"></i>هشدار!
+            </h4>
+            <p class="mb-0">آیا از حذف این دسترسی مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</p>
+        </div>
+
+        <div class="info-card mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-info"></i>اطلاعات دسترسی
+            </h5>
+            <dl class="row">
+                <dt class="col-sm-3">
+                    <i class="fas fa-user me-2 text-primary"></i>کاربر:
+                </dt>
+                <dd class="col-sm-9">
+                    <span class="fw-bold">@Model.User!.FirstName @Model.User.LastName</span>
+                    <small class="text-muted d-block">(@Model.User.UserName)</small>
+                </dd>
+
+                <dt class="col-sm-3">
+                    <i class="fas fa-building me-2 text-success"></i>سازمان:
+                </dt>
+                <dd class="col-sm-9">
+                    <span class="fw-bold">@Model.Organization!.Name</span>
+                    @if (!string.IsNullOrEmpty(Model.Organization.Code))
+                    {
+                        <small class="text-muted d-block">(کد: @Model.Organization.Code)</small>
+                    }
+                </dd>
+
+                <dt class="col-sm-3">
+                    <i class="fas fa-id-badge me-2 text-warning"></i>سمت:
+                </dt>
+                <dd class="col-sm-9">
+                    <span class="fw-bold">@Model.Position</span>
+                </dd>
+            </dl>
+        </div>
+
+        <form asp-action="Delete" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-danger btn-lg px-4">
+                    <i class="fas fa-trash me-2"></i> حذف دسترسی
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="fas fa-times me-2"></i> انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    
+    .header-icon {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .card {
+        border-radius: 16px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+        padding: 2rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 1.5rem;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .info-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6);
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    dt {
+        font-weight: 600;
+        color: #495057;
+        padding: 0.5rem 0;
+    }
+    
+    dd {
+        padding: 0.5rem 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .fw-bold {
+        font-weight: 600 !important;
+    }
+    
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    .card {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    .info-card {
+        animation: fadeInUp 0.6s ease;
+        animation-delay: 0.2s;
+    }
+</style>

@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Identity
+@model BE.ApplicationRole
+
+
+@{
+    ViewData["Title"] = "افزودن نقش جدید";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section vendorcss
+{
+    <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/node-waves/node-waves.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/typeahead-js/typeahead.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/apex-charts/apex-charts.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/swiper/swiper.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/dropzone/dropzone.css"/>
+
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/pickr/pickr-themes.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/dropzone/dropzone.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css"/>
+}
+
+@section pagecss
+{
+    <link rel="stylesheet" href="~/assets/vendor/css/pages/cards-statistics.css"/>
+}
+
+
+<div class="row">
+    <!-- FormValidation -->
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header">افزودن نقش جدید</h5>
+            <div class="card-body">
+                <form asp-action="AddRole" asp-controller="ManageRole" method="post">
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-floating form-floating-outline">
+                                <input maxlength="150" type="text"
+                                       asp-for="Name"
+                                       class="form-control"
+                                       placeholder="نام نقش"/>
+                                <label asp-for="Name">نام نقش</label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-0"/>
+                    <div class="row">
+                        <div class="col-md-6" align="right">
+                            <a class="btn btn-primary waves-effect waves-light" asp-action="Index"
+                               asp-controller="ManageRole">
+                                لیست نقش ها
+                            </a>
+                        </div>
+                        <div class="col-md-6" align="left">
+
+                            <button type="submit" class="btn btn btn-primary left" type="submit" name="Create">
+                                ثبت
+                            </button>
+                        </div>
+
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section vendorjs
+{
+    <!-- Vendors JS -->
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="~/assets/vendor/libs/swiper/swiper.js"></script>
+    <script src="~/assets/vendor/libs/dropzone/DropzonModified.js"></script>
+    <script src="~/assets/vendor/libs/jquery/jquery.min.js"></script>
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/fa-jdate.js"></script>
+    <script src="~/assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+    <script src="~/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js"></script>
+    <script src="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
+    <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
+
+    <script src="~/assets/vendor/libs/dropzone/dropzone.js"></script>
+    <script src="~/assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
+    <script src="~/assets/vendor/libs/jquery-repeater/jquery-repeater.js"></script>
+}
+
+@section PageJs
+{
+    <script src="~/assets/js/dashboards-ecommerce.js"></script>
+    <script src="~/assets/js/forms-pickers.js"></script>
+    <script src="~/assets/js/forms-file-upload.js"></script>
+    <script src="~/assets/js/forms-extras.js"></script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

@@ -1,0 +1,394 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.ResetPassModel
+
+
+@{
+    ViewData["Title"] = "تغییر رمز عبور";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section vendorcss
+{
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section pagecss
+{
+    <style>
+        [dir=rtl] .me-4 {
+            margin-left: 1px !important;
+        }
+
+        .password-field {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #0d6efd;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #e9ecef;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.5s ease;
+            border-radius: 2px;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .password-match {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s ease;
+        }
+
+        .password-match.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .match-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .match-success {
+            background: #d1e7dd;
+            color: #0f5132;
+            animation: pulse 0.6s ease;
+        }
+
+        .match-error {
+            background: #f8d7da;
+            color: #721c24;
+            animation: shake 0.6s ease;
+        }
+
+        .form-floating {
+            transition: all 0.3s ease;
+        }
+
+        .form-floating:focus-within {
+            transform: translateY(-2px);
+        }
+
+        .btn-submit {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.6s ease;
+        }
+
+        .form-floating {
+            animation: slideIn 0.6s ease;
+            animation-delay: calc(var(--animation-order) * 0.1s);
+        }
+
+        .form-floating:nth-child(1) { --animation-order: 1; }
+        .form-floating:nth-child(2) { --animation-order: 2; }
+    </style>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <partial name="Admin/_ProfileParitial" />
+        <div class="card mb-4">
+            <h4 class="card-header">
+                <i class="fas fa-key me-2"></i>تغییر رمز عبور
+            </h4>
+            <!-- Account -->
+            <div class="card-body pt-2 mt-1">
+                @if (TempData["res"] is not null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["res"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                <span class="text-danger">
+                    @Html.ValidationSummary()
+                </span>
+
+                <form asp-controller="Account" asp-action="ResetPass" method="post" id="resetPasswordForm">
+                    <input asp-for="Id" hidden/>
+                    <div class="row">
+                        <input hidden asp-for="Id"/>
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline password-field">
+                                <input maxlength="30" type="password"
+                                       asp-for="Password"
+                                       class="form-control bootstrap-maxlength"
+                                       id="password"
+                                       placeholder="رمز عبور جدید"/>
+                                <label asp-for="Password">
+                                    <i class="fas fa-lock me-2"></i>رمز عبور جدید
+                                </label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                    <i class="fas fa-eye" id="password-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                            
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength" id="passwordStrength" style="display: none;">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthFill"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline password-field">
+                                <input maxlength="30" type="password"
+                                       asp-for="Password2"
+                                       class="form-control bootstrap-maxlength"
+                                       id="confirmPassword"
+                                       placeholder="تکرار رمز عبور"/>
+                                <label asp-for="Password2">
+                                    <i class="fas fa-lock me-2"></i>تکرار رمز عبور
+                                </label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                    <i class="fas fa-eye" id="confirmPassword-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password2" class="text-danger"></span>
+                            
+                            <!-- Password Match Indicator -->
+                            <div class="password-match" id="passwordMatch">
+                                <div class="match-icon" id="matchIcon">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <span id="matchText">رمز عبور مطابقت ندارد</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary me-2 btn-submit" id="submitBtn" disabled>
+                            <i class="fas fa-save me-2"></i>ذخیره تغییرات
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <!-- /Account -->
+        </div>
+    </div>
+</div>
+
+@section vendorjs
+{
+
+}
+
+@section PageJs
+{
+    <script src="~/assets/js/pages-account-settings-account.js"></script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Password visibility toggle
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const eyeIcon = document.getElementById(fieldId === 'password' ? 'password-eye' : 'confirmPassword-eye');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                field.type = 'password';
+                eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let feedback = '';
+
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const strengthBar = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+            const strengthDiv = document.getElementById('passwordStrength');
+
+            if (password.length > 0) {
+                strengthDiv.style.display = 'block';
+                
+                const percentage = (strength / 5) * 100;
+                strengthBar.style.width = percentage + '%';
+
+                if (strength <= 2) {
+                    strengthBar.style.background = '#dc3545';
+                    feedback = 'ضعیف';
+                    strengthText.style.color = '#dc3545';
+                } else if (strength <= 3) {
+                    strengthBar.style.background = '#ffc107';
+                    feedback = 'متوسط';
+                    strengthText.style.color = '#ffc107';
+                } else if (strength <= 4) {
+                    strengthBar.style.background = '#17a2b8';
+                    feedback = 'خوب';
+                    strengthText.style.color = '#17a2b8';
+                } else {
+                    strengthBar.style.background = '#28a745';
+                    feedback = 'عالی';
+                    strengthText.style.color = '#28a745';
+                }
+                
+                strengthText.textContent = `قدرت رمز عبور: ${feedback}`;
+            } else {
+                strengthDiv.style.display = 'none';
+            }
+        }
+
+        // Password match checker
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchDiv = document.getElementById('passwordMatch');
+            const matchIcon = document.getElementById('matchIcon');
+            const matchText = document.getElementById('matchText');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (confirmPassword.length === 0) {
+                matchDiv.classList.remove('show');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            if (password === confirmPassword && password.length > 0) {
+                matchDiv.classList.add('show');
+                matchIcon.className = 'match-icon match-success';
+                matchIcon.innerHTML = '<i class="fas fa-check"></i>';
+                matchText.textContent = 'رمز عبور مطابقت دارد';
+                matchText.style.color = '#0f5132';
+                submitBtn.disabled = false;
+            } else {
+                matchDiv.classList.add('show');
+                matchIcon.className = 'match-icon match-error';
+                matchIcon.innerHTML = '<i class="fas fa-times"></i>';
+                matchText.textContent = 'رمز عبور مطابقت ندارد';
+                matchText.style.color = '#721c24';
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+
+            passwordField.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+                checkPasswordMatch();
+            });
+
+            confirmPasswordField.addEventListener('input', function() {
+                checkPasswordMatch();
+            });
+
+            // Form validation
+            const form = document.getElementById('resetPasswordForm');
+            form.addEventListener('submit', function(e) {
+                const password = passwordField.value;
+                const confirmPassword = confirmPasswordField.value;
+
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    confirmPasswordField.focus();
+                    checkPasswordMatch();
+                    return false;
+                }
+
+                if (password.length < 8) {
+                    e.preventDefault();
+                    passwordField.focus();
+                    alert('رمز عبور باید حداقل 8 کاراکتر باشد');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,71 @@
+[
+  {
+    "outputFileName": "wwwroot/css/bundle.min.css",
+    "inputFiles": [
+      "wwwroot/css/**/*.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "commentMode": "none"
+    },
+    "sourceMap": false
+  },
+
+  {
+    "outputFileName": "wwwroot/css/vendor.min.css",
+    "inputFiles": [
+      "wwwroot/assets/vendor/libs/bootstrap/dist/css/bootstrap.css",
+      "wwwroot/assets/vendor/libs/bootstrap-icons/font/bootstrap-icons.css",
+      "wwwroot/assets/vendor/libs/sweetalert2/dist/sweetalert2.css",
+      "wwwroot/assets/vendor/libs/datatables.net-bs5/css/dataTables.bootstrap5.css",
+      "wwwroot/assets/vendor/libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.css",
+      "wwwroot/assets/vendor/libs/flatpickr/dist/flatpickr.css",
+      "wwwroot/assets/vendor/libs/select2/dist/css/select2.css",
+      "wwwroot/assets/vendor/libs/dropzone/dist/dropzone.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "commentMode": "none"
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/bundle.min.js",
+    "inputFiles": [
+      "wwwroot/dist/app.bundle.js",
+      "wwwroot/dist/menu.bundle.js",
+      "wwwroot/dist/template.bundle.js",
+      "wwwroot/dist/dropdown.bundle.js",
+      "wwwroot/dist/mega.bundle.js",
+      "wwwroot/dist/persian.bundle.js",
+      "wwwroot/dist/persianPicker.bundle.js",
+      "wwwroot/dist/runtime.bundle.js",
+      "wwwroot/dist/vendors.bundle.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/vendor.min.js",
+    "inputFiles": [
+      "wwwroot/assets/vendor/libs/jquery/dist/jquery.js",
+      "wwwroot/assets/vendor/libs/bootstrap/dist/js/bootstrap.bundle.js",
+      "wwwroot/assets/vendor/libs/sweetalert2/dist/sweetalert2.js",
+      "wwwroot/assets/vendor/libs/datatables.net/js/jquery.dataTables.js",
+      "wwwroot/assets/vendor/libs/datatables.net-bs5/js/dataTables.bootstrap5.js",
+      "wwwroot/assets/vendor/libs/datatables.net-responsive/js/jquery.dataTables.responsive.js",
+      "wwwroot/assets/vendor/libs/datatables.net-responsive-bs5/js/responsive.bootstrap5.js",
+      "wwwroot/assets/vendor/libs/flatpickr/dist/flatpickr.js",
+      "wwwroot/assets/vendor/libs/select2/dist/js/select2.js",
+      "wwwroot/assets/vendor/libs/dropzone/dist/dropzone.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  }
+]

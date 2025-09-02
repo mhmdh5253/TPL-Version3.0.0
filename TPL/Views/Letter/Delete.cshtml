@@ -1,0 +1,128 @@
+﻿@using BLL.LetterAutomation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BE.LetterAutomation.Letter
+@inject BlRecivers BlRecivers
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "حذف نامه";
+    var recivers = await BlRecivers.GetAllOrganizationsChainingAsync();
+
+}
+
+<div class="card border-left-danger shadow-lg mb-4">
+    <div class="card-header py-3 bg-gradient-danger text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-trash-alt ml-2"></i> @ViewData["Title"]
+            </h6>
+            <a asp-action="Index" class="btn btn-outline-light btn-sm">
+                <i class="fas fa-arrow-right ml-2"></i> بازگشت
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="alert alert-danger rounded-lg shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x ml-3"></i>
+                <h4 class="alert-heading mb-0">آیا از حذف این نامه مطمئن هستید؟</h4>
+            </div>
+            <hr>
+            <p class="mb-0">این عمل غیرقابل بازگشت است و تمام اطلاعات مربوط به این نامه حذف خواهد شد.</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <tbody>
+                    <tr>
+                        <th class="bg-light text-right" style="width: 25%">@Html.DisplayNameFor(model => model.Subject)</th>
+                        <td>@Html.DisplayFor(model => model.Subject)</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">@Html.DisplayNameFor(model => model.Sender)</th>
+                        <td>@Html.DisplayFor(model => model.Sender)</td>
+                    </tr>
+                <tr>
+                    @{
+                        var girande="";
+
+                        var rc = recivers?.FirstOrDefault(x => x.Id == int.Parse(Model?.Receiver ?? "0"));
+                        girande = $"{rc?.Name}";
+                        if (rc != null && rc.ParentId != null)
+                        {
+                            var rd = await BlRecivers?.GetOrganizationByIdAsync(System.Convert.ToInt32(rc.ParentId))!;
+                            girande = $"{rd?.Name} - {rc?.Name}";
+                            if (rd != null && rd.ParentId != null)
+                            {
+                                var rf = await BlRecivers?.GetOrganizationByIdAsync(System.Convert.ToInt32(rd.ParentId))!;
+                                girande = $"{rf.Name} - {rd?.Name} - {rc?.Name}";
+                                if (rf != null && rf.ParentId != null)
+                                {
+                                    var rg = await BlRecivers?.GetOrganizationByIdAsync(System.Convert.ToInt32(rf.ParentId))!;
+                                    girande = $"{rg.Name} - {rf.Name} - {rd?.Name} - {rc?.Name}";
+                                   
+                                }
+                            }
+                        }
+                    }
+
+                    <th class="bg-light">@Html.DisplayNameFor(model => model.Receiver)</th>
+                    <td>@girande</td>
+                </tr>
+                    <tr>
+                        <th class="bg-light">@Html.DisplayNameFor(model => model.RegistrationDate)</th>
+                        <td dir="ltr">@Model.RegistrationDate.ToString("yyyy/MM/dd - HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">@Html.DisplayNameFor(model => model.Priority)</th>
+                        <td>
+                            <span class="badge badge-danger text-dark">
+                                @Html.DisplayFor(model => model.Priority)
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">@Html.DisplayNameFor(model => model.Classification)</th>
+                        <td>@Html.DisplayFor(model => model.Classification)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <form method="post" asp-controller="Letter" asp-action="DeleteConfirmed" class="mt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-danger btn-icon-split mr-3">
+                    <span class="icon text-white">
+                        <i class="fas fa-trash-alt"></i>
+                    </span>
+                    <span class="text">حذف نهایی</span>
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-times"></i>
+                    </span>
+                    <span class="text">انصراف</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+
+    .table th {
+        font-weight: 600;
+    }
+</style>

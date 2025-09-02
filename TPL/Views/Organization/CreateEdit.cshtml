@@ -1,0 +1,210 @@
+﻿@using BE.LetterAutomation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BE.LetterAutomation.OrganizationFormModel
+
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "ویرایش سازمان" : "ایجاد سازمان جدید";
+    List<Organization>? orgs = ViewBag.ParentOrganizations;
+    var lastklas = new Random().Next(maxValue: 99999);
+
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title">@ViewData["Title"]</h3>
+            </div>
+            <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    @if (isEdit)
+                    {
+                        <input type="hidden" asp-for="Id" />
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Name" class="control-label"></label>
+                                <input asp-for="Name" class="form-control" placeholder="آتش نشانی" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Code" class="control-label"></label>
+                                @if (isEdit)
+                                {
+                                    <input asp-for="Code" class="form-control" placeholder="کد مکاتباتی" />
+                                }
+                                else
+                                {
+                                    <input value="@lastklas" asp-for="Code" class="form-control" placeholder="کد مکاتباتی" />
+
+                                }
+                                <span asp-validation-for="Code" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="OrgType" class="control-label"></label>
+                                <select asp-for="OrgType" class="form-control select2">
+                                    <option value="main">سازمان اصلی</option>
+                                    <option value="department">اداره</option>
+                                    <option value="unit">واحد</option>
+                                    <option value="section">بخش</option>
+                                </select>
+                                <span asp-validation-for="OrgType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ParentId" class="control-label"></label>
+                                <select asp-for="ParentId" class="form-control select2" data-placeholder="انتخاب سازمان مافوق">
+                                    <option value="">-- بدون سازمان مافوق --</option>
+                                    @foreach (Organization mainOrg in orgs.Where(o => o.IsMain))
+                                    {
+                                        <optgroup label="@mainOrg.Name">
+                                            <option value="@mainOrg.Id">@mainOrg.Name</option>
+                                            @foreach (Organization subOrg in orgs.Where(o => o.ParentId == mainOrg.Id))
+                                            {
+                                                <option value="@subOrg.Id">&nbsp;&nbsp;├─ @subOrg.Name</option>
+
+                                                @foreach (Organization childOrg in orgs.Where(o => o.ParentId == subOrg.Id))
+                                                {
+                                                    <option value="@childOrg.Id">&nbsp;&nbsp;&nbsp;&nbsp;└─ @childOrg.Name</option>
+                                                    @foreach (Organization childch in orgs.Where(o => o.ParentId == childOrg.Id))
+                                                    {
+                                                        <option value="@childch.Id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ @childch.Name</option>
+                                                    }
+                                                }
+                                            }
+                                        </optgroup>
+                                    }
+                                </select>
+                                <span asp-validation-for="ParentId" class="text-danger"></span>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Phone" class="control-label"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="تلفن سازمان مربوطه" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Email" class="control-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="info@example.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Address" class="control-label"></label>
+                                <textarea placeholder="نمونه : قم،15 خرداد..." asp-for="Address" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Description" class="control-label"></label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> ذخیره
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> بازگشت
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section pagecss
+{
+    <style>
+        optgroup {
+            font-weight: bold;
+            color: #333;
+        }
+
+            optgroup option {
+                font-weight: normal;
+                padding-right: 20px;
+            }
+    </style>
+
+}
+@section pagejs {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                width: '100%',
+                theme: 'bootstrap4',
+                language: 'fa'
+            });
+
+            // تغییر گزینه‌های والد بر اساس نوع سازمان
+            $('#OrgType').change(function() {
+                const orgType = $(this).val();
+                let parentTypes = [];
+
+                if (orgType === 'main') {
+                    $('#ParentId').val('').trigger('change');
+                    $('#ParentId').prop('disabled', true);
+                } else if (orgType === 'department') {
+                    parentTypes = ['main'];
+                    $('#ParentId').prop('disabled', false);
+                } else if (orgType === 'unit') {
+                    parentTypes = ['department', 'main'];
+                    $('#ParentId').prop('disabled', false);
+                } else {
+                    parentTypes = ['unit', 'department', 'main'];
+                    $('#ParentId').prop('disabled', false);
+                }
+            });
+
+            // مقداردهی اولیه
+            $('#OrgType').trigger('change');
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                templateResult: formatOrganization,
+                templateSelection: formatOrganization
+            });
+
+            function formatOrganization(org) {
+                if (!org.id) return org.text;
+
+                // حذف کاراکترهای سلسله مراتبی هنگام انتخاب
+                return $('<span>').text(org.text.replace(/[├└─]/g, '').trim());
+            }
+        });
+    </script>
+}

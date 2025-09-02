@@ -1,0 +1,289 @@
+﻿@using BE
+@using BLL.Wallet
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject BlWallet Wallet
+
+<!-- Navbar -->
+<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+     id="layout-navbar">
+    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+            <i class="fas fa-bars fa-lg"></i>
+        </a>
+    </div>
+
+    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+
+                 <!-- Admin Message Slider -->
+         @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+         {
+             <div class="admin-message-slider me-3" id="adminMessageSlider" style="display: none;">
+                 <div class="message-container">
+                     <div class="message-content">
+                         <i class="fas fa-bullhorn me-2 text-warning"></i>
+                         <span class="message-title">اعلان مدیریتی:</span>
+                         <span id="adminMessageText"></span>
+                     </div>
+                 </div>
+             </div>
+         }
+
+        <ul class="navbar-nav flex-row align-items-center ms-auto">
+            <!-- Notifications -->
+            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-2 me-xl-1">
+                <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow waves-effect waves-light" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="notifBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-50 translate-middle-y badge badge-dot bg-danger mt-2 border d-none" id="notifDot"></span>
+                </a>
+                                 <ul class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="notifBell" style="min-width:360px; max-height:400px;">
+                     <li class="dropdown-menu-header border-bottom">
+                         <div class="dropdown-header d-flex align-items-center py-3">
+                             <h6 class="mb-0 me-auto">اعلان ها</h6>
+                             <span class="badge rounded-pill bg-label-primary"><span id="notifHeaderCount">0</span> جدید</span>
+                         </div>
+                     </li>
+                     <li class="dropdown-notifications-list" style="max-height:250px; overflow-y:auto;">
+                         <ul class="list-group list-group-flush" id="notifList">
+                             <li class="list-group-item text-center text-muted py-3">اعلانی وجود ندارد</li>
+                         </ul>
+                     </li>
+                     <li class="dropdown-menu-footer border-top p-2">
+                         <a href="@Url.Action("Index","Notifications")" class="btn btn-primary d-flex justify-content-center waves-effect waves-light">مشاهده همه اعلان ها</a>
+                     </li>
+                 </ul>
+            </li>
+            <!-- User -->
+            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                    <div class="avatar avatar-online">
+                        @{ var me = User.Identity!.IsAuthenticated ? UserManager.Users.SingleOrDefault(u => u.UserName == User.Identity!.Name) : null; }
+                        @{
+                            var avatarPath = Url.Content("~/CompanyVariables/avatars/1.png");
+                            if (!string.IsNullOrWhiteSpace(me?.Avatar))
+                            {
+                                avatarPath = me.Avatar.StartsWith("/") || me.Avatar.StartsWith("http")
+                                    ? me.Avatar
+                                    : Url.Content($"~/CompanyVariables/avatars/{me.Avatar}");
+                            }
+                            else if (!string.IsNullOrWhiteSpace(me?.Emza))
+                            {
+                                avatarPath = me.Emza.StartsWith("/") || me.Emza.StartsWith("http")
+                                    ? me.Emza
+                                    : Url.Content($"~/CompanyVariables/signatures/{me.Emza}");
+                            }
+                        }
+                        <img src="@avatarPath" alt="" class="w-px-40 h-auto rounded-circle" onerror="this.onerror=null;this.src='/CompanyVariables/avatars/1.png';" />
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item waves-effect" href="@Url.Action("ProfilePage","Account")">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="avatar avatar-online">
+                                        @{
+                                            var avatarPath2 = Url.Content("~/CompanyVariables/avatars/1.png");
+                                            if (!string.IsNullOrWhiteSpace(me?.Avatar))
+                                            {
+                                                avatarPath2 = me.Avatar.StartsWith("/") || me.Avatar.StartsWith("http")
+                                                    ? me.Avatar
+                                                    : Url.Content($"~/CompanyVariables/avatars/{me.Avatar}");
+                                            }
+                                            else if (!string.IsNullOrWhiteSpace(me?.Emza))
+                                            {
+                                                avatarPath2 = me.Emza.StartsWith("/") || me.Emza.StartsWith("http")
+                                                    ? me.Emza
+                                                    : Url.Content($"~/CompanyVariables/signatures/{me.Emza}");
+                                            }
+                                        }
+                                        <img src="@avatarPath2" alt="" class="w-px-40 h-auto rounded-circle" onerror="this.onerror=null;this.src='/CompanyVariables/avatars/1.png';" />
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    @{
+                                        if (User!.Identity!.IsAuthenticated)
+                                        {
+                                            var user = UserManager.Users.SingleOrDefault(u => u.UserName == User.Identity.Name);
+                                            <span class="fw-semibold d-block">@user!.FirstName @user!.LastName</span>
+                                            <small class="text-muted">@user!.UserName</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-semibold d-block">null</span>
+                                            <small class="text-muted">null</small>
+                                        }
+                                    }
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    @if (User!.Identity!.IsAuthenticated)
+                    {
+                        
+                            string id = UserManager.Users.SingleOrDefault(x => x.UserName == User.Identity.Name)!.Id;
+                            var balance =await Wallet.GetBalanceAsync(id);
+                            <li>
+                                <a class="dropdown-item waves-effect" href="@Url.Action("Deposit", "Wallet")">
+                                    <i class="fas fa-wallet me-2"></i>
+                                    <span class="align-middle">موجودی :@Convert.ToInt32(balance).ToString("##,###") تومان </span>
+                                </a>
+                            </li>
+                        
+                       
+                    }
+                   
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+
+                @*     <li>
+                        <a class="dropdown-item waves-effect" href="@Url.Action("Learn", "Home")">
+                            <i class="fas fa-question-circle me-2"></i>
+                            <span class="align-middle"> آموزش کار با سامانه</span>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li> *@
+                    <li>
+                        <a class="dropdown-item waves-effect" href="@Url.Action("Logout", "Account")">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            <span class="align-middle">خروج</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <!--/ User -->
+        </ul>
+    </div>
+</nav>
+
+<!-- / Navbar -->
+
+<style>
+    .admin-message-slider {
+        max-width: 400px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .message-container {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        animation: slideIn 0.5s ease-out;
+    }
+
+    .message-content {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+         .message-content i {
+         animation: pulse 2s infinite;
+     }
+
+     .message-title {
+         font-weight: bold;
+         margin-left: 0.5rem;
+         margin-right: 0.5rem;
+     }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @@media (max-width: 1200px) {
+        .admin-message-slider {
+            max-width: 300px;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .admin-message-slider {
+            display: none !important;
+        }
+    }
+</style>
+
+<script>
+    // Admin Message Slider functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageSlider = document.getElementById('adminMessageSlider');
+        const messageText = document.getElementById('adminMessageText');
+        
+        if (messageSlider && messageText) {
+            // Sample admin messages - you can replace these with dynamic content from your backend
+            const adminMessages = [
+                "به سیستم مدیریت تقویم خوش آمدید!",
+                "لطفاً رویدادهای مهم را در تقویم ثبت کنید",
+                "برای ایجاد اعلان مدیریتی از بخش تقویم استفاده کنید",
+                "سیستم اعلان‌ها به‌روزرسانی شده است",
+                "از ویژگی‌های جدید تقویم استفاده کنید"
+            ];
+            
+            let currentMessageIndex = 0;
+            
+            function showMessage() {
+                if (messageSlider.style.display === 'none') {
+                    messageSlider.style.display = 'block';
+                }
+                
+                messageText.textContent = adminMessages[currentMessageIndex];
+                
+                // Auto-hide after 8 seconds
+                setTimeout(() => {
+                    messageSlider.style.display = 'none';
+                    
+                    // Show next message after a delay
+                    setTimeout(() => {
+                        currentMessageIndex = (currentMessageIndex + 1) % adminMessages.length;
+                        showMessage();
+                    }, 3000);
+                }, 8000);
+            }
+            
+            // Start showing messages
+            showMessage();
+            
+            // You can also trigger messages manually from other parts of your application
+            window.showAdminMessage = function(message) {
+                messageText.textContent = message;
+                messageSlider.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageSlider.style.display = 'none';
+                }, 8000);
+            };
+        }
+    });
+</script>

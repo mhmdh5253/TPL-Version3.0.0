@@ -1,0 +1,156 @@
+﻿@using BE
+@using BE.Ticketing.SupportTicketSystem.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<Ticket>
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "مدیریت تیکت‌ها";
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-list me-1"></i>@ViewData["Title"]</h5>
+        <div>
+            <a asp-action="Dashboard" asp-controller="AdminTicket" class="btn btn-outline-secondary btn-sm waves-effect">
+                <i class="fas fa-tachometer-alt"></i> داشبورد
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="ticketsTable">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>کاربر</th>
+                        <th>وضعیت</th>
+                        <th>اولویت</th>
+                        <th>دسته‌بندی</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td>@ticket.Title</td>
+                            @{
+                               var u1= UserManager.Users.FirstOrDefault(x => x.Id == ticket.CreatedByUserId);
+                            }
+                            <td>@u1!.FirstName @u1.LastName</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(ticket.Status)">@ticket.Status</span>
+                            </td>
+                            <td>
+                                <span class="badge @GetPriorityBadgeClass(ticket.Priority)">@ticket.Priority</span>
+                            </td>
+                            <td>@ticket.Category?.Name</td>
+                            <td>@ticket.CreatedDate.ToString("yyyy/MM/dd")</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-primary dropdown-toggle waves-effect" data-bs-toggle="dropdown">
+                                        تغییر وضعیت
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @foreach (TicketStatus status in Enum.GetValues(typeof(TicketStatus)))
+                                        {
+                                            <li>
+                                                <form asp-action="ChangeTicketStatus" method="post">
+                                                    <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                                    <input type="hidden" name="status" value="@status" />
+                                                    <button type="submit" class="dropdown-item @(ticket.Status == status ? "active" : "")">
+                                                        @status
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle waves-effect" data-bs-toggle="dropdown">
+                                        تغییر دسته‌بندی
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @foreach (var category in (ViewBag.Categories as IEnumerable<Category>)!)
+                                        {
+                                            <li>
+                                                <form asp-action="ChangeTicketCategory" asp-controller="AdminTicket" method="post">
+                                                    <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                                    <input type="hidden" name="categoryId" value="@category.Id" />
+                                                    <button type="submit" class="dropdown-item @(ticket.CategoryId == category.Id ? "active" : "")">
+                                                        @category.Name
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+
+                                    <a asp-action="ViewTicket" asp-controller="AdminTicket" asp-route-id="@ticket.Id" class="btn btn-outline-primary waves-effect">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="EditTicket" asp-route-id="@ticket.Id" class="btn btn-outline-warning waves-effect">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center mt-4">
+                هیچ تیکتی یافت نشد
+            </div>
+        }
+    </div>
+</div>
+@section pagecss
+{
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css"/>
+}
+@section pagejs {
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#ticketsTable').DataTable();
+
+        });
+    </script>
+
+
+}
+
+@functions {
+    public string GetStatusBadgeClass(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "bg-label-secondary",
+            TicketStatus.Open => "bg-label-primary",
+            TicketStatus.InProgress => "bg-label-info",
+            TicketStatus.Resolved => "bg-label-success",
+            TicketStatus.Closed => "bg-label-dark",
+            _ => "bg-label-secondary"
+        };
+    }
+
+    public string GetPriorityBadgeClass(Priority priority)
+    {
+        return priority switch
+        {
+            Priority.Low => "bg-label-success",
+            Priority.Medium => "bg-label-primary",
+            Priority.High => "bg-label-warning",
+            Priority.Critical => "bg-label-danger",
+            _ => "bg-label-secondary"
+        };
+    }
+}

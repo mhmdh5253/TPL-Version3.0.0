@@ -1,0 +1,178 @@
+﻿<script src="~/Firstpage/js/jquery-3.6.0.min.js"></script>
+<script src="~/Firstpage/js/popper.min.js"></script>
+<script src="~/Firstpage/js/bootstrap.min.js"></script>
+<script src="~/Firstpage/js/owl.carousel.js"></script>
+<script src="~/Firstpage/js/aos.js"></script>
+<script src="~/Firstpage/js/cdn.jsdelivr.net_npm_swiper@10_swiper-bundle.min.js"></script>
+<script>
+         $(window).on('load', function(){
+            // Preloader
+            $('.loader').fadeOut();
+            $('.loader-mask').delay(350).fadeOut('slow');
+            });
+        AOS.init();
+        $('#owlsliderone').owlCarousel({
+        loop:true,
+        margin:30,
+        nav:true,
+        animateOut: 'slideInLeft',
+        animateIn: 'slideOutRight',
+        responsive:{
+            0:{
+                items:2,
+                margin: 15
+            },
+            576:{
+                items:3
+            },
+            992:{
+                items:3
+            },
+            1000:{
+                items:5
+            }
+        }
+    })
+    var btn = $('#button');
+
+      $(window).scroll(function() {
+        if ($(window).scrollTop() > 300) {
+        btn.addClass('show');
+      }
+       else {
+        btn.removeClass('show');
+      }
+      });
+      btn.on('click', function(e) {
+      e.preventDefault();
+      $('html, body').animate({scrollTop:0}, '300');
+    });
+    window.addEventListener('load',function(){
+      document.querySelector('body').classList.add("loaded")
+    });
+</script>
+<script>
+        $('#owlslider').owlCarousel({
+        loop:true,
+        margin:30,
+        nav:true,
+        animateOut: 'slideInLeft',
+        animateIn: 'slideOutRight',
+        responsive:{
+            0:{
+                items:1
+            },
+            600:{
+                items:2
+            },
+            1000:{
+                items:2
+            }
+        }
+    })
+    window.document.onkeydown = function (e) {
+                if (!e) {
+                    e = event;
+                }
+                if (e.keyCode == 27) {
+                    lightbox_close();
+                }
+            }
+
+            function lightbox_open() {
+                var lightBoxVideo = document.getElementById("VisaChipCardVideo");
+                //   window.scrollTo(0, 0);
+                document.getElementById('light').style.display = 'block';
+                document.getElementById('fade1').style.display = 'block';
+                lightBoxVideo.play();
+            }
+
+            function lightbox_close() {
+                var lightBoxVideo = document.getElementById("VisaChipCardVideo");
+                document.getElementById('light').style.display = 'none';
+                document.getElementById('fade1').style.display = 'none';
+                lightBoxVideo.pause();
+            }
+</script>
+<script>
+        const lightbox = document.createElement('div')
+            lightbox.id = 'lightbox'
+            document.body.appendChild(lightbox)
+
+            const images = document.querySelectorAll('.images img')
+            images.forEach(image => {
+            image.addEventListener('click', e => {
+            lightbox.classList.add('active')
+            const img = document.createElement('img')
+            img.src = image.src
+            while (lightbox.firstChild) {
+                lightbox.removeChild(lightbox.firstChild)
+            }
+            lightbox.appendChild(img)
+            })
+        })
+
+            lightbox.addEventListener('click', e => {
+            if (e.target !== e.currentTarget) return
+            lightbox.classList.remove('active')
+        })
+
+        const $dropdown = $(".dropdown");
+        const $dropdownToggle = $(".dropdown-toggle");
+        const $dropdownMenu = $(".dropdown-menu");
+        const showClass = "show";
+
+        $(window).on("load resize", function() {
+        if (this.matchMedia("(min-width: 768px)").matches) {
+            $dropdown.hover(
+            function() {
+                const $this = $(this);
+                $this.addClass(showClass);
+                $this.find($dropdownToggle).attr("aria-expanded", "true");
+                $this.find($dropdownMenu).addClass(showClass);
+            },
+            function() {
+                const $this = $(this);
+                $this.removeClass(showClass);
+                $this.find($dropdownToggle).attr("aria-expanded", "false");
+                $this.find($dropdownMenu).removeClass(showClass);
+            }
+            );
+        } else {
+            $dropdown.off("mouseenter mouseleave");
+        }
+        });
+        const swiper = new Swiper('.swiper', {
+        loop: true,
+        spaceBetween: 10,
+        autoplay: {
+            delay: 0,
+            pauseOnMouseEnter: true,        // added
+            disableOnInteraction: false,    // added
+        },
+        breakpoints: {
+            360: {
+                slidesPerView: 2,
+                spaceBetween: 30,
+              },
+            576: {
+                slidesPerView: 3,
+                spaceBetween: 10,
+              },
+              768: {
+                slidesPerView: 4,
+                spaceBetween: 20,
+              },
+              992: {
+                slidesPerView: 4,
+                spaceBetween: 20,
+              },
+              1200: {
+                slidesPerView: 7,
+                spaceBetween: 10,
+              },
+            },
+
+        speed: 4000,
+    })
+</script>

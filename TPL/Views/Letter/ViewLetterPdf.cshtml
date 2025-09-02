@@ -1,0 +1,288 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "مشاهده نامه";
+    string LetterNumber = ViewBag.LetterNumber.ToString()+".pdf";
+}
+
+<div class="letter-management-container">
+   @*  <!-- پنل اقدامات در سمت راست -->
+    <div class="action-panel-wrapper">
+        <div class="modern-action-panel">
+            <h3 class="panel-title">
+                <i class="fas fa-tasks"></i> مدیریت نامه
+            </h3>
+            <div class="action-buttons">
+                <button class="action-btn refer-btn">
+                    <i class="fas fa-share"></i> ارجاع نامه
+                </button>
+                <button class="action-btn action-btn">
+                    <i class="fas fa-play-circle"></i> اقدام
+                </button>
+                <button class="action-btn return-btn">
+                    <i class="fas fa-undo"></i> عودت
+                </button>
+                <button class="action-btn reply-btn">
+                    <i class="fas fa-reply"></i> پاسخ
+                </button>
+                <button class="action-btn archive-btn">
+                    <i class="fas fa-archive"></i> بایگانی
+                </button>
+                <button class="action-btn quick-archive-btn">
+                    <i class="fas fa-archive"></i> بایگانی سریع
+                </button>
+                <button class="action-btn track-btn">
+                    <i class="fas fa-search"></i> پیگیری
+                </button>
+                <button class="action-btn approve-btn">
+                    <i class="fas fa-check"></i> تایید
+                </button>
+                <button class="action-btn reject-btn">
+                    <i class="fas fa-times"></i> رد نامه
+                </button>
+                <a href="@Url.Action("Index","Letter")" class="action-btn list-btn">
+                    <i class="fas fa-list"></i> لیست نامه ها
+                </a>
+            </div>
+        </div>
+    </div>
+ *@
+    <!-- نمایشگر PDF در سمت چپ -->
+    <div class="pdf-display-wrapper">
+        <div class="pdf-display-frame">
+            <iframe src="~/wordfiles/@LetterNumber"
+                    style="width:100%; height:100%; border:none; color: #006064;" 
+                    title="مشاهده نامه"></iframe>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-management-container {
+        display: flex;
+        height: calc(100vh - 80px);
+        gap: 15px;
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+
+    .action-panel-wrapper {
+        width: 280px;
+        min-width: 280px;
+    }
+
+    .modern-action-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 15px;
+        height: 100%;
+    }
+
+    .panel-title {
+        color: #444;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        background: #f0f0f0;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: right;
+        width: 100%;
+    }
+
+    /* رنگ‌های مختلف برای دکمه‌های مختلف */
+    .print-btn {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .refer-btn {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .action-btn {
+        background-color: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .return-btn {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+
+    .reply-btn {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .archive-btn {
+        background-color: #e0f7fa;
+        color: #00838f;
+    }
+
+    .quick-archive-btn {
+        background-color: #e0f7fa;
+        color: #006064;
+    }
+
+    .track-btn {
+        background-color: #e8eaf6;
+        color: #3949ab;
+    }
+
+    .approve-btn {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+    }
+
+    .reject-btn {
+        background-color: #ffebee;
+        color: #d32f2f;
+    }
+
+    .list-btn {
+        background-color: #f5f5f5;
+        color: #616161;
+    }
+
+    .action-btn:hover {
+        transform: translateX(-3px);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .pdf-display-wrapper {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .pdf-display-frame {
+        height: 100%;
+        position: relative;
+    }
+</style>
+<style>
+    /* استایل اصلی کانتینر */
+    .custom-pdf-viewer-container {
+        width: 100%;
+        height: 100%;
+        background: #f8f9fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* استایل PDF Viewer */
+    .custom-pdf-viewer {
+        width: 100%;
+        height: 100%;
+        min-height: 600px;
+        border: none;
+        background: #ffffff;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+        /* استایل برای حالت تعامل */
+        .custom-pdf-viewer:hover {
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        /* استایل نوار ابزار PDF (در صورت نمایش) */
+        .custom-pdf-viewer ::deep .toolbar {
+            background: #2c3e50;
+            padding: 8px 12px;
+            border-radius: 8px 8px 0 0;
+        }
+
+            /* استایل دکمه‌های نوار ابزار */
+            .custom-pdf-viewer ::deep .toolbar button {
+                color: white;
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                border-radius: 4px;
+                padding: 6px 10px;
+                margin: 0 3px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+                .custom-pdf-viewer ::deep .toolbar button:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+        /* استایل صفحات PDF */
+        .custom-pdf-viewer ::deep .page {
+            margin: 15px auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+    /* استایل برای حالت تلفن همراه */
+    @@media (max-width: 768px) {
+        .custom-pdf-viewer-container
+
+    {
+        border-radius: 8px;
+    }
+
+    .custom-pdf-viewer {
+        min-height: 400px;
+    }
+
+    }
+
+    /* انیمیشن لودینگ */
+    .custom-pdf-viewer.loading {
+        position: relative;
+    }
+
+        .custom-pdf-viewer.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+
+    }
+</style>

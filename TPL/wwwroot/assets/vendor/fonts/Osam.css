@@ -1,0 +1,80 @@
+@font-face {
+    font-family: 'Osam';
+    font-style: normal;
+    font-weight: 300;
+    font-display: fallback;
+    src: url('Osam/Osam-Light.woff2') format('woff2'),
+         url('Osam/Osam-Light.woff') format('woff'),
+         url('Osam/Osam-Light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Osam';
+    font-style: normal;
+    font-weight: 400;
+    font-display: fallback;
+    src: url('Osam/Osam-Regular.woff2') format('woff2'),
+         url('Osam/Osam-Regular.woff') format('woff'),
+         url('Osam/Osam-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Osam';
+    font-style: normal;
+    font-weight: 500;
+    font-display: fallback;
+    src: url('Osam/Osam-Medium.woff2') format('woff2'),
+         url('Osam/Osam-Medium.woff') format('woff'),
+         url('Osam/Osam-Medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Osam';
+    font-style: normal;
+    font-weight: 600;
+    font-display: fallback;
+    src: url('Osam/Osam-SemiBold.woff2') format('woff2'),
+         url('Osam/Osam-SemiBold.woff') format('woff'),
+         url('Osam/Osam-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Osam';
+    font-style: normal;
+    font-weight: 700;
+    font-display: fallback;
+    src: url('Osam/Osam-Bold.woff2') format('woff2'),
+         url('Osam/Osam-Bold.woff') format('woff'),
+         url('Osam/Osam-Bold.ttf') format('truetype');
+}
+
+/* Global font application */
+*, body, html {
+    font-family: 'Osam', 'IRANSans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Specific font classes for different weights */
+.font-osam-light {
+    font-family: 'Osam', sans-serif !important;
+    font-weight: 300 !important;
+}
+
+.font-osam-regular {
+    font-family: 'Osam', sans-serif !important;
+    font-weight: 400 !important;
+}
+
+.font-osam-medium {
+    font-family: 'Osam', sans-serif !important;
+    font-weight: 500 !important;
+}
+
+.font-osam-semibold {
+    font-family: 'Osam', sans-serif !important;
+    font-weight: 600 !important;
+}
+
+.font-osam-bold {
+    font-family: 'Osam', sans-serif !important;
+    font-weight: 700 !important;
+}

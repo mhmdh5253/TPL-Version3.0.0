@@ -1,0 +1,109 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.RegisterWhitPhone
+<!DOCTYPE html>
+@{
+    ViewData["Title"] = "ثبت نام در آچار فرانسه";
+    Layout = null;
+}
+<html lang="en" class="light-style" dir="rtl" data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/CompanyVariables/favicon/favicon.ico" />
+    <link rel="manifest" href="/manifest.json" />
+    <link href="@Url.Content("~/libs/@fortawesome/fontawesome-free/css/all.min.css")" rel="stylesheet" />
+    <link rel="stylesheet" href="~/assets/vendor/css/rtl/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="~/assets/vendor/fonts/IRANSans.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/formvalidation/dist/css/formValidation.min.css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/pages/page-auth.css">
+</head>
+<style>
+    .DIRLTR {
+        direction: ltr;
+    }
+
+</style>
+<body>
+    <div class="position-relative">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner py-4">
+
+                <!-- Login -->
+                <div class="card p-2">
+                    <!-- Logo -->
+                    <div class="row">
+                        <div class="input-field col">
+                            <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" width="100" src="~/CompanyVariables/favicon/logo.png" alt="">
+                            <h5 style="text-align: center;">شرکت شیلنگ های مسلح قم</h5>
+                        </div>
+                        <span class="text-danger">@Html.ValidationSummary()</span>
+                    </div>
+                    <!-- /Logo -->
+                    <div class="card-body mt-2">
+                        <form asp-controller="Account" asp-action="Register" class="mb-3" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+                            <div class="form-floating form-floating-outline mb-3">
+                                <input asp-for="Phone" type="text" class="form-control DIRLTR"
+                                       placeholder="09000000000" autofocus>
+                                <label asp-for="Phone">شماره موبایل</label>
+                                <span asp-validation-for="Phone"></span>
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100" type="submit">ارسال</button>
+                            </div>
+                        </form>
+
+                    </div>
+                    <hr class="mt-0" />
+                    <div class="d-flex justify-content-between align-items-center" style="font-family: Arial, sans-serif; font-size: 14px; padding: 10px;">
+                        <a href="@Url.Action("Login","Account")" style="text-decoration: none; color: #007bff; font-weight: bold; margin-right: 10px;">
+                            ورود یا نام کاربری
+                        </a>
+                        <hr class="mt-0" style="flex-grow: 1; margin: 0 10px; border: 1px solid #ddd;">
+                        <a href="@Url.Action("LoginWhitPhone","Account")" style="text-decoration: none; color: #007bff; font-weight: bold; margin-left: 10px;">
+                            ورود با موبایل
+                        </a>
+                    </div>
+                </div>
+                <!-- /Login -->
+                <img alt="mask" src="~/assets/img/illustrations/auth-basic-login-mask-light.png"
+                     class="authentication-image d-none d-lg-block"
+                     data-app-light-img="illustrations/auth-basic-login-mask-light.png"
+                     data-app-dark-img="illustrations/auth-basic-login-mask-dark.png" />
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/assets/vendor/libs/popper/popper.js"></script>
+    <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="~/assets/vendor/libs/node-waves/node-waves.js"></script>
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/assets/vendor/js/helpers.js"></script>
+    <script src="~/assets/vendor/js/template-customizer.js"></script>
+    <script src="~/assets/js/config.js"></script>
+
+    <script src="~/assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="~/assets/vendor/libs/i18n/i18n.js"></script>
+    <script src="~/assets/vendor/libs/typeahead-js/typeahead.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js"></script>
+    <script src="~/assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js"></script>
+    <script src="~/assets/js/main.js"></script>
+    <script src="@Url.Content("~/libs/@fortawesome/fontawesome-free/js/all.min.js")"></script>
+    
+    <!-- Disable Service Worker for login pages -->
+    <script>
+        // Disable service worker registration on login pages
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
+
+    </script>
+</body>
+</html>

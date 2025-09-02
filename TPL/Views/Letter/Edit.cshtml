@@ -1,0 +1,1237 @@
+﻿@using BE
+@using BE.LetterAutomation
+@using BLL.LetterAutomation
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.EntityFrameworkCore
+@model BE.LetterAutomation.Letter
+@inject Blkelaseh KlBlkelaseh
+@inject UserManager<ApplicationUser> UserManager
+@inject BlRecivers BlRecivers
+@{
+    List<Organization> orgs = ViewBag.ParentOrganizations;
+    ViewData["Title"] = "ویرایش نامه";
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+@section pagecss {
+    <link rel="stylesheet" href="~/assets/vendor/libs/quill/typography.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/quill/katex.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/quill/editor.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/tagify/tagify.css">
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/pickr/pickr-themes.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-select/bootstrap-select.css">
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+
+    <style>
+        #girandeganselect {
+            width: -webkit-fill-available !important;
+        }
+        #btnOpenFileCodeModal {
+            border-top-left-radius: 10px !important;
+            border-bottom-left-radius: 10px!important;
+        }
+        .org-group {
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 2px solid #007bff;
+        }
+
+        .sub-orgs {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+
+        .child-orgs {
+            margin-left: 20px;
+        }
+
+        .grandchild-orgs {
+            margin-left: 20px;
+        }
+
+        .main-org {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        label {
+            display: block;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            margin-left: 5px;
+        }
+
+        .input-group-text {
+            color: blue !important;
+        }
+
+        .form-group {
+            margin-top: 20px;
+        }
+
+        button.btn-success, a.btn-secondary {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-content-between {
+            justify-content: space-between;
+        }
+
+        .form-control {
+            appearance: revert !important;
+        }
+
+        .progress-bar {
+            display: block;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: #007bff;
+            transition: width 0.3s ease-in-out;
+            border-radius: 2px;
+        }
+
+        .btn-info {
+            color: #fff;
+            background-color: #17a2b8;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .form-control-sm {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            font-size: 0.85rem;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        .control-label {
+        }
+
+        /* فاصله و عدم شکست نام‌ها در درخت‌ها */
+        #ReceiverTree .jstree-anchor,
+        #organizationTreeJs .jstree-anchor {
+            padding: 6px 10px;
+            line-height: 1.8;
+            white-space: nowrap;
+        }
+
+        #ReceiverTree .jstree-node,
+        #organizationTreeJs .jstree-node {
+            margin: 4px 0;
+        }
+
+        /* چیدمان یادداشت‌های انتخابی */
+        #selectedNotes {
+            padding-top: 6px;
+        }
+
+        #selectedNotes .note-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        #selectedNotes .note-item label {
+            margin: 0;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        #selectedNotes .note-item input.org-note {
+            flex: 1;
+            height: 38px;
+            padding: 6px 10px;
+        }
+
+        /* مودال‌ها عریض‌تر + اسکرول داخلی */
+        #Copyreciversmodal .modal-dialog {
+            max-width: 50%;
+        }
+
+        #Copyreciversmodal .modal-body {
+            max-height: 70vh;
+            overflow: auto;
+        }
+
+        #ReceiverSelectModal .modal-dialog {
+            max-width: 60%;
+        }
+
+        /* استایل برای نمایش پیوست فعلی */
+        .current-attachment {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .current-attachment a {
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .current-attachment .remove-attachment {
+            color: #dc3545;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+    </style>
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" enctype="multipart/form-data" method="post" class="needs-validation" novalidate>
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- بخش نوع مکاتبه و ارتباط -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>&nbsp;&nbsp;
+                                <label asp-for="CorrespondenceType" class="control-label font-weight-bold"></label>
+                            </span>
+                            <select asp-for="CorrespondenceType" class="form-control" required>
+                                <option value="">انتخاب کنید</option>
+                                <option value="0">مکاتباتی</option>
+                                <option value="1">آموزشی</option>
+                                <option value="2">اطلاع رسانی</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="CorrespondenceType" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا نوع مکاتبه را انتخاب کنید</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>&nbsp;
+                                <label asp-for="Classification" class="control-label font-weight-bold"></label>
+                            </span>
+                            <select asp-for="Classification" class="form-control" required>
+                                <option value="انتخاب کنید">انتخاب کنید</option>
+                                <option value="0">عادی</option>
+                                <option value="1">محرمانه</option>
+                                <option value="2">خیلی محرمانه</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Classification" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-exclamation-circle"></i>&nbsp;
+                                <label asp-for="Priority" class="control-label font-weight-bold"></label>
+                            </span>
+                            <select asp-for="Priority" class="form-control" required>
+                                <option value="">انتخاب کنید</option>
+                                <option value="0">عادی</option>
+                                <option value="1">فوری</option>
+                                <option value="2">آنی</option>
+                                <option value="3">اقدام سریع</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بخش تاریخ‌ها و اولویت‌ها -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-link"></i>&nbsp;
+                                <label asp-for="LetterRelationType" class="control-label font-weight-bold"></label>
+                            </span>
+                            <select asp-for="LetterRelationType" class="form-control" id="letterRelationType" required
+                                    onchange="toggleRelatedLetterField(this.value)" onclick="toggleRelatedLetterField(this.value)">
+                                <option value="">انتخاب کنید</option>
+                                <option value="0">نامه جدید</option>
+                                <option value="1">پاسخ</option>
+                                <option value="2">عطف</option>
+                                <option value="3">پیرو</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="LetterRelationType" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا نوع ارتباط نامه را انتخاب کنید</div>
+                    </div>
+                </div>
+                <div class="col-md-4" id="relatedLetterContainer" @if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
+                     {
+                                                                          <text> style = "display: inline-block;"</text>
+                                                                  }
+                                                                                                                                    else
+                                                                  {
+                                                                          <text> style = "display: none;"</text>
+
+                                                                  }
+>
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-history"></i>&nbsp;
+                                <label class="control-label font-weight-bold">سابقه نامه</label>
+                            </span>
+                            <input type="text" class="form-control" id="relatedLetterText" readonly placeholder="انتخاب نامه سابقه"@if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
+                                                                                                                                   {
+                                                                                                                                           <text> value="@ViewBag.relatedtext"</text>
+
+                                                                                                                                   }
+>
+                            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#letterSearchModal">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" asp-for="RelatedLetterId" id="relatedLetterId" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-flag"></i>&nbsp;
+                                <label asp-for="FollowUpDate"> تاریخ پیگیری</label>
+                            </span>
+                            <input asp-for="FollowUpDate" type="text"
+                                   class="form-control input flatpickr-date"
+                                   placeholder="YYYY-MM-DD" />
+                        </div>
+                        <span asp-validation-for="FollowUpDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-9 position-relative">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-file-archive"></i>&nbsp;
+                                <label for="MostadatFile" class="mb-0">فایل مستندات:</label>
+                            </span>
+                            <input class="form-control" type="file" id="MostadatFile" accept=".zip,.rar">
+                            <button class="btn btn-info btn-sm ms-2" type="button" id="uploadButton">
+                                <i class="fas fa-upload"></i> آپلود
+                            </button>
+                        </div>
+
+                        <!-- Progress bar container -->
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div id="uploadProgressBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                        </div>
+
+                        <div id="progressText" class="small text-muted text-center mt-1">0%</div>
+
+                        <!-- نمایش پیوست فعلی -->
+                        @if (!string.IsNullOrEmpty(Model.AttachmentName))
+                        {
+                            <div class="current-attachment">
+                                <a href="~/PeyvastNameha/@Model.AttachmentName" download="@Model.AttachmentName">
+                                    <i class="fas fa-paperclip"></i> @Model.AttachmentName
+                                </a>
+                                <span class="remove-attachment" onclick="removeAttachment(@Model.Id)">
+                                    <i class="fas fa-times"></i> حذف
+                                </span>
+                            </div>
+                        }
+                        <input hidden class="form-control form-control-sm mt-2" id="fileaddress" asp-for="AttachmentName" type="text" readonly placeholder="آدرس فایل">
+                        <span asp-validation-for="AttachmentName" class="text-danger mt-2"></span>
+                        <small class="text-muted d-block mt-1">حداکثر حجم فایل: 500 مگابایت</small>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <div class="input-group-text">
+                                <input class="form-check-input" type="checkbox" asp-for="ShowOnDashboard">
+                            </div>
+                            <label class="form-control bg-light" asp-for="ShowOnDashboard">نمایش در تابلو اعلانات</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بخش کلاسه نامه -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-barcode"></i>&nbsp;
+                                <label class="control-label font-weight-bold">کلاسه نامه</label>
+                            </span>
+                            <input type="hidden" asp-for="FileCode" id="FileCode" required />
+                            <input type="text" id="FileCodeText" class="form-control" placeholder="انتخاب کلاسه نامه" readonly value="@Model.FileDescription" />
+                            <button class="btn btn-outline-secondary" type="button" id="btnOpenFileCodeModal" data-bs-toggle="modal" data-bs-target="#FileCodeSelectModal">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <span asp-validation-for="FileDescription" class="text-danger"></span>
+                        </div>
+                        <div class="invalid-feedback">لطفا کد کلاسه را وارد کنید</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-user-tie"></i>&nbsp;
+                                <label asp-for="Sender" class="control-label font-weight-bold"></label>
+                            </span>
+                            @{
+                                var organizationId = await UserManager.Users
+                                .Where(x => x.UserName == User.Identity!.Name)
+                                .Select(x => x.OrganizationId)
+                                .FirstOrDefaultAsync();
+
+                                if (organizationId.HasValue)
+                                {
+                                    var userorg = await BlRecivers.GetOrganizationByIdAsync(organizationId.Value);
+                                    <input hidden="" value="@userorg.Id" asp-for="Sender" class="form-control" required readonly="" placeholder="فرستنده" />
+                                    <input value="@await BlRecivers.GetReceiverFullPath(userorg.Id.ToString())" asp-for="Sender" class="form-control" required readonly="" placeholder="فرستنده" />
+                                }
+
+                            }
+                        </div>
+                        <span asp-validation-for="Sender" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا فرستنده را وارد کنید</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>&nbsp;
+                                <label asp-for="Receiver" class="control-label font-weight-bold"></label>
+                            </span>
+                            <select asp-for="Receiver" class="form-control" data-placeholder="انتخاب گیرنده نامه">
+                                @foreach (Organization mainOrg in orgs.Where(o => o.IsMain))
+                                {
+                                    <optgroup label="@mainOrg.Name">
+                                        <option value="@mainOrg.Id" selected="@(Model.Receiver == mainOrg.Id.ToString())">@mainOrg.Name</option>
+                                        @foreach (Organization subOrg in orgs.Where(o => o.ParentId == mainOrg.Id))
+                                        {
+                                            <option value="@subOrg.Id" selected="@(Model.Receiver == subOrg.Id.ToString())">@mainOrg.Name-@subOrg.Name</option>
+
+                                            @foreach (Organization childOrg in orgs.Where(o => o.ParentId == subOrg.Id))
+                                            {
+                                                <option value="@childOrg.Id" selected="@(Model.Receiver == childOrg.Id.ToString())">@mainOrg.Name-@subOrg.Name-@childOrg.Name</option>
+                                                @foreach (Organization childch in orgs.Where(o => o.ParentId == childOrg.Id))
+                                                {
+                                                    <option value="@childch.Id" selected="@(Model.Receiver == childch.Id.ToString())">@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name</option>
+                                                }
+                                            }
+                                        }
+                                    </optgroup>
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="Receiver" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا گیرنده را انتخاب کنید</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a style="margin-top: 20px !important; padding: 15px;" class="btn btn-outline-info waves-effect" id="girandeganselect">انتخاب سایر گیرندگان</a>
+                </div>
+                <input type="hidden" asp-for="CopyReceivers" id="selectedOrganizations" />
+            </div>
+
+            <!-- بخش موضوع -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-header"></i>&nbsp;
+                                <label asp-for="Subject" class="control-label font-weight-bold"></label>
+                            </span>
+                            <input asp-for="Subject" class="form-control" required placeholder="موضوع نامه" />
+                        </div>
+                        <span asp-validation-for="Subject" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا موضوع نامه را وارد کنید</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بخش متن نامه با ویرایشگر پیشرفته -->
+            <div class="form-group mb-4">
+                <div class="input-group input-group-lg">
+                    <span style="border: none;" class="input-group-text">
+                        <i class="fas fa-align-left"></i>&nbsp;
+                        <label asp-for="Content" class="control-label font-weight-bold"></label>
+                    </span>
+                    <div style="width: 100%;">
+                        <input type="hidden" asp-for="Content" id="letterContent" />
+                        <div id="editor" style="height: 400px;">@Html.Raw(Model.Content)</div>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا متن نامه را وارد کنید</div>
+                    </div>
+                    <div id="counter" class="text-muted mt-2">تعداد کاراکتر: 0 | تعداد خطوط: 0</div>
+                </div>
+            </div>
+
+            <!-- بخش امضاکننده -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-tags"></i>&nbsp;
+                                <label asp-for="Keywords" class="control-label font-weight-bold"></label>
+                            </span>
+                            <input id="TagifyBasic" class="form-control tagifyy" name="Keywords" asp-for="Keywords" multiple />
+                        </div>
+                    </div>
+                    <span asp-validation-for="Keywords" class="text-danger"></span>
+                    <small class="form-text text-muted">برای افزودن کلیدواژه جدید، Enter بزنید</small>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-signature"></i>&nbsp;
+                                <label asp-for="SignerName" class="control-label font-weight-bold"></label>
+                            </span>
+                            @{
+                                var u2 = UserManager.Users.FirstOrDefault(x => x.UserName == User.Identity!.Name);
+                                if (u2!.HaqEmza)
+                                {
+                                    <select asp-for="SignerName" class="form-control">
+                                        <option value="@u2.Id" selected="@(Model.SignerName == u2.Id)">@u2.Semat : @u2.FirstName @u2.LastName</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    var u3 = UserManager.Users.Where(x => x.HaqEmza == true).ToList();
+                                    <select asp-for="SignerName" class="form-control">
+                                        @foreach (var item in u3)
+                                        {
+                                            <option value="@item.Id" selected="@(Model.SignerName == item.Id)">@item.Semat : @item.FirstName @item.LastName</option>
+                                        }
+                                    </select>
+                                }
+                            }
+                        </div>
+                        <span asp-validation-for="SignerName" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا نام امضاکننده را وارد کنید</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4 d-flex justify-content-between">
+                <!-- دکمه سمت چپ -->
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>&nbsp; بازگشت به لیست
+                </a>
+                <!-- دکمه سمت راست -->
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i>&nbsp; ذخیره تغییرات
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- مودال جستجوی نامه -->
+<div class="modal fade" id="letterSearchModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title  text-white" id="letterSearchModalLabel">جستجوی نامه سابقه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Subjectsearch" class="font-weight-bold">موضوع نامه</label>
+                            <input type="text" class="form-control" id="Subjectsearch" name="Subjectsearch" placeholder="موضوع نامه">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="LetterNumber" class="font-weight-bold">شماره نامه</label>
+                            <input type="text" class="form-control" id="LetterNumber" name="LetterNumber" placeholder="شماره نامه">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="font-weight-bold">تاریخ ثبت نامه</label>
+                            <div class="input-daterange input-group">
+                                <input type="text" class="form-control flatpickr-datesearch" id="FromDate" name="FromDate" placeholder="از تاریخ">
+                                <div class="input-group-prepend input-group-append">
+                                    <span class="input-group-text">تا</span>
+                                </div>
+                                <input type="text" class="form-control flatpickr-datesearch" id="ToDate" name="ToDate" placeholder="تا تاریخ">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group text-center mt-3">
+                    <button class="btn btn-primary" type="button" id="searchLetterBtn">
+                        <i class="fas fa-search"></i> جستجوی نامه‌ها
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" id="resetSearchBtn">
+                        <i class="fas fa-sync-alt"></i> بازنشانی فیلترها
+                    </button>
+                </div>
+
+                <hr>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="letterSearchResults">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="50px">انتخاب</th>
+                                <th>شماره نامه</th>
+                                <th>موضوع</th>
+                                <th>تاریخ ثبت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="searchLoading" class="text-center py-3" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">در حال جستجو...</span>
+                    </div>
+                    <p class="mt-2">در حال جستجو...</p>
+                </div>
+
+                <div id="noResults" class="text-center py-3" style="display:none;">
+                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                    <p class="mt-2">نتیجه‌ای یافت نشد</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="btn btn-primary" id="selectLetterBtn" disabled>
+                    <i class="fas fa-check"></i> انتخاب نامه
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="Copyreciversmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">انتخاب سایر گیرندگان</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tree-container">
+                    <h6 class="tree-title mb-3">
+                        <i class="fas fa-sitemap me-2"></i>
+                        انتخاب سازمان‌های گیرنده رونوشت
+                    </h6>
+                    <div id="organizationTree">
+                        @foreach (Organization mainOrg in orgs.Where(o => o.IsMain))
+                        {
+                            <div class="org-group">
+                                <label class="main-org">
+                                    <input type="checkbox" value="@mainOrg.Id" data-name="@mainOrg.Name" class="org-checkbox"
+                                           @(Model.CopyReceiversList.Any(x => x.Id == mainOrg.Id) ? "checked" : "") />
+                                    <span>@mainOrg.Name</span>
+                                </label>
+                                <div class="sub-orgs">
+                                    @foreach (Organization subOrg in orgs.Where(o => o.ParentId == mainOrg.Id))
+                                    {
+                                        <div class="sub-org">
+                                            <label>
+                                                <input type="checkbox" value="@subOrg.Id" data-name="@mainOrg.Name-@subOrg.Name" class="org-checkbox"
+                                                       @(Model.CopyReceiversList.Any(x => x.Id == subOrg.Id) ? "checked" : "") />
+                                                <span>@mainOrg.Name-@subOrg.Name</span>
+                                            </label>
+                                            <div class="child-orgs">
+                                                @foreach (Organization childOrg in orgs.Where(o => o.ParentId == subOrg.Id))
+                                                {
+                                                    <div class="child-org">
+                                                        <label>
+                                                            <input type="checkbox" value="@childOrg.Id" data-name="@mainOrg.Name-@subOrg.Name-@childOrg.Name" class="org-checkbox"
+                                                                   @(Model.CopyReceiversList.Any(x => x.Id == childOrg.Id) ? "checked" : "") />
+                                                            <span>@mainOrg.Name-@subOrg.Name-@childOrg.Name</span>
+                                                        </label>
+                                                        <div class="grandchild-orgs">
+                                                            @foreach (Organization childch in orgs.Where(o => o.ParentId == childOrg.Id))
+                                                            {
+                                                                <label>
+                                                                    <input type="checkbox" value="@childch.Id" data-name="@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name" class="org-checkbox"
+                                                                           @(Model.CopyReceiversList.Any(x => x.Id == childch.Id) ? "checked" : "") />
+                                                                    <span>@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name</span>
+                                                                </label>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+            <button type="button" class="btn btn-primary" id="confirmSelection">تایید انتخاب</button>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    <!-- ابتدا کتابخانه‌های پایه و ضروری -->
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/firstpage/js/bootstrap.min.js"></script>
+
+    <!-- کتابخانه‌های تاریخ و زمان -->
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/fa-jdate.js"></script>
+    <script src="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
+
+    <!-- کتابخانه‌های دیگر -->
+    <script src="~/assets/vendor/libs/swiper/swiper.js"></script>
+    <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
+    <script src="~/assets/vendor/libs/tagify/tagify.js" type="module"></script>
+    <script src="~/assets/vendor/libs/bloodhound/bloodhound.js"></script>
+    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="~/dist/libs/sweetalert2/sweetalert2.js" type="module"></script>
+    <script src="~/assets/vendor/libs/quill/katex.js" type="module"></script>
+    <script src="~/assets/vendor/libs/quill/quill.js" type="module"></script>
+
+    <!-- فایل‌های اسکریپت اختصاصی -->
+    <script src="~/assets/js/forms-tagify.js" type="module"></script>
+    <script src="~/assets/js/ui-modals.js" type="module"></script>
+    <script src="~/assets/js/forms-selects.js"></script>
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // مقداردهی درخت انتخاب گیرنده اصلی (مانند ایجاد نامه)
+            try {
+                var receiverTreeData = [
+                    @foreach (var main in orgs.Where(o => o.IsMain))
+                    {
+                            @: { "id": "@main.Id", "parent": "#", "text": "@main.Name", "icon": "fas fa-building", "full": "@main.Name" },
+                            foreach (var sub in orgs.Where(o => o.ParentId == main.Id))
+                            {
+                                    @: { "id": "@sub.Id", "parent": "@main.Id", "text": "@sub.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name" },
+                                    foreach (var child in orgs.Where(o => o.ParentId == sub.Id))
+                                    {
+                                            @: { "id": "@child.Id", "parent": "@sub.Id", "text": "@child.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name-@child.Name" },
+                                            foreach (var leaf in orgs.Where(o => o.ParentId == child.Id))
+                                            {
+                                                    @: { "id": "@leaf.Id", "parent": "@child.Id", "text": "@leaf.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name-@child.Name-@leaf.Name" },
+                                            }
+                                    }
+                            }
+                    }
+                ];
+
+                $('#ReceiverTree').jstree({
+                    core: { data: receiverTreeData, themes: { stripes: true } },
+                    plugins: ['search']
+                });
+
+                $('#ReceiverTree').off('select_node.jstree').on('select_node.jstree', function (e, data) {
+                    var id = data.node.id;
+                    var node = data.instance.get_node(id);
+                    var full = (node && node.original && node.original.full) ? node.original.full : data.node.text;
+                    $('#Receiver').val(id);
+                    $('#ReceiverText').val(full);
+                    const el = document.getElementById('ReceiverSelectModal');
+                    if (window.bootstrap && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(el).hide();
+                    }
+                });
+            } catch (err) { console.warn('Receiver tree init error', err); }
+            // مقداردهی اولیه برای نوع ارتباط نامه
+            toggleRelatedLetterField($('#letterRelationType').val());
+
+            // اگر نامه مرتبطی وجود دارد، مقدار آن را تنظیم کنید
+            @if (Model.RelatedLetterId.HasValue)
+            {
+                        <text>
+                        $('#relatedLetterText').val('@Model.RelatedLetter!.LetterNumber - @Model.RelatedLetter.Subject');
+                        $('#relatedLetterId').val('@Model.RelatedLetterId');
+                        </text>
+            }
+
+            // مقداردهی اولیه برای کلیدواژه‌ها
+            if ($('#TagifyBasic').length > 0) {
+                var input = document.querySelector('#TagifyBasic');
+                var tagify = new Tagify(input, {
+                    whitelist: @Html.Raw(Json.Serialize(Model.KeywordsList ?? new List<string>())),
+                    dropdown: {
+                        maxItems: 20,
+                        classname: "tags-look",
+                        enabled: 0,
+                        closeOnSelect: false
+                    }
+                });
+            }
+
+            // مقداردهی اولیه برای گیرندگان رونوشت
+            var selectedOrgs = [];
+            @foreach (var org in Model.CopyReceiversList)
+            {
+                        <text>
+                        selectedOrgs.push({
+                            id: '@org.Id',
+                            name: '@org.Name'
+                        });
+                        </text>
+            }
+
+            $("#selectedOrganizations").val(selectedOrgs.map(org => org.id).join(','));
+
+            // باز کردن مودال انتخاب گیرندگان
+            $("#girandeganselect").off('click').on('click', function() {
+                const el = document.getElementById('Copyreciversmodal');
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).show();
+                }
+            });
+
+            // تایید انتخاب گیرندگان
+            $("#confirmSelection").click(function() {
+                selectedOrgs = [];
+
+                $("#Copyreciversmodal input.org-checkbox:checked").each(function() {
+                    selectedOrgs.push({
+                        id: $(this).val(),
+                        name: $(this).data('name')
+                    });
+                });
+
+                $("#selectedOrganizations").val(selectedOrgs.map(org => org.id).join(','));
+                const el = document.getElementById('Copyreciversmodal');
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).hide();
+                }
+            });
+        });
+
+        // Show/hide related letter field based on letter relation type
+        function toggleRelatedLetterField(value) {
+            const relatedLetterContainer = document.getElementById('relatedLetterContainer');
+            const relatedLetterId = document.getElementById('relatedLetterId');
+            const relatedLetterText = document.getElementById('relatedLetterText');
+
+            if (value === '0') {
+                relatedLetterContainer.style.display = 'none';
+                if (relatedLetterId) relatedLetterId.value = '';
+                if (relatedLetterText) relatedLetterText.value = '';
+            } else {
+                relatedLetterContainer.style.display = 'block';
+            }
+        }
+
+        flatpickr(".flatpickr-date", {
+            monthSelectorType: 'static',
+            locale: 'fa',
+            altInput: true,
+            altFormat: 'Y/m/d',
+            disableMobile: true,
+            minDate:'today'
+        });
+
+        flatpickr(".flatpickr-datesearch", {
+            monthSelectorType: 'static',
+            locale: 'fa',
+            altInput: true,
+            altFormat: 'Y/m/d',
+            disableMobile: true,
+            maxDate:'today'
+        });
+
+        // مدیریت ویرایشگر متن
+        document.addEventListener('DOMContentLoaded', function() {
+            const editorElement = document.getElementById('editor');
+            const counterElement = document.getElementById('counter');
+            const form = document.querySelector('form.needs-validation');
+
+            if (!editorElement) return;
+
+            // Initialize Quill editor
+            var quill = new Quill('#editor', {
+                modules: {
+                    toolbar: [
+                        [{ 'font': [] }, { 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'script': 'super' }, { 'script': 'sub' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        [{ 'align': [] }],
+                        ['blockquote', 'code-block'],
+                        ['clean']
+                    ],
+                    history: {
+                        delay: 1000,
+                        maxStack: 200,
+                        userOnly: false
+                    },
+                    clipboard: { matchVisual: true }
+                },
+                placeholder: 'متن خود را اینجا وارد کنید...',
+                theme: 'snow'
+            });
+
+            // Update character and line counter
+            function updateCounter() {
+                if (!counterElement) return;
+
+                const text = quill.getText().trim();
+                const lines = text.split('\n').filter(line => line.trim() !== '').length;
+
+                counterElement.textContent = `تعداد کاراکتر: ${text.length} | تعداد خطوط: ${lines}`;
+            }
+
+            quill.on('text-change', updateCounter);
+
+            // Update hidden input before form submission
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (form.checkValidity() === false) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+
+                    const contentInput = document.getElementById('letterContent');
+                    if (contentInput) {
+                        contentInput.value = quill.root.innerHTML;
+                    }
+                });
+            }
+
+            updateCounter();
+        });
+
+        // مدیریت آپلود فایل
+        document.getElementById('uploadButton').addEventListener('click', function () {
+            const fileInput = document.getElementById('MostadatFile');
+            const file = fileInput.files[0];
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('progressText');
+            const fileAddressField = document.getElementById('fileaddress');
+
+            if (!file) {
+                Swal.fire({
+                    title: 'خطا!',
+                    text: 'لطفا یک فایل انتخاب کنید.',
+                    icon: 'error',
+                    confirmButtonText: 'باشه'
+                });
+                return;
+            }
+
+            if (file.size > 500 * 1024 * 1024) {
+                Swal.fire({
+                    title: 'خطا!',
+                    text: 'حجم فایل نباید بیش از 500 مگابایت باشد.',
+                    icon: 'error',
+                    confirmButtonText: 'باشه'
+                });
+                return;
+            }
+
+            progressBar.style.width = '0%';
+            progressBar.style.backgroundColor = '#0d6efd';
+            progressText.innerText = '0%';
+            fileAddressField.value = 'در حال آپلود...';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Letter/UploadFile', true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = `${percentComplete}%`;
+                    progressText.innerText = `${percentComplete}%`;
+
+                    if (percentComplete === 100) {
+                        progressBar.style.backgroundColor = '#28a745';
+                        progressText.innerText = 'آماده!';
+                    }
+                }
+            };
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        fileAddressField.value = response.filePath;
+
+                        Swal.fire({
+                            title: 'موفقیت‌آمیز!',
+                            text: 'فایل با موفقیت آپلود شد.',
+                            icon: 'success',
+                            confirmButtonText: 'باشه'
+                        });
+                    } else {
+                        progressBar.style.backgroundColor = '#dc3545';
+                        progressText.innerText = 'خطا!';
+
+                        Swal.fire({
+                            title: 'خطا!',
+                            text: 'خطا در آپلود فایل: ' + response.message,
+                            icon: 'error',
+                            confirmButtonText: 'باشه'
+                        });
+                    }
+                } else {
+                    progressBar.style.backgroundColor = '#dc3545';
+                    progressText.innerText = 'خطا!';
+
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: 'خطا در ارتباط با سرور.',
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                }
+            };
+
+            xhr.onerror = function () {
+                progressBar.style.backgroundColor = '#dc3545';
+                progressText.innerText = 'خطا!';
+
+                Swal.fire({
+                    title: 'خطا!',
+                    text: 'خطا در ارتباط با سرور.',
+                    icon: 'error',
+                    confirmButtonText: 'باشه'
+                });
+            };
+
+            xhr.send(formData);
+        });
+
+        // حذف پیوست فعلی
+        function removeAttachment(letterId) {
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: 'آیا می‌خواهید این پیوست را حذف کنید؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف شود',
+                cancelButtonText: 'انصراف'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Letter/RemoveAttachment',
+                        type: 'POST',
+                        data: { id: letterId },
+                        success: function(response) {
+                            if (response.success) {
+                                $('.current-attachment').remove();
+                                $('#fileaddress').val('');
+                                Swal.fire({
+                                    title: 'موفقیت',
+                                    text: 'پیوست با موفقیت حذف شد',
+                                    icon: 'success'
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'خطا',
+                                    text: response.message,
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'خطا',
+                                text: 'خطا در ارتباط با سرور',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // مدیریت جستجوی نامه
+        $(document).ready(function() {
+            $('#resetSearchBtn').click(function() {
+                $('#letterSearchModal').find('input[type="text"], input[type="search"], textarea').val('');
+                $('#FromDate, #ToDate').val('').trigger('change');
+                $('#letterSearchResults tbody').empty();
+                $('#noResults').hide();
+                $('#selectLetterBtn').prop('disabled', true);
+                $('#letterSearchResults tr').removeClass('selected-row');
+            });
+
+            $('#letterSearchResults').on('click', 'tr', function() {
+                if (!$(this).hasClass('selected-row')) {
+                    $('#letterSearchResults tr').removeClass('selected-row');
+                    $(this).addClass('selected-row');
+                    $('#selectLetterBtn').prop('disabled', false);
+                } else {
+                    $(this).removeClass('selected-row');
+                    $('#selectLetterBtn').prop('disabled', true);
+                }
+            });
+
+            $('#selectLetterBtn').click(function() {
+                var selectedRow = $('#letterSearchResults tr.selected-row');
+                if (selectedRow.length) {
+                    var letterId = selectedRow.data('id');
+                    var letterNumber = selectedRow.find('td:eq(1)').text();
+                    var letterSubject = selectedRow.find('td:eq(2)').text();
+
+                    $('#relatedLetterId').val(letterId);
+                    $('#relatedLetterText').val(letterNumber + ' - ' + letterSubject);
+                    const el = document.getElementById('letterSearchModal');
+                    if (window.bootstrap && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(el).hide();
+                    }
+                }
+            });
+
+            $('#searchLetterBtn').click(function() {
+                var searchData = {};
+
+                if ($('#Subjectsearch').val()) searchData.Subject = $('#Subjectsearch').val();
+                if ($('#LetterNumber').val()) searchData.LetterNumber = $('#LetterNumber').val();
+                if ($('#FromDate').val()) searchData.FromDate = $('#FromDate').val();
+                if ($('#ToDate').val()) searchData.ToDate = $('#ToDate').val();
+
+                if (Object.keys(searchData).length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'خطا',
+                        text: 'حداقل یک فیلد جستجو باید پر شود'
+                    });
+                    return;
+                }
+
+                $('#searchLoading').show();
+                $('#letterSearchResults tbody').empty();
+                $('#noResults').hide();
+                $('#selectLetterBtn').prop('disabled', true);
+
+                $.ajax({
+                    url: '/Letter/Search',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(searchData),
+                    success: function(response) {
+                        $('#searchLoading').hide();
+
+                        if (response && (response.Success || response.success) && response.Data && response.Data.Data) {
+                            var tableBody = $('#letterSearchResults tbody');
+                            tableBody.empty();
+
+                            var actualData = response.Data.Data;
+
+                            if (actualData.length > 0) {
+                                $.each(actualData, function(index, letter) {
+                                    var row = `
+                                        <tr data-id="${letter.Id}">
+                                            <td><input type="radio" name="selectedLetter" value="${letter.Id}"></td>
+                                            <td>${letter.LetterNumber || '-'}</td>
+                                            <td>${letter.Subject || 'بدون موضوع'}</td>
+                                            <td>${letter.RegistrationDate || 'نامشخص'}</td>
+                                        </tr>
+                                    `;
+                                    tableBody.append(row);
+                                });
+                                $('#noResults').hide();
+                            } else {
+                                $('#noResults').show();
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'توجه',
+                                    text: 'نتیجه‌ای یافت نشد'
+                                });
+                            }
+                        } else {
+                            $('#noResults').show();
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'خطا',
+                                text: response.Message || 'خطا در ساختار پاسخ سرور'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#searchLoading').hide();
+                        console.error("AJAX Error:", xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطا',
+                            text: 'خطا در ارتباط با سرور'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

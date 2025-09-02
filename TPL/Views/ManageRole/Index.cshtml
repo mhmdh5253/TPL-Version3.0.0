@@ -1,0 +1,303 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<BE.ApplicationUser> UserManager
+@inject RoleManager<BE.ApplicationRole> RoleManager
+@model List<BE.ApplicationRole>
+@{
+    ViewData["Title"] = "مدیریت نقش های کاربری";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    bool asignrolemassege = Convert.ToBoolean(TempData["asignrolemassege"]);
+    bool firstload = Convert.ToBoolean(TempData["firstload"]);
+}
+
+@section vendorcss {
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css"/>
+}
+
+@section pagecss {
+    <style>
+        .role-badge {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .role-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .action-buttons .btn {
+            margin: 0 3px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+}
+
+<div class="col-12">
+    <div class="card animate__animated animate__fadeIn">
+        <div class="card-header">
+            <h5 class="mb-0">مدیریت نقش های کاربری</h5>
+            <a class="btn btn-primary waves-effect waves-light" asp-action="AddRole" asp-controller="ManageRole">
+                <i class="fas fa-plus me-2"></i>اضافه نمودن نقش جدید
+            </a>
+        </div>
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        
+        @if (asignrolemassege)
+        {
+            <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+                ویرایش دسترسی برای نقش مورد نظر با موفقیت انجام شد
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        else if (!firstload)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                ویرایش دسترسی برای نقش مورد نظر با شکست مواجه شد
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>تنظیماتی برای نمایش وجود ندارد
+                </div>
+            }
+            else
+            {
+                <!-- Roles Badges Row -->
+                <div class="mb-4">
+                    <h6 class="mb-3">لیست نقش ها:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var role in Model)
+                        {
+                            <span class="badge bg-label-primary role-badge px-3 py-2" 
+                                  data-bs-toggle="modal" data-bs-target="#usersModal"
+                                  data-role-id="@role.Id" data-role-name="@role.Name" 
+                                  onclick="loadUsersForRole('@role.Id', '@role.Name')">
+                                <i class="fas fa-user-tag me-2"></i>@role.Name
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Roles Table -->
+                <div class="table-responsive">
+                    <table id="rolesTable" class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th scope="col" hidden>آی دی</th>
+                            <th scope="col">نام نقش</th>
+                            <th scope="col">عملیات</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var role in Model)
+                        {
+                            <tr>
+                                <th scope="row" hidden>@role.Id</th>
+                                <td>
+                                    <i class="fas fa-user-tag text-primary me-2"></i>
+                                    @role.Name
+                                </td>
+                                <td>
+                                    <div class="action-buttons d-flex">
+                                        <a asp-controller="ManageRole" asp-action="EditRole" asp-route-id="@role.Id"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit me-1"></i>ویرایش
+                                        </a>
+                                        <form asp-controller="ManageRole" asp-action="DeleteRole" method="post" 
+                                              asp-route-id="@role.Id" class="ms-2">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash me-1"></i>حذف
+                                            </button>
+                                        </form>
+                                        <form asp-controller="RoleManagement" asp-action="AssignRoleIndex" method="post" 
+                                              asp-route-role="@role.Name" class="ms-2">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-key me-1"></i>تعیین دسترسی
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Users Modal -->
+<div class="modal fade" id="usersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">کاربران دارای نقش: <span id="roleTitle"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">در حال دریافت اطلاعات...</p>
+                </div>
+                <div id="usersList" class="d-none">
+                    <!-- Users will be loaded here -->
+                </div>
+                <div id="noUsersMessage" class="text-center d-none">
+                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">هیچ کاربری با این نقش یافت نشد</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section vendorjs {
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
+    <script src="~/assets/vendor/libs/flatpickr/fa-jdate.js"></script>
+}
+
+@section PageJs {
+    <script src="~/assets/js/tables-datatables-advanced.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#rolesTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json'
+                }
+            });
+        });
+        
+        async function loadUsersForRole(roleId, roleName) {
+            $('#loadingSpinner').removeClass('d-none');
+            $('#usersList').addClass('d-none');
+            $('#noUsersMessage').addClass('d-none');
+            $('#roleTitle').text(roleName);
+            
+            try {
+                // درخواست به سرور برای دریافت کاربران این نقش
+                const response = await fetch(`/ManageRole/GetUsersInRole?roleId=${roleId}`);
+                
+                if (!response.ok) {
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                
+                const users = await response.json();
+                
+                if (users.length > 0) {
+                    renderUsers(users);
+                } else {
+                    showNoUsersMessage();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                $('#usersList').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        خطا در دریافت اطلاعات کاربران
+                    </div>
+                `);
+                $('#loadingSpinner').addClass('d-none');
+                $('#usersList').removeClass('d-none');
+            }
+        }
+        
+        function renderUsers(users) {
+            const $usersList = $('#usersList');
+            $usersList.empty();
+            
+            users.forEach(user => {
+                const avatarUrl = user.avatar || '/Firstpage/images/team-img1.png';
+                $usersList.append(`
+                    <div class="d-flex align-items-center mb-3 p-3 border-bottom">
+                        <img src="${avatarUrl}" alt="${user.fullName}" class="user-avatar me-3">
+                        <div>
+                            <h6 class="mb-1">${user.fullName || user.userName}</h6>
+                            <small class="text-muted">${user.email}</small>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-sm btn-outline-danger remove-role-btn" 
+                                    data-user-id="${user.id}" data-role-id="${user.roleId}">
+                                <i class="fas fa-user-minus"></i> حذف نقش
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+            
+            // اضافه کردن ایونت برای دکمه حذف نقش
+            $('.remove-role-btn').click(async function() {
+                const userId = $(this).data('user-id');
+                const roleId = $(this).data('role-id');
+                
+                if (confirm('آیا از حذف این نقش از کاربر مطمئن هستید؟')) {
+                    try {
+                        const response = await fetch(`/ManageRole/RemoveUserFromRole?userId=${userId}&roleId=${roleId}`, {
+                            method: 'POST'
+                        });
+                        
+                        if (response.ok) {
+                            $(this).closest('.border-bottom').fadeOut(300, function() {
+                                $(this).remove();
+                                if ($('#usersList').children().length === 0) {
+                                    showNoUsersMessage();
+                                }
+                            });
+                        } else {
+                            alert('خطا در حذف نقش از کاربر');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('خطا در ارتباط با سرور');
+                    }
+                }
+            });
+            
+            $('#loadingSpinner').addClass('d-none');
+            $usersList.removeClass('d-none');
+        }
+        
+        function showNoUsersMessage() {
+            $('#loadingSpinner').addClass('d-none');
+            $('#usersList').addClass('d-none');
+            $('#noUsersMessage').removeClass('d-none');
+        }
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

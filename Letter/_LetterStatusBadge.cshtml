@@ -1,0 +1,29 @@
+﻿@using BE.LetterAutomation
+@model BE.LetterAutomation.Letter
+
+@{
+    var badgeClass = "";
+    var statusText = "";
+
+    switch (Model.Priority)
+    {
+        case PriorityType.عادی:
+            badgeClass = "badge-secondary";
+            statusText = "عادی";
+            break;
+        case PriorityType.فوری:
+            badgeClass = "badge-warning";
+            statusText = "فوری";
+            break;
+        case PriorityType.آنی:
+            badgeClass = "badge-danger";
+            statusText = "آنی";
+            break;
+        case PriorityType.اقدام_سریع:
+            badgeClass = "badge-primary";
+            statusText = "اقدام سریع";
+            break;
+    }
+}
+
+<span class="badge @badgeClass">@statusText</span>

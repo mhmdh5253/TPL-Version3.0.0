@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "گزارش‌گیری";
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-1"></i>@ViewData["Title"]</h5>
+            <div>
+                <a href="@Url.Action("Dashboard")" class="btn btn-sm btn-outline-secondary waves-effect">
+                    <i class="fas fa-tachometer-alt"></i> داشبورد
+                </a>
+                <a href="@Url.Action("ManageTickets")" class="btn btn-sm btn-outline-secondary waves-effect">
+                    <i class="fas fa-list"></i> مدیریت تیکت ها
+                </a>
+            </div>
+        </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0"><i class="fas fa-chart-area me-1"></i>گزارش وضعیت تیکت‌ها</h6>
+                    </div>
+                    <div class="row card-body">
+                        <form asp-action="GenerateStatusReport" method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">از تاریخ <span class="text-danger">*</span></label>
+                                    <input type="date" name="startDate" class="form-control" required
+                                           max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">تا تاریخ <span class="text-danger">*</span></label>
+                                    <input type="date" name="endDate" class="form-control" required
+                                           max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 waves-effect">
+                                <i class="fas fa-chart-bar"></i> تولید گزارش
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0"><i class="fas fa-history me-1"></i>تاریخچه گزارش‌های اخیر</h6>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+                {
+                    <div class="list-group">
+                        @foreach (var report in ViewBag.RecentReports)
+                        {
+                            <a href="@Url.Action("ReportResult", new { id = report.Id })"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between">
+                                    <span>@report.Title</span>
+                                    <small class="text-muted">@report.GeneratedDate.ToString("yyyy/MM/dd HH:mm")</small>
+                                </div>
+                                <small class="text-muted">@report.Description</small>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        هیچ گزارشی یافت نشد
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pagecss { }

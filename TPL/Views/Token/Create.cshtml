@@ -1,0 +1,56 @@
+﻿@using BE
+@using Microsoft.AspNetCore.Identity
+@using TPLWeb.Controllers
+@model TokenGenerationDto
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "ایجاد توکن جدید";
+}
+<partial name="Admin/_ProfileParitial" />
+<div class="container mt-5">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Create">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @{
+                    var u1 =  UserManager.Users.FirstOrDefault(x => x.UserName == User.Identity!.Name);
+                }
+                <div hidden="" class="form-group mb-3">
+                    <label asp-for="UserId" class="form-label"></label>
+                    <input  value="@u1!.Id" asp-for="UserId" class="form-control" />
+                    <span asp-validation-for="UserId" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <small>لطفا موارد استفاده را بنویسید.مانند :استفاده در نرم افزار حسابداری سپیدار</small>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ExpiresInDays" class="form-label"></label>
+                    <input asp-for="ExpiresInDays" class="form-control" />
+                    <span asp-validation-for="ExpiresInDays" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> ایجاد توکن
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> بازگشت
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

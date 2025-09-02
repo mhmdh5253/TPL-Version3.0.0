@@ -1,0 +1,198 @@
+﻿<script src="~/assets/js/main.js"></script>
+<script>
+    (function() {
+        const listEl = document.getElementById('notifList');
+        const dotEl = document.getElementById('notifDot');
+        const headerCountEl = document.getElementById('notifHeaderCount');
+        let pollingHandle = null;
+
+        function renderItems(items) {
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            if (!items || items.length === 0) {
+                listEl.innerHTML = '<li class="list-group-item text-center text-muted py-3">اعلانی وجود ندارد</li>';
+                if (dotEl) dotEl.classList.add('d-none');
+                if (headerCountEl) headerCountEl.textContent = '0';
+                return;
+            }
+            if (dotEl) dotEl.classList.remove('d-none');
+            if (headerCountEl) headerCountEl.textContent = items.length.toString();
+            const frag = document.createDocumentFragment();
+            items.forEach(n => {
+                const id = n.Id || n.id || '';
+                const isEphemeral = (n.Ephemeral || n.ephemeral) ? true : false;
+                const message = n.Message || n.message || '';
+                const link = n.Link || n.link || '';
+                const type = (n.Type || n.type || '').toString().toLowerCase();
+                const source = (n.SourceTitle || n.sourceTitle || '').toString();
+                const created = n.CreatedDate || n.createdDate;
+                const dt = created ? new Date(created) : null;
+                const pad = (x) => (x !== undefined && x !== null ? x.toString().padStart(2, '0') : '00');
+                
+                // تبدیل تاریخ میلادی به شمسی
+                let dateStr = '';
+                if (dt) {
+                    const gregorianYear = dt.getFullYear();
+                    const gregorianMonth = dt.getMonth() + 1;
+                    const gregorianDay = dt.getDate();
+                    
+                    // تبدیل ساده میلادی به شمسی (تقریبی)
+                    let persianYear = gregorianYear - 621;
+                    let persianMonth = gregorianMonth;
+                    let persianDay = gregorianDay;
+                    
+                    // تنظیم ماه‌های شمسی
+                    if (gregorianMonth <= 3) {
+                        persianMonth = gregorianMonth + 9;
+                        persianYear = persianYear - 1;
+                    } else {
+                        persianMonth = gregorianMonth - 3;
+                    }
+                    
+                    // تنظیم روزهای شمسی
+                    if (gregorianDay > 20) {
+                        persianDay = gregorianDay - 20;
+                        persianMonth = persianMonth + 1;
+                    } else {
+                        persianDay = gregorianDay + 10;
+                    }
+                    
+                    // تنظیم ماه‌های اضافی
+                    if (persianMonth > 12) {
+                        persianMonth = persianMonth - 12;
+                        persianYear = persianYear + 1;
+                    }
+                    
+                    dateStr = `${persianYear}/${pad(persianMonth)}/${pad(persianDay)} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+                }
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action dropdown-notifications-item waves-effect waves-light';
+                li.setAttribute('data-id', isEphemeral ? '' : id);
+                li.setAttribute('data-ephemeral', isEphemeral ? '1' : '0');
+                const srcLabel = source || (type === 'calendar' ? 'تقویم' : (type === 'letter' ? 'نامه' : 'اعلان'));
+                li.innerHTML = `
+                    <div class=\"d-flex gap-2\"> 
+                        <div class=\"flex-shrink-0\">
+                            <div class=\"avatar me-1\">
+                                <span class=\"avatar-initial rounded-circle bg-label-primary\"><i class=\"fas fa-bell\"></i></span>
+                            </div>
+                        </div>
+                        <div class=\"d-flex flex-column flex-grow-1 overflow-hidden w-px-200\">
+                            <h6 class=\"mb-1 text-truncate\">${srcLabel}</h6>
+                            <small class=\"text-truncate text-body\">${message}</small>
+                        </div>
+                        <div class=\"flex-shrink-0 dropdown-notifications-actions text-end\">
+                            <small class=\"text-muted\">${dateStr}</small>
+                            <div class=\"mt-2\">
+                                <button type=\"button\" class=\"btn btn-sm btn-outline-primary notif-view\" ${isEphemeral ? '' : `data-id=\"${id}\"`} data-link=\"${link}\">مشاهده</button>
+                                ${isEphemeral ? '' : `<button data-id=\"${id}\" class=\"btn btn-sm btn-outline-secondary notif-read\">خواندم</button>`}
+                                ${isEphemeral ? '' : `<button data-id=\"${id}\" class=\"btn btn-sm btn-outline-danger notif-del\">حذف</button>`}
+                            </div>
+                        </div>
+                    </div>`;
+                frag.appendChild(li);
+            });
+            listEl.appendChild(frag);
+
+            listEl.querySelectorAll('.notif-read').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    fetch(`/Notifications/Read/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(() => load())
+                        .catch(() => {});
+                });
+            });
+            listEl.querySelectorAll('.notif-del').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    fetch(`/Notifications/Delete/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(() => load())
+                        .catch(() => {});
+                });
+            });
+            listEl.querySelectorAll('.notif-view').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parent = this.closest('li');
+                    const id = this.getAttribute('data-id') || (parent ? parent.getAttribute('data-id') : '') || '';
+                    const isEphemeral = parent && parent.getAttribute('data-ephemeral') === '1';
+                    const link = this.getAttribute('data-link') || '';
+                    const titleText = parent ? (parent.querySelector('h6.mb-1')?.textContent || '') : '';
+                    const messageText = parent ? (parent.querySelector('small.text-body')?.textContent || '') : '';
+                    const isExternal = /^https?:\/\//i.test(link);
+                    const linkBtn = link ? `<div class=\"mt-2\"><a href=\"${link}\" class=\"btn btn-sm btn-primary\" target=\"${isExternal ? '_blank' : '_self'}\" onclick=\"markNotificationAsRead('${id}')\">برو به صفحه مرتبط</a></div>` : '';
+                    const bodyHtml = `
+                        <div class=\"text-start\" style=\"line-height:1.8\">
+                            ${titleText ? `<div class=\"mb-2\"><strong>منبع:</strong> ${titleText}</div>` : ''}
+                            <div>${messageText}</div>
+                            ${linkBtn}
+                        </div>`;
+                    Swal.fire({
+                        title: 'جزئیات اعلان',
+                        html: bodyHtml,
+                        icon: 'info',
+                        showCancelButton: false,
+                        showDenyButton: !isEphemeral,
+                        confirmButtonText: !isEphemeral ? 'خواندم' : 'بستن',
+                        denyButtonText: 'حذف',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showCloseButton: false,
+                        backdrop: true
+                    }).then(result => {
+                        if (!isEphemeral && result.isConfirmed && id) {
+                            markNotificationAsRead(id);
+                        } else if (!isEphemeral && result.isDenied && id) {
+                            fetch(`/Notifications/Delete/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                .then(() => load())
+                                .catch(() => {});
+                        }
+                    });
+                });
+            });
+            
+            // تابع علامت‌گذاری اعلان به عنوان خوانده شده
+            window.markNotificationAsRead = function(id) {
+                if (id && id !== '') {
+                    fetch(`/Notifications/Read/${id}`, { 
+                        method: 'POST', 
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+                    })
+                    .then(() => {
+                        // حذف اعلان از لیست
+                        const notificationItem = document.querySelector(`li[data-id="${id}"]`);
+                        if (notificationItem) {
+                            notificationItem.style.opacity = '0.5';
+                            notificationItem.style.transition = 'opacity 0.3s';
+                            setTimeout(() => {
+                                notificationItem.remove();
+                                // بررسی تعداد اعلان‌های باقی‌مانده
+                                const remainingItems = document.querySelectorAll('.dropdown-notifications-item');
+                                if (remainingItems.length === 0) {
+                                    load(); // بارگذاری مجدد لیست
+                                }
+                            }, 300);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('خطا در علامت‌گذاری اعلان:', error);
+                    });
+                }
+            };
+        }
+
+        function load() {
+            fetch('/Notifications/List', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => renderItems(data.items))
+                .catch(() => {});
+        }
+
+        function startPolling() {
+            if (pollingHandle) return;
+            load();
+            pollingHandle = setInterval(load, 20000);
+        }
+
+        document.addEventListener('DOMContentLoaded', startPolling);
+    })();
+</script>

@@ -1,0 +1,155 @@
+﻿@using BE
+@using BE.Ticketing.SupportTicketSystem.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.Ticketing.AdminDashboardViewModel
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "داشبورد مدیریتی";
+}
+<partial name="Admin/_ProfileParitial" />
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-ticket-alt me-1"></i>کل تیکت‌ها</div>
+                <h3 class="mb-0">@Model.TotalTickets!.Count</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-bell me-1"></i>تیکت‌های جدید</div>
+                <h3 class="mb-0">@Model.TotalTickets.Count(t => t.Status == TicketStatus.New)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-clock me-1"></i>در حال بررسی</div>
+                <h3 class="mb-0">@Model.TotalTickets.Count(t => t.Status == TicketStatus.InProgress)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-check-circle me-1"></i>حل شده</div>
+                <h3 class="mb-0">@Model.TotalTickets.Count(t => t.Status == TicketStatus.Resolved)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-list me-1"></i>وضعیت تیکت‌ها</div>
+                <a class="btn btn-sm btn-primary waves-effect" href="@Url.Action("ManageTickets","AdminTicket")">مدیریت</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted mb-1"><i class="fas fa-chart-bar me-1"></i>گزارش تیکت‌ها</div>
+                <a class="btn btn-sm btn-secondary waves-effect" href="@Url.Action("Reports","AdminTicket")">گزارش‌ها</a>
+            </div>
+        </div>
+    </div>
+</div>
+<hr class="h-1"/>
+<div class="row">
+    <div class="col-md-9">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0"><i class="fas fa-list me-1"></i>آخرین تیکت‌ها</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>کاربر</th>
+                                <th>عنوان</th>
+                                <th>وضعیت</th>
+                                <th>اولویت</th>
+                                <th>تاریخ ایجاد</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticket in Model.RecentTickets!)
+                            {
+                                var fullName = UserManager.Users.Where(x => x.Id == ticket.AssignedToUserId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault();
+                                <tr>
+                                    <td>@fullName</td>
+                                    <td>@ticket.Title</td>
+                                    <td><span class="badge @GetStatusBadgeClass(ticket.Status)">@ticket.Status</span></td>
+                                    <td><span class="badge @GetPriorityBadgeClass(ticket.Priority)">@ticket.Priority</span></td>
+                                    <td>@ticket.CreatedDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>
+                                        <a asp-action="ViewTicket" asp-controller="AdminTicket" asp-route-id="@ticket.Id" class="btn btn-sm btn-outline-primary waves-effect">
+                                            <i class="fas fa-eye"></i> مشاهده
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0"><i class="fas fa-tags me-1"></i>دسته‌بندی‌ها</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    @foreach (var category in Model.Categories!)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            @category.Name
+                            <span class="badge bg-label-primary rounded-pill">@category.Tickets.Count</span>
+                        </div>
+                    }
+                </div>
+                <a asp-action="ManageCategories" asp-controller="AdminTicket" class="btn btn-primary mt-3 w-100 waves-effect">
+                    <i class="fas fa-cog"></i> مدیریت دسته‌بندی‌ها
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pagecss { }
+
+@functions {
+    public string GetStatusBadgeClass(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "bg-label-secondary",
+            TicketStatus.Open => "bg-label-primary",
+            TicketStatus.InProgress => "bg-label-info",
+            TicketStatus.Resolved => "bg-label-success",
+            TicketStatus.Closed => "bg-label-dark",
+            _ => "bg-label-secondary"
+        };
+    }
+
+    public string GetPriorityBadgeClass(Priority priority)
+    {
+        return priority switch
+        {
+            Priority.Low => "bg-label-success",
+            Priority.Medium => "bg-label-primary",
+            Priority.High => "bg-label-warning",
+            Priority.Critical => "bg-label-danger",
+            _ => "bg-label-secondary"
+        };
+    }
+}

@@ -1,0 +1,55 @@
+{
+  "pages": [
+    {
+      "name": "Dashboard",
+      "url": "/",
+      "icon": "mdi-view-dashboard"
+    },
+    {
+      "name": "Chat",
+      "url": "/Chat",
+      "icon": "mdi-chat"
+    },
+    {
+      "name": "Letters",
+      "url": "/Letter",
+      "icon": "mdi-file-document"
+    },
+    {
+      "name": "Calendar",
+      "url": "/Calendar",
+      "icon": "mdi-calendar"
+    },
+    {
+      "name": "Tickets",
+      "url": "/Ticket",
+      "icon": "mdi-ticket"
+    }
+  ],
+  "files": [
+    {
+      "src": "img/icons/brands/bootstrap.svg",
+      "name": "Bootstrap",
+      "subtitle": "Framework",
+      "meta": "CSS Framework"
+    },
+    {
+      "src": "img/icons/brands/angular.svg",
+      "name": "Angular",
+      "subtitle": "Framework",
+      "meta": "JS Framework"
+    }
+  ],
+  "members": [
+    {
+      "name": "John Doe",
+      "src": "img/avatars/1.png",
+      "subtitle": "Frontend Developer"
+    },
+    {
+      "name": "Jane Smith",
+      "src": "img/avatars/2.png",
+      "subtitle": "Backend Developer"
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+﻿@using BE
+@using BLL.Wallet
+@using DAL.Wallet
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Org.BouncyCastle.Bcpg
+@model TPLWeb.Controllers.WalletController.DepositRequestVm
+@inject BlWallet BlWallet
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "شارژ کیف پول";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section vendorcss
+{
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css"/>
+}
+
+@section pagecss
+{
+}
+
+<style>
+    [dir=rtl] .me-4 {
+        margin-left: 1px !important;
+    }
+
+    .currency-input {
+        position: relative;
+    }
+
+    .currency-input::after {
+        content: "تومان";
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        pointer-events: none;
+    }
+
+    .currency-input input {
+        padding-left: 50px !important;
+    }
+    #zarinpal{margin:auto} #zarinpal img {width: 80px;}
+
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <partial name="Admin/_ProfileParitial" />
+        <div class="card mb-4">
+            <h4 class="card-header">شارژ کیف پول</h4>
+            @if (TempData["Error"] != null)
+            {
+                if (TempData["Error"]!.ToString()?.Contains("خطا") == true)
+                {
+                    <h6 class="card-header text-danger">@TempData["Error"]</h6>
+                }
+                else
+                {
+                    <h6 class="card-header text-success">@TempData["Error"]</h6>
+                }
+            }
+            else if (TempData["Success"] != null)
+            {
+                <h6 class="card-header text-success">@TempData["Success"]</h6>
+            }
+            <!-- Account -->
+            <div class="card-body pt-2 mt-1">
+                <form asp-controller="Wallet" asp-action="Deposit" method="post">
+                    <div class="row mt-2 gy-4">
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline">
+                                <select asp-for="Amount" class="form-control form-select select2" data-placeholder="مبلغ را انتخاب کنید">
+                                    <option value=""></option>
+                                    <!-- مبالغ پایه -->
+                                    <optgroup label="مبالغ پایه">
+                                        <option value="10000">10,000 تومان</option>
+                                        <option value="20000">20,000 تومان</option>
+                                        <option value="30000">30,000 تومان</option>
+                                        <option value="40000">40,000 تومان</option>
+                                        <option value="50000">50,000 تومان</option>
+                                        <option value="100000">100,000 تومان</option>
+                                    </optgroup>
+
+                                    <!-- مبالغ متوسط -->
+                                    <optgroup label="مبالغ متوسط">
+                                        <option value="200000">200,000 تومان</option>
+                                        <option value="300000">300,000 تومان</option>
+                                        <option value="400000">400,000 تومان</option>
+                                        <option value="500000">500,000 تومان</option>
+                                        <option value="1000000">1,000,000 تومان</option>
+                                    </optgroup>
+
+                                    <!-- مبالغ بالا -->
+                                    <optgroup label="مبالغ بالا">
+                                        <option value="2000000">2,000,000 تومان</option>
+                                        <option value="3000000">3,000,000 تومان</option>
+                                        <option value="4000000">4,000,000 تومان</option>
+                                        <option value="5000000">5,000,000 تومان</option>
+                                        <option value="6000000">6,000,000 تومان</option>
+                                        <option value="7000000">7,000,000 تومان</option>
+                                        <option value="8000000">8,000,000 تومان</option>
+                                        <option value="9000000">9,000,000 تومان</option>
+                                        <option value="10000000">10,000,000 تومان</option>
+                                    </optgroup>
+                                </select>
+                                <label asp-for="Amount">مبلغ (تومان)</label>
+                                <span asp-validation-for="Amount" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating form-floating-outline">
+                                <input class="form-control" type="text" asp-for="Description" value="شارژ کیف پول" />
+                                <label asp-for="Description">توضیحات</label>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <br/>
+                    <div id="zarinpal">
+                        <img src="https://cdn.zarinpal.com/badges/trustLogo/1.png" alt="دروازه پرداخت معتبر">
+                        @*                         <script src="https://www.zarinpal.com/webservice/TrustCode" type="text/javascript"></script>
+ *@
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary me-2">انتقال به درگاه پرداخت</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<hr class="h-1"/>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <h4 class="card-header">تاریخچه تراکنش ها</h4>
+            <!-- Account -->
+            <div class="card-body pt-2 mt-1">
+                <div class="row mt-2 gy-4">
+                    @{
+                        var usId = UserManager.Users.FirstOrDefault(u => u.UserName == User.Identity!.Name!)!.Id;
+                        var transactions = await BlWallet.GetTransactionHistoryAsync(usId, 50);
+                        int rowcont = 1;
+                        if (transactions !=null)
+                        {
+                            <div class="card-body" style="margin-top: 0px; padding-top: 0px;">
+                                <table id="myTable" class="table-responsive table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">ردیف</th>
+                                            <th scope="col">مبلغ</th>
+                                            <th scope="col">تاریخ</th>
+                                            <th scope="col">توضیحات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    
+                                    @foreach (var trans in transactions)
+                                    {
+                                        <tr>
+                                            <td>@rowcont</td>
+                                            <td>@trans.Amount.ToString("##,###") تومان</td>
+                                            <td>@trans.TransactionDate.ToString("F")</td>
+                                            <td>@trans.Description</td>
+
+                                        </tr>
+                                        rowcont++;
+                                    }
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+
+
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+@section vendorjs
+{
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#myTable').DataTable();
+
+        });
+    </script>
+ 
+}
+
+@section PageJs
+{
+    <script src="~/assets/js/tables-datatables-advanced.js"></script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

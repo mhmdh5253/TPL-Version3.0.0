@@ -1,0 +1,106 @@
+﻿@using BE
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<BE.Tokening.Token>
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "مدیریت توکن‌ها";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0"><i class="fas fa-link me-2"></i>@ViewData["Title"]</h5>
+        <div class="d-flex gap-2">
+            <a asp-action="Create" class="btn btn-primary waves-effect">
+                <i class="fas fa-plus me-1"></i> ایجاد توکن جدید
+            </a>
+            <a asp-action="Validate" class="btn btn-outline-secondary waves-effect">
+                <i class="fas fa-check me-1"></i> اعتبارسنجی توکن
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @{ var u1 = UserManager.Users.FirstOrDefault(x => x.UserName == User.Identity!.Name); }
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i> هنوز هیچ توکنی ایجاد نشده است.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>شناسه</th>
+                            <th>کاربر</th>
+                            <th>توکن</th>
+                            <th>تاریخ ایجاد</th>
+                            <th>تاریخ انقضا</th>
+                            <th>وضعیت</th>
+                            <th>توضیحات</th>
+                            <th class="text-nowrap">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var token in Model)
+                    {
+                        <tr>
+                            <td>@token.Id</td>
+                            <td>@u1!.FirstName @u1.LastName</td>
+                            <td><code>@(token.Value!.Substring(0, 10))...</code></td>
+                            <td>@token.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>@token.ExpiresAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>
+                                @if (token.IsActive)
+                                {
+                                    <span class="badge bg-success">فعال</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">غیرفعال</span>
+                                }
+                            </td>
+                            <td>@token.Description</td>
+                            <td class="text-nowrap">
+                                <a asp-action="Details" asp-route-id="@token.Id" class="btn btn-sm btn-outline-info waves-effect me-1">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (token.IsActive)
+                                {
+                                    <form asp-action="Revoke" asp-route-id="@token.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-warning waves-effect">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

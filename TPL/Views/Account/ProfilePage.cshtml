@@ -1,0 +1,282 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.ManageUser.AddViewModel
+@{
+    ViewData["Title"] = "حساب کاربری";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    
+    // تابع کمکی برای تبدیل نوع سازمان به متن فارسی
+    string GetOrganizationTypeText(string? orgType)
+    {
+        return orgType switch
+        {
+            "main" => "سازمان اصلی",
+            "department" => "اداره",
+            "unit" => "واحد",
+            "section" => "بخش",
+            _ => orgType ?? "نامشخص"
+        };
+    }
+    
+    // تابع کمکی برای دریافت آیکون مناسب نوع سازمان
+    string GetOrganizationTypeIcon(string? orgType)
+    {
+        return orgType switch
+        {
+            "main" => "fas fa-building",
+            "department" => "fas fa-layer-group",
+            "unit" => "fas fa-sitemap",
+            "section" => "fas fa-level-down-alt",
+            _ => "fas fa-question-circle"
+        };
+    }
+    
+    // تابع کمکی برای دریافت رنگ مناسب نوع سازمان
+    string GetOrganizationTypeColor(string? orgType)
+    {
+        return orgType switch
+        {
+            "main" => "text-primary",
+            "department" => "text-info",
+            "unit" => "text-secondary",
+            "section" => "text-muted",
+            _ => "text-warning"
+        };
+    }
+}
+
+@section vendorcss {
+}
+
+@section pagecss { }
+
+<div class="row">
+    <div class="col-md-12">
+        <partial name="Admin/_ProfileParitial" />
+
+        @if (TempData["res"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                @TempData["res"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["email"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                @TempData["email"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>پروفایل کاربری</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-4">
+                        <form asp-action="UploadAvatar" asp-controller="Account" method="post" enctype="multipart/form-data" id="avatarUploadForm" class="text-center">
+                            @Html.AntiForgeryToken()
+                            <input type="file" id="avatarInput" name="avatar" class="d-none" accept="image/*" />
+                            <label for="avatarInput" class="d-inline-block" title="برای تغییر عکس کلیک کنید">
+                                @{ var avatarPath = Url.Content("~/CompanyVariables/avatars/1.png");
+                                   if (!string.IsNullOrWhiteSpace(Model.Avatar))
+                                   {
+                                       avatarPath = Model.Avatar.StartsWith("/") || Model.Avatar.StartsWith("http")
+                                           ? Model.Avatar
+                                           : Url.Content($"/CompanyVariables/avatars/{Model.Avatar}");
+                                   }
+                                }
+                                <img src="@avatarPath" alt="Avatar" class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;cursor:pointer;" />
+                                <div class="text-center small mt-1">تصویر پروفایل</div>
+                            </label>
+                        </form>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Avatar))
+                    {
+                        <form class="mt-2" asp-action="DeleteAvatar" asp-controller="Account" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm waves-effect">
+                                <i class="fas fa-trash-alt me-1"></i>حذف تصویر پروفایل
+                            </button>
+                        </form>
+                    }
+                    <small class="text-muted mt-2">برای تغییر عکس، روی تصویر پروفایل کلیک کنید</small>
+                </div>
+
+                <div class="accordion mt-3" id="profileAccordion">
+                    <div class="card accordion-item active border border-primary-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-primary-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-1" aria-expanded="true">
+                                <i class="fas fa-id-card me-2 text-primary"></i>
+                                اطلاعات شخصی
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-1" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                <div><i class="fas fa-user me-1 text-primary"></i>نام : @Model.FirstName @Model.LastName</div>
+                                <div><i class="fas fa-user-tag me-1 text-primary"></i>نام کاربری : @(string.IsNullOrEmpty(Model.UserName) ? "ثبت نشده" : Model.UserName)</div>
+                                <div><i class="fas fa-user-shield me-1 text-primary"></i>نوع حساب : @(string.IsNullOrEmpty(Model.AccountType) ? "ثبت نشده" : Model.AccountType)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card accordion-item active mt-3 border border-info-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-info-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-2" aria-expanded="true">
+                                <i class="fas fa-map-marker-alt me-2 text-info"></i>
+                                اطلاعات محل سکونت
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-2" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                <div><i class="fas fa-map-marker-alt me-1 text-info"></i>استان : @(string.IsNullOrEmpty(Model.Ostan) ? "ثبت نشده" : Model.Ostan)</div>
+                                <div><i class="fas fa-home me-1 text-info"></i>آدرس : @(string.IsNullOrEmpty(Model.Address) ? "ثبت نشده" : Model.Address)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card accordion-item active mt-3 border border-success-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-success-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-3" aria-expanded="true">
+                                <i class="fas fa-address-card me-2 text-success"></i>
+                                اطلاعات تماس
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-3" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                <div><i class="fas fa-envelope me-1 text-success"></i>ایمیل : @(string.IsNullOrEmpty(Model.Email) ? "ثبت نشده" : Model.Email)</div>
+                                <div><i class="fas fa-mobile-alt me-1 text-success"></i>تلفن همراه : @(string.IsNullOrEmpty(Model.Phone) ? "ثبت نشده" : Model.Phone)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card accordion-item active mt-3 border border-warning-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-warning-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-4" aria-expanded="true">
+                                <i class="fas fa-building me-2 text-warning"></i>
+                                اطلاعات سازمانی کاربر
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-4" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                @if (Model.Organization != null)
+                                {
+                                    <div><i class="@GetOrganizationTypeIcon(Model.Organization.OrgType) me-1 @GetOrganizationTypeColor(Model.Organization.OrgType)"></i>نوع سازمان : <span class="@GetOrganizationTypeColor(Model.Organization.OrgType) fw-bold">@GetOrganizationTypeText(Model.Organization.OrgType)</span></div>
+                                    <div><i class="fas fa-city me-1 text-warning"></i>نام اداره : @(string.IsNullOrEmpty(Model.NameEdareh) ? "ثبت نشده" : Model.NameEdareh)</div>
+                                    <div><i class="fas fa-briefcase me-1 text-warning"></i>سمت : @(string.IsNullOrEmpty(Model.Semat) ? "ثبت نشده" : Model.Semat)</div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        کاربر به هیچ سازمانی اختصاص داده نشده است
+                                    </div>
+                                }
+                                <div><i class="fas fa-certificate me-1 text-warning"></i>حق امضا : @(Model.HaqEmza ? "دارد" : "ندارد")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card accordion-item active mt-3 border border-secondary-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-secondary-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-5" aria-expanded="true">
+                                <i class="fas fa-sitemap me-2 text-secondary"></i>
+                                سازمان
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-5" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                <div><i class="fas fa-sitemap me-1 text-secondary"></i>نام سازمان : @(Model.Organization?.Name ?? "ثبت نشده")</div>
+                                <div><i class="fas fa-hashtag me-1 text-secondary"></i>کد سازمان : @(string.IsNullOrEmpty(Model.Organization?.Code) ? "ثبت نشده" : Model.Organization?.Code)</div>
+                                <div><i class="fas fa-phone me-1 text-secondary"></i>تلفن سازمان : @(string.IsNullOrEmpty(Model.Organization?.Phone) ? "ثبت نشده" : Model.Organization?.Phone)</div>
+                                <div><i class="fas fa-at me-1 text-secondary"></i>ایمیل سازمان : @(string.IsNullOrEmpty(Model.Organization?.Email) ? "ثبت نشده" : Model.Organization?.Email)</div>
+                                <div><i class="fas fa-map-marked-alt me-1 text-secondary"></i>آدرس سازمان : @(string.IsNullOrEmpty(Model.Organization?.Address) ? "ثبت نشده" : Model.Organization?.Address)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Emza))
+                    {
+                        <div class="card accordion-item active mt-3 border border-info-subtle">
+                            <h2 class="accordion-header d-flex align-items-center bg-info-subtle">
+                                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-6" aria-expanded="true">
+                                    <i class="fas fa-signature me-2 text-info"></i>
+                                    امضا
+                                </button>
+                            </h2>
+                            <div id="profileAccordion-6" class="accordion-collapse collapse show">
+                                <div class="accordion-body lh-2">
+                                    <img src="~/CompanyVariables/signatures/@Model.Emza" class="img-thumbnail bg-white" style="max-height:140px;" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="card accordion-item active mt-3 border border-danger-subtle">
+                        <h2 class="accordion-header d-flex align-items-center bg-danger-subtle">
+                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#profileAccordion-7" aria-expanded="true">
+                                <i class="fas fa-user-cog me-2 text-danger"></i>
+                                مدیریت حساب کاربری
+                            </button>
+                        </h2>
+                        <div id="profileAccordion-7" class="accordion-collapse collapse show">
+                            <div class="accordion-body lh-2">
+                                <div class="alert alert-danger" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">آیا از حذف حساب خود اطمینان دارید؟</div>
+                                            <small class="text-muted">با حذف حساب، تمام اطلاعات به‌صورت دائم پاک می‌شود و امکان بازیابی وجود ندارد.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <form asp-controller="Account" asp-action="AccountDeactive" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" asp-for="Id" />
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" required />
+                                        <label class="form-check-label" for="accountActivation">
+                                            با آگاهی کامل، غیرفعال کردن حساب کاربری خود را تایید می‌کنم
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-danger waves-effect">
+                                        <i class="fas fa-user-slash me-1"></i>غیرفعال کردن حساب
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Accordion -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section vendorjs {
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+}
+
+@section pagejs {
+   <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var avatarInput = document.getElementById('avatarInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function () {
+                    if (this.files && this.files.length > 0) {
+                        var form = document.getElementById('avatarUploadForm');
+                        if (form) { form.submit(); }
+                    }
+                });
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

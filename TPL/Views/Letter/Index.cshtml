@@ -1,0 +1,962 @@
+﻿@using BLL.LetterAutomation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.IdentityModel.Tokens
+@using BE.LetterAutomation
+@model IEnumerable<BE.LetterAutomation.Letter>
+@inject BlRecivers BlRecivers
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var recivers = await BlRecivers.GetAllOrganizationsChainingAsync();
+
+}
+
+@section vendorcss {
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .header-icon {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border-radius: 16px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 2rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Enhanced Status Badges */
+        .status-badge {
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .status-badge:hover::before {
+            left: 100%;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+            color: #fff;
+            border: 2px solid #ff8f00;
+        }
+
+        .status-referred {
+            background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+            color: #fff;
+            border: 2px solid #1565c0;
+        }
+
+        .status-archived {
+            background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+            color: #fff;
+            border: 2px solid #616161;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
+            color: #fff;
+            border: 2px solid #388e3c;
+        }
+
+        .status-rejected {
+            background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+            color: #fff;
+            border: 2px solid #d32f2f;
+        }
+
+        /* Enhanced Read Status Indicators */
+        .read-status {
+            font-size: 1.4rem;
+            padding: 12px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .read-opened {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .read-unopened {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+            animation: pulse-unread 2s infinite;
+        }
+
+        /* Enhanced Priority Badges */
+        .priority-badge {
+            font-size: 1.2rem;
+            padding: 12px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .priority-badge::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff0, #f0f, #0ff, #0f0, #ff0);
+            background-size: 400%;
+            z-index: -1;
+            animation: border-rotate 3s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .priority-badge:hover::after {
+            opacity: 1;
+        }
+
+        .priority-urgent {
+            background: linear-gradient(135deg, #ff1744 0%, #d50000 100%);
+            color: white;
+            animation: urgent-pulse 1s infinite;
+        }
+
+        .priority-high {
+            background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+            color: white;
+            animation: high-pulse 1.5s infinite;
+        }
+
+        .priority-normal {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+            animation: normal-pulse 2s infinite;
+        }
+
+        .priority-low {
+            background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+            color: white;
+            animation: low-pulse 3s infinite;
+        }
+
+        /* Enhanced Animation Keyframes */
+        @@keyframes urgent-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 23, 68, 0.4); }
+            50% { transform: scale(1.15); box-shadow: 0 8px 25px rgba(255, 23, 68, 0.6); }
+        }
+
+        @@keyframes high-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 111, 0, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 6px 20px rgba(255, 111, 0, 0.5); }
+        }
+
+        @@keyframes normal-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 5px 18px rgba(33, 150, 243, 0.5); }
+        }
+
+        @@keyframes low-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(158, 158, 158, 0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 4px 16px rgba(158, 158, 158, 0.5); }
+        }
+
+        @@keyframes pulse-unread {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6); }
+        }
+
+        @@keyframes border-rotate {
+            0% { background-position: 0%; }
+            100% { background-position: 400%; }
+        }
+
+        /* Table Enhancements */
+        .letter-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .letter-row {
+            transition: all 0.4s ease;
+            border-radius: 8px;
+        }
+
+        .action-buttons .btn {
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .action-buttons .btn:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Enhanced Header */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Tooltip Enhancements */
+        .tooltip {
+            font-size: 0.9rem;
+            border-radius: 8px;
+        }
+
+        .tooltip-inner {
+            background: rgba(0,0,0,0.9);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        /* Priority Indicators in Header */
+        .priority-indicators {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .priority-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .priority-indicator:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .priority-indicator.unread {
+            background: rgba(255, 193, 7, 0.3);
+            border-color: rgba(255, 193, 7, 0.5);
+        }
+
+        .priority-indicator.urgent {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
+        .priority-indicator.high {
+            background: rgba(255, 111, 0, 0.3);
+            border-color: rgba(255, 111, 0, 0.5);
+        }
+
+        .priority-indicator .count {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Enhanced Table Styling */
+        .table thead th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            color: #495057;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .header-icon {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .priority-indicators {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .priority-indicator {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+}
+
+<div class="card border-0 shadow-lg">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="header-icon">
+                    <i class="fas fa-envelope-open text-white" style="font-size: 2rem;"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1 text-white">@ViewData["Title"]</h4>
+                    <p class="mb-0 text-white opacity-90">
+                        <i class="fas fa-info-circle me-1"></i>مدیریت و مشاهده نامه‌های سیستم
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-3">
+                <a asp-action="Create" class="btn btn-light btn-lg px-4 animate__animated animate__pulse">
+                    <i class="fas fa-plus me-2"></i>ایجاد نامه جدید
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["LetterDownloadLink"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                <i class="fas fa-file-word me-2"></i>
+                <a download href="~/wordfiles/@TempData["LetterDownloadLink"]" class="text-decoration-none">دانلود فایل ورد نامه</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="dataTable" width="100%" cellspacing="0">
+                <thead class="table-light">
+                    <tr>
+                        @if (TempData["vaziat"] != null)
+                        {
+                            <th class="text-center">وضعیت</th>
+                        }
+                        <th>شماره نامه</th>
+                        <th class="text-center">وضعیت خواندن</th>
+                        <th class="text-center">اولویت</th>
+                        <th>مشاهده</th>
+                        <th>موضوع</th>
+                        <th>فرستنده</th>
+                        <th>گیرنده</th>
+                        <th>تاریخ ثبت</th>
+                        <th class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  @if (!Model.IsNullOrEmpty())
+                  {
+                        @foreach (var item in Model)
+                        {
+                            var girandeh = await BlRecivers.GetReceiverFullPath(item?.Receiver!);
+                            <tr class="letter-row animate__animated animate__fadeIn">
+                                @if (TempData["vaziat"] != null)
+                                {
+                                    <td class="text-center">
+                                        <span class="status-badge status-@item!.Status.ToString().ToLower() animate__animated animate__fadeIn">
+                                            @if (item.Status.ToString() == "Pending")
+                                            {
+                                                <i class="fas fa-clock text-warning"></i>
+                                            }
+                                            else if (item.Status.ToString() == "Referred")
+                                            {
+                                                <i class="fas fa-share-alt text-info"></i>
+                                            }
+                                            else if (item.Status.ToString() == "OrganizationArchived")
+                                            {
+                                                <i class="fas fa-archive text-secondary"></i>
+                                            }
+                                            else if (item.Status.ToString() == "Completed")
+                                            {
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            }
+                                            else if (item.Status.ToString() == "Rejected")
+                                            {
+                                                <i class="fas fa-times-circle text-danger"></i>
+                                            }
+                                            @Status(item.Status.ToString())
+                                        </span>
+                                    </td>
+                                }
+                                <td class="fw-bold">@item!.LetterNumber</td>
+                                
+                                <!-- Letter Read Status -->
+                                <td class="text-center">
+                                    @{
+                                        // Check if letter has been viewed by current user
+                                        var isRead = item.IsRead;
+                                    }
+                                    @if (isRead)
+                                    {
+                                        <span class="read-status read-opened" data-bs-toggle="tooltip" title="نامه خوانده شده">
+                                            <i class="fas fa-envelope-open"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="read-status read-unopened" data-bs-toggle="tooltip" title="نامه خوانده نشده">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                    }
+                                </td>
+                                
+                                <!-- Letter Priority -->
+                                <td class="text-center">
+                                    @if (item.Priority == PriorityType.آنی)
+                                    {
+                                        <span class="priority-badge priority-urgent" data-bs-toggle="tooltip" title="اولویت آنی - نیاز به اقدام فوری">
+                                            <i class="fas fa-bolt"></i>
+                                        </span>
+                                    }
+                                    else if (item.Priority == PriorityType.فوری)
+                                    {
+                                        <span class="priority-badge priority-high" data-bs-toggle="tooltip" title="اولویت بالا - نیاز به توجه سریع">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </span>
+                                    }
+                                    else if (item.Priority == PriorityType.عادی)
+                                    {
+                                        <span class="priority-badge priority-normal" data-bs-toggle="tooltip" title="اولویت عادی">
+                                            <i class="fas fa-circle"></i>
+                                        </span>
+                                    }
+                                    else if (item.Priority == PriorityType.اقدام_سریع)
+                                    {
+                                        <span class="priority-badge priority-high" data-bs-toggle="tooltip" title="اقدام سریع - نیاز به پیگیری">
+                                            <i class="fas fa-running"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="priority-badge priority-low" data-bs-toggle="tooltip" title="اولویت پایین">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </span>
+                                    }
+                                </td>
+                                
+                                <td>
+                                    <a asp-action="LetterView" asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary waves-effect"
+                                       data-bs-toggle="tooltip"
+                                       title="مشاهده جزئیات">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                                <td>@item.Subject</td>
+                                <td>@await BlRecivers.GetReceiverFullPath(item.Sender!)</td>
+                                <td>@girandeh</td>
+                                <td dir="ltr" class="text-nowrap">@item.RegistrationDate.ToString("yyyy/MM/dd - HH:mm")</td>
+                                <td class="action-buttons">
+                                    <div class="d-flex justify-content-center gap-2">
+
+                                        @if (ReferenceEquals(ViewData["Title"], "کارتابل نامه های صادره"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-outline-info waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="ویرایش">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#" onclick="generateWordFile(@item.Id, event)"
+                                               class="btn btn-sm btn-outline-primary waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="تولید و دانلود فایل ورد">
+                                                <i class="fas fa-file-word"></i>
+                                            </a>
+                                            <a href="#" onclick="generatePdfFile(@item.Id, event)"
+                                               class="btn btn-sm btn-outline-danger waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="دانلود PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-outline-dark waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <!-- ابزارهای عمومی -->
+                                            <a href="#" onclick="generateWordFile(@item.Id, event)"
+                                               class="btn btn-sm btn-outline-primary waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="تولید و دانلود فایل ورد">
+                                                <i class="fas fa-file-word"></i>
+                                            </a>
+                                            <a href="#" onclick="generatePdfFile(@item.Id, event)"
+                                               class="btn btn-sm btn-outline-danger waves-effect"
+                                               data-bs-toggle="tooltip"
+                                               title="دانلود PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            @* اگر از مسیر تابلو اعلانات آمده باشیم، دکمه خواندم برای حذف از تابلو *@
+                                            @if (TempData["tablo"]?.ToString() == "elanat")
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-secondary waves-effect mark-dashboard-read" data-id="@item.Id" title="خواندم">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            }
+
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+
+                    }
+                    
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@{
+    string Status(string state)
+    {
+        switch (state)
+        {
+            case "Pending":
+                return "در انتظار";
+            case "Referred":
+                return "ارجاع شده";
+            case "OrganizationArchived":
+                return "بایگانی شده";
+            case "Completed":
+                return "تکمیل شده";
+            case "Rejected":
+                return "رد شده";
+        }
+        return "";
+    }
+}
+
+@section vendorjs {
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+}
+
+@section PageJs {
+    <script src="~/assets/js/tables-datatables-advanced.js"></script>
+    <script>
+        async function generatePdfFile(id, event) {
+            event.preventDefault();
+
+            const btn = event.target.closest('a');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال تولید...';
+            btn.classList.add('disabled');
+
+            try {
+                const response = await fetch(`@Url.Action("LetterGenerate", "Letter")?id=${id}`);
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const data = await response.json();
+                const fileId = data.fileId;
+
+                // بررسی وجود فایل قبل از دانلود
+                const fileCheck = await fetch(`/wordfiles/${fileId}.pdf`, { method: 'HEAD' });
+                if (!fileCheck.ok) {
+                    throw new Error('فایل تولید شده یافت نشد');
+                }
+
+                // دانلود خودکار
+                const a = document.createElement('a');
+                a.href = `/wordfiles/${fileId}.pdf`;
+                a.download = `نامه_${fileId}_${new Date().toLocaleDateString('fa-IR')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('خطا در تولید فایل: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('disabled');
+            }
+        }
+    </script>
+    
+    <script>
+        async function generateWordFile(id, event) {
+            event.preventDefault();
+
+            const btn = event.target.closest('a');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال تولید...';
+            btn.classList.add('disabled');
+
+            try {
+                const response = await fetch(`@Url.Action("LetterGenerate", "Letter")?id=${id}`);
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const data = await response.json();
+                const fileId = data.fileId;
+
+                // بررسی وجود فایل قبل از دانلود
+                const fileCheck = await fetch(`/wordfiles/${fileId}.docx`, { method: 'HEAD' });
+                if (!fileCheck.ok) {
+                    throw new Error('فایل تولید شده یافت نشد');
+                }
+
+                // دانلود خودکار
+                const a = document.createElement('a');
+                a.href = `/wordfiles/${fileId}.docx`;
+                a.download = `نامه_${fileId}_${new Date().toLocaleDateString('fa-IR')}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('خطا در تولید فایل: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('disabled');
+            }
+        }
+    </script>
+    
+    <script>
+        var dt;
+        $(document).ready(function(){
+            // Initialize DataTable with Persian language
+            dt = $('#dataTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fa.json'
+                },
+                responsive: true,
+                pageLength: 25,
+                order: [[0, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: [1, 2, -1] } // Disable sorting for status, read status, priority, and actions columns
+                ]
+            });
+
+            // Initialize tooltips
+            initializeTooltips();
+
+            // Add animation to status badges
+            setInterval(function() {
+                $('.status-badge').addClass('animate__pulse');
+                setTimeout(function() {
+                    $('.status-badge').removeClass('animate__pulse');
+                }, 1000);
+            }, 3000);
+
+            // Priority badge animations
+            initializeEnhancedAnimations();
+
+            // Row hover effects
+            $('.letter-row').hover(
+                function() {
+                    $(this).addClass('animate__pulse');
+                },
+                function() {
+                    $(this).removeClass('animate__pulse');
+                }
+            );
+
+            // Update letter count
+            updateLetterCount();
+        });
+
+        // Enhanced Priority and Status Animations
+        function initializeEnhancedAnimations() {
+            // Add staggered animation delays for priority badges
+            $('.priority-badge').each(function(index) {
+                $(this).css('animation-delay', `${index * 0.1}s`);
+            });
+
+            // Add hover effects for status badges
+            $('.status-badge').hover(
+                function() {
+                    $(this).addClass('animate__pulse');
+                },
+                function() {
+                    $(this).removeClass('animate__pulse');
+                }
+            );
+
+            // Add click effects for priority badges
+            $('.priority-badge').click(function() {
+                $(this).addClass('animate__bounce');
+                setTimeout(() => {
+                    $(this).removeClass('animate__bounce');
+                }, 600);
+            });
+
+            // Add floating animation for read status
+            $('.read-status').addClass('animate__animated animate__fadeIn');
+        }
+
+        // Initialize tooltips
+        function initializeTooltips() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    placement: 'top',
+                    trigger: 'hover'
+                });
+            });
+        }
+
+        // Enhanced letter count update
+        function updateLetterCount() {
+            const totalLetters = $('.letter-row').length;
+            const unreadLetters = $('.read-unopened').length;
+            const urgentLetters = $('.priority-urgent').length;
+            const highPriorityLetters = $('.priority-high').length;
+            
+            // Update the main badge
+            $('#letterCount').html(`<i class="fas fa-envelope me-2"></i>${totalLetters} نامه`);
+            
+            // Add priority indicators to header
+            updatePriorityIndicators(unreadLetters, urgentLetters, highPriorityLetters);
+        }
+
+        function updatePriorityIndicators(unread, urgent, high) {
+            // Clear existing indicators
+            $('.priority-indicators').remove();
+            
+            // Create priority indicators container
+            const indicatorsContainer = $('<div class="priority-indicators d-flex gap-2"></div>');
+            
+            if (unread > 0) {
+                indicatorsContainer.append(`
+                    <div class="priority-indicator unread" data-bs-toggle="tooltip" title="${unread} نامه خوانده نشده">
+                        <i class="fas fa-envelope text-warning"></i>
+                        <span class="count">${unread}</span>
+                    </div>
+                `);
+            }
+            
+            if (urgent > 0) {
+                indicatorsContainer.append(`
+                    <div class="priority-indicator urgent" data-bs-toggle="tooltip" title="${urgent} نامه با اولویت آنی">
+                        <i class="fas fa-bolt text-danger"></i>
+                        <span class="count">${urgent}</span>
+                    </div>
+                `);
+            }
+            
+            if (high > 0) {
+                indicatorsContainer.append(`
+                    <div class="priority-indicator high" data-bs-toggle="tooltip" title="${high} نامه با اولویت بالا">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <span class="count">${high}</span>
+                    </div>
+                `);
+            }
+            
+            // Add to header if there are indicators
+            if (indicatorsContainer.children().length > 0) {
+                $('.page-header .d-flex.gap-3').prepend(indicatorsContainer);
+                initializeTooltips();
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const alertClass = `alert-${type}`;
+            const iconClass = type === 'success' ? 'fa-check-circle' : 
+                             type === 'warning' ? 'fa-exclamation-triangle' : 
+                             type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="fas ${iconClass} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 4000);
+        }
+
+        $(document).on('click', '.mark-dashboard-read', function(){
+            var id = $(this).data('id');
+            var $tr = $(this).closest('tr');
+            
+            // Show loading state
+            $(this).html('<i class="fas fa-spinner fa-spin"></i>');
+            $(this).prop('disabled', true);
+            
+            fetch('/Letter/MarkDashboardRead/' + id, { 
+                method: 'POST', 
+                headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    showNotification('نامه با موفقیت علامت‌گذاری شد', 'success');
+                    if (dt) {
+                        dt.row($tr).remove().draw(false);
+                    } else {
+                        $tr.fadeOut(500, function() {
+                            $(this).remove();
+                        });
+                    }
+                    updateLetterCount();
+                } else {
+                    showNotification('خطا در علامت‌گذاری نامه', 'error');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                showNotification('خطا در ارتباط با سرور', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                $(this).html('<i class="fas fa-check"></i>');
+                $(this).prop('disabled', false);
+            });
+        });
+
+        // Keyboard shortcuts
+        $(document).keydown(function(e) {
+            // Ctrl+F to focus search
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                $('.dataTables_filter input').focus();
+            }
+            
+            // Ctrl+N to create new letter
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                $('a[asp-action="Create"]').click();
+            }
+        });
+
+        // Add loading animation to buttons
+        $('.btn').click(function() {
+            const btn = $(this);
+            if (!btn.hasClass('disabled')) {
+                btn.addClass('btn-loading');
+                setTimeout(() => btn.removeClass('btn-loading'), 200);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,49 @@
+﻿@{
+    var currentUrl = Context.Request.Path.Value!.ToLower();
+
+    string GetActiveClass(string url)
+    {
+        return currentUrl.Contains(url.ToLower()) ? "active" : "";
+    }
+}
+
+<ul class="nav nav-pills flex-column flex-md-row mb-3 gap-2 gap-lg-0">
+    <li class="nav-item">
+        <a class="nav-link @GetActiveClass(Url.Action("ProfilePage","Account")!)" href="@Url.Action("ProfilePage","Account")">
+            <i class="fas fa-user fa-lg me-1"></i>حساب
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @GetActiveClass(Url.Action("ResetPass","Account")!)" href="@Url.Action("ResetPass","Account")">
+            <i class="fas fa-shield-alt fa-lg me-1"></i> امنیت
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @GetActiveClass(Url.Action("Deposit","Wallet")!)" href="@Url.Action("Deposit","Wallet")">
+            <i class="fas fa-wallet fa-lg me-1"></i> شارژ کیف پول
+        </a>
+    </li>
+    @if (User.IsInRole("Admin"))
+    {
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass(Url.Action("Dashboard","AdminTicket")!)" href="@Url.Action("Dashboard","AdminTicket")">
+                <i class="fas fa-ticket-alt fa-lg me-1"></i> پشتیبانی کاربران
+            </a>
+        </li> 
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass(Url.Action("Dashboard","TicketUser")!)" href="@Url.Action("Dashboard","TicketUser")">
+                <i class="fas fa-ticket-alt fa-lg me-1"></i> پشتیبانی 
+            </a>
+        </li>
+       
+       
+    }
+    <li class="nav-item">
+        <a class="nav-link @GetActiveClass(Url.Action("Index","Token")!)" href="@Url.Action("Index","Token")">
+            <i class="fas fa-link fa-lg me-1"></i>اتصالات
+        </a>
+    </li>
+</ul>

@@ -1,0 +1,78 @@
+﻿@using BE
+@using BLL.LetterAutomation
+@using Microsoft.AspNetCore.Identity
+@model BE.LetterAutomation.Kelasehnameh
+@inject Blkelaseh BlkelaseheBlkelaseh
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "ویرایش کلاسه";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+@{
+    var klss = await BlkelaseheBlkelaseh.GetAllKelasehnamehsAsync(UserManager.GetUserId(User)!);
+}
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h3 class="card-title mb-0 text-white "> ویرایش کلاسه</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <div class="row mb-4">
+                <input hidden asp-for="Id"/>
+                <div class="form-group col-md-3">
+                    <label asp-for="CodeKelaseh" class="form-label">کد کلاسه</label>
+                    <input asp-for="CodeKelaseh" class="form-control form-control-lg" placeholder="کد کلاسه را وارد نمایید"/>
+                    <span asp-validation-for="CodeKelaseh" class="text-danger small"></span>
+                    <small>شماره آخرین کلاسه: @klss.LastOrDefault()!.CodeKelaseh</small>
+
+                </div>
+                <div class="form-group  col-md-9">
+                    <label asp-for="NameKelaseh" class="form-label">نام کلاسه</label>
+                    <input asp-for="NameKelaseh" class="form-control form-control-lg" placeholder="نام کلاسه را وارد نمایید"/>
+                    <span asp-validation-for="NameKelaseh" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="form-group d-flex justify-content-between mt-5">
+                <button type="submit" class="btn btn-success px-4 py-2">
+                    <i class="fas fa-save ml-2"></i> ویرایش کلاسه
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2">
+                    <i class="fas fa-arrow-right ml-2"></i> بازگشت به لیست
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section pagecss {
+    <style>
+        .card {
+            border-radius: 15px;
+            border: none;
+            margin-top: 2rem;
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .form-control-lg {
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .btn {
+            border-radius: 10px;
+            font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+            font-weight: 500;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+    </style>
+}

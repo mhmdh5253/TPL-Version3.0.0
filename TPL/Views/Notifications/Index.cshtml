@@ -1,0 +1,134 @@
+@using System.Globalization
+@model List<TPLWeb.Controllers.NotificationsController.UnifiedNotificationItem>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "همه اعلان‌ها";
+}
+
+@section pagecss{
+    <style>
+        .notif-card { border-radius: 10px; }
+        .notif-card + .notif-card { margin-top: .75rem; }
+    </style>
+}
+
+<div class="container-xxl">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="mb-0">همه اعلان‌ها</h5>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">اعلانی یافت نشد.</div>
+    }
+    else
+    {
+        foreach (var n in Model)
+        {
+            <div class="card notif-card">
+                <div class="card-body d-flex align-items-start justify-content-between">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="avatar">
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="fas fa-bell"></i></span>
+                        </div>
+                        <div>
+                            <div class="fw-bold">@(!string.IsNullOrWhiteSpace(n.SourceTitle) ? n.SourceTitle : "اعلان")</div>
+                            <div>@(n.Message ?? "")</div>
+                            @if (!string.IsNullOrWhiteSpace(n.Link))
+                            {
+                                var isExternal = n.Link.StartsWith("http://") || n.Link.StartsWith("https://");
+                                <div class="mt-2">
+                                    <a href="@n.Link" target="@(isExternal ? "_blank" : "_self")" class="btn btn-sm btn-outline-primary">برو به صفحه مرتبط</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-muted">@{
+                            var persianDate = new PersianCalendar();
+                            var year = persianDate.GetYear(n.CreatedDate);
+                            var month = persianDate.GetMonth(n.CreatedDate);
+                            var day = persianDate.GetDayOfMonth(n.CreatedDate);
+                            var hour = n.CreatedDate.Hour;
+                            var minute = n.CreatedDate.Minute;
+                            <text>@year/@month.ToString("00")/@day.ToString("00") @hour.ToString("00"):@minute.ToString("00")</text>
+                        }</div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary notif-read-all" data-id="@n.Id">خواندم</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger notif-del-all" data-id="@n.Id">حذف</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section PageJs{
+    <script>
+        // بهبود عملکرد دکمه‌های اعلانات
+        function handleNotificationAction(action, id) {
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            // غیرفعال کردن دکمه و نمایش loading
+            button.disabled = true;
+            button.textContent = 'در حال پردازش...';
+            
+            fetch(`/Notifications/${action}/${id}`, { 
+                method: 'POST', 
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // حذف کارت اعلان از DOM
+                    const card = button.closest('.notif-card');
+                    if (card) {
+                        card.style.opacity = '0.5';
+                        card.style.transition = 'opacity 0.3s';
+                        setTimeout(() => {
+                            card.remove();
+                            // بررسی تعداد اعلان‌های باقی‌مانده
+                            const remainingCards = document.querySelectorAll('.notif-card');
+                            if (remainingCards.length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                } else {
+                    throw new Error('خطا در پردازش درخواست');
+                }
+            })
+            .catch(error => {
+                console.error('خطا:', error);
+                // بازگرداندن دکمه به حالت اولیه
+                button.disabled = false;
+                button.textContent = originalText;
+                alert('خطا در پردازش درخواست. لطفاً دوباره تلاش کنید.');
+            });
+        }
+        
+        // اضافه کردن event listener برای دکمه خواندم
+        document.querySelectorAll('.notif-read-all').forEach(btn => {
+            btn.addEventListener('click', function(){
+                const id = this.getAttribute('data-id');
+                handleNotificationAction('Read', id);
+            });
+        });
+        
+        // اضافه کردن event listener برای دکمه حذف
+        document.querySelectorAll('.notif-del-all').forEach(btn => {
+            btn.addEventListener('click', function(){
+                const id = this.getAttribute('data-id');
+                if (confirm('آیا مطمئن هستید که می‌خواهید این اعلان را حذف کنید؟')) {
+                    handleNotificationAction('Delete', id);
+                }
+            });
+        });
+    </script>
+}
+
+

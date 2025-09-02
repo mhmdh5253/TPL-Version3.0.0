@@ -1,0 +1,265 @@
+﻿@using BE.Ticketing.SupportTicketSystem.Models
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.Ticketing.UserDashboardViewModel
+
+@{
+    ViewData["Title"] = "پشتیبانی کاربران";
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+        <h4 class="mb-1">@ViewData["Title"]</h4>
+        <small class="text-muted">مرور سریع وضعیت تیکت‌ها و اعلان‌های شما</small>
+    </div>
+    <div>
+        <a asp-action="CreateTicket" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i>
+            تیکت جدید
+        </a>
+    </div>
+</div>
+<hr/>
+@{
+    var tickets = Model.MyTickets ?? Enumerable.Empty<BE.Ticketing.SupportTicketSystem.Models.Ticket>();
+    int totalCount = tickets.Count();
+    int newCount = tickets.Count(t => t.Status == TicketStatus.New);
+    int openCount = tickets.Count(t => t.Status == TicketStatus.Open);
+    int inProgressCount = tickets.Count(t => t.Status == TicketStatus.InProgress);
+    int resolvedCount = tickets.Count(t => t.Status == TicketStatus.Resolved);
+    int closedCount = tickets.Count(t => t.Status == TicketStatus.Closed);
+}
+
+<div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">همه</div>
+                        <div class="h5 mb-0">@totalCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-secondary"><i class="fas fa-list-ul"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">جدید</div>
+                        <div class="h5 mb-0">@newCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-info"><i class="fas fa-star"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">باز</div>
+                        <div class="h5 mb-0">@openCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-primary"><i class="fas fa-folder-open"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">درحال انجام</div>
+                        <div class="h5 mb-0">@inProgressCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-warning"><i class="fas fa-spinner"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">حل‌شده</div>
+                        <div class="h5 mb-0">@resolvedCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-success"><i class="fas fa-check-circle"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">بسته</div>
+                        <div class="h5 mb-0">@closedCount</div>
+                    </div>
+                    <span class="badge rounded-pill bg-label-dark"><i class="fas fa-lock"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+<hr/>
+<div class="row">
+    <div class="col-lg-8 col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <h5 class="mb-0">تیکت‌های من</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input id="ticketSearch" type="text" class="form-control" placeholder="جستجو در عنوان..." aria-label="جستجو" />
+                        </div>
+                        <select id="statusFilter" class="form-select form-select-sm" aria-label="وضعیت">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="New">جدید</option>
+                            <option value="Open">باز</option>
+                            <option value="InProgress">درحال انجام</option>
+                            <option value="Resolved">حل‌شده</option>
+                            <option value="Closed">بسته</option>
+                        </select>
+                        <a asp-action="CreateTicket" class="btn btn-sm btn-outline-primary"><i class="fas fa-plus"></i> ایجاد تیکت</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.MyTickets!.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>عنوان</th>
+                                    <th>وضعیت</th>
+                                    <th>تاریخ</th>
+                                    <th class="text-center">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ticket in Model.MyTickets!)
+                                {
+                                    <tr data-title="@ticket.Title" data-status="@ticket.Status">
+                                        <td class="fw-medium text-truncate" style="max-width: 260px">@ticket.Title</td>
+                                        <td><span class="badge rounded-pill bg-label-@GetStatusBadge(ticket.Status)">@GetStatusText(ticket.Status)</span></td>
+                                        <td><small class="text-muted">@ticket.CreatedDate.ToString("yyyy/MM/dd")</small></td>
+                                        <td class="text-center">
+                                            <a asp-action="ViewTicket" asp-route-id="@ticket.Id" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i>
+                                                مشاهده
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-5">
+                        <img src="~/assets/img/illustrations/empty-state.png" alt="" class="img-fluid mb-3" style="max-height:120px;" onerror="this.style.display='none'">
+                        <h6 class="mb-2">هنوز هیچ تیکتی ایجاد نکرده‌اید</h6>
+                        <p class="text-muted mb-4">برای شروع، اولین تیکت خود را ثبت کنید تا تیم پشتیبانی رسیدگی کند.</p>
+                        <a asp-action="CreateTicket" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i>
+                            ایجاد تیکت
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">اعلان‌ها</h5>
+            </div>
+            <div class="card-body">
+                @if (Model!.Notifications!.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var notification in Model.Notifications!.Take(5))
+                        {
+                            <a href="@notification.Link" class="list-group-item list-group-item-action @(!notification.IsRead ? "fw-bold" : "")">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>@notification.Message</span>
+                                    <small class="text-muted">@notification.CreatedDate.ToString("HH:mm")</small>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                    <a href="#" class="btn btn-sm btn-link mt-2">مشاهده همه اعلان‌ها</a>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">اعلانی وجود ندارد</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    <script>
+        (function() {
+            const search = document.getElementById('ticketSearch');
+            const filter = document.getElementById('statusFilter');
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+            function applyFilters() {
+                const term = (search?.value || '').toLowerCase();
+                const status = (filter?.value || '').toLowerCase();
+                tbody.querySelectorAll('tr').forEach(tr => {
+                    const title = (tr.getAttribute('data-title') || '').toLowerCase();
+                    const st = (tr.getAttribute('data-status') || '').toLowerCase();
+                    const matchTitle = !term || title.indexOf(term) !== -1;
+                    const matchStatus = !status || st === status.toLowerCase();
+                    tr.style.display = (matchTitle && matchStatus) ? '' : 'none';
+                });
+            }
+            search?.addEventListener('input', applyFilters);
+            filter?.addEventListener('change', applyFilters);
+        })();
+    </script>
+}
+
+@functions {
+    string GetStatusBadge(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "info",
+            TicketStatus.Open => "primary",
+            TicketStatus.InProgress => "warning",
+            TicketStatus.Resolved => "success",
+            TicketStatus.Closed => "dark",
+            _ => "secondary"
+        };
+    }
+
+    string GetStatusText(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "جدید",
+            TicketStatus.Open => "باز",
+            TicketStatus.InProgress => "درحال انجام",
+            TicketStatus.Resolved => "حل‌شده",
+            TicketStatus.Closed => "بسته",
+            _ => status.ToString()
+        };
+    }
+}

@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BE.LetterAutomation.Organization
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h3 class="card-title">جزئیات سازمان</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">نام کامل</th>
+                        <td>@Model.Name</td>
+                    </tr>
+                    <tr>
+                        <th>مسیر سلسله مراتبی</th>
+                        <td>@ViewBag.FullPath</td>
+                    </tr>
+                    <tr>
+                        <th>کد سازمان</th>
+                        <td>@Model.Code</td>
+                    </tr>
+                    <tr>
+                        <th>نوع</th>
+                        <td>
+                            @switch (Model.OrgType)
+                            {
+                                case "main":
+                                    <span class="badge bg-primary">سازمان اصلی</span>
+                                    break;
+                                case "department":
+                                    <span class="badge bg-info">اداره</span>
+                                    break;
+                                case "unit":
+                                    <span class="badge bg-secondary">واحد</span>
+                                    break;
+                                case "section":
+                                    <span class="badge bg-light">بخش</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-dark">@Model.OrgType</span>
+                                    break;
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">وضعیت</th>
+                        <td>
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">فعال</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">غیرفعال</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>تاریخ ایجاد</th>
+                        <td>@Model.CreatedAt.ToString("d")</td>
+                    </tr>
+                    <tr>
+                        <th>آخرین ویرایش</th>
+                        <td>@(Model.UpdatedAt?.ToString("d") ?? "بدون ویرایش")</td>
+                    </tr>
+                    <tr>
+                        <th>زیرمجموعه‌ها</th>
+                        <td>
+                            @(Model.Children?.Count(x => x.IsActive) ?? 0) از @(Model.Children?.Count ?? 0) فعال
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <h5>اطلاعات تماس</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><i class="fas fa-phone"></i> @(Model.Phone ?? "ثبت نشده")</p>
+                    <p><i class="fas fa-envelope"></i> @(Model.Email ?? "ثبت نشده")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><i class="fas fa-map-marker-alt"></i> @(Model.Address ?? "ثبت نشده")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <h5>توضیحات</h5>
+            <div class="border p-3 rounded bg-light">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    @Model.Description
+                }
+                else
+                {
+                    <span class="text-muted">توضیحاتی ثبت نشده است</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="btn-group">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> ویرایش
+            </a>
+            <button class="btn @(Model.IsActive ? "btn-warning" : "btn-success") toggle-status"
+                    data-id="@Model.Id">
+                @if (Model.IsActive)
+                {
+                    <i class="fas fa-ban"></i>@("غیرفعال کردن")
+                }
+                else
+                {
+                    <i class="fas fa-check"></i>
+                    @("فعال کردن")
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // تغییر وضعیت فعال/غیرفعال
+        $('.toggle-status').click(function() {
+            const orgId = $(this).data('id');
+            $.post('@Url.Action("ToggleStatus")', { id: orgId }, function() {
+                window.location.reload();
+            });
+        });
+    });
+</script>

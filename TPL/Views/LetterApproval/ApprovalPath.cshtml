@@ -1,0 +1,232 @@
+﻿@using BE.LetterAutomation
+@model List<BE.LetterAutomation.LetterApproval>
+
+<div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-success text-white">
+        <div class="d-flex align-items-center">
+            <div class="header-icon me-3">
+                <i class="fas fa-sitemap fa-2x"></i>
+            </div>
+            <div>
+                <h3 class="card-title mb-1">سلسله مراتب تایید نامه</h3>
+                <p class="mb-0 opacity-75">
+                    <i class="fas fa-info-circle me-1"></i>نمایش مسیر تایید و وضعیت هر سطح
+                </p>
+                    </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .header-icon {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .card {
+        border-radius: 16px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+        padding: 2rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        transform: translateX(-50%);
+    }
+    
+    .time-label {
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .time-label span {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .timeline-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .timeline-item i.fas.fa-user {
+        background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-header {
+        margin-bottom: 1rem;
+        color: #495057;
+    }
+    
+    .timeline-header small {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .timeline-body p {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    
+    .bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+        color: #000 !important;
+    }
+    
+    .bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    }
+    
+    .bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
+    }
+    
+    .bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%) !important;
+    }
+    
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    .card {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    .timeline-item {
+        animation: fadeInUp 0.6s ease;
+        animation-delay: calc(var(--animation-order) * 0.2s);
+    }
+    
+    .timeline-item:nth-child(1) { --animation-order: 1; }
+    .timeline-item:nth-child(2) { --animation-order: 2; }
+    .timeline-item:nth-child(3) { --animation-order: 3; }
+    .timeline-item:nth-child(4) { --animation-order: 4; }
+</style>
+    <div class="card-body">
+        <div class="timeline">
+            @foreach (var item in Model)
+            {
+                <div class="time-label">
+                    <span class="bg-@(item.Status == ApprovalStatus.Approved ? "success" : 
+                                      item.Status == ApprovalStatus.Rejected ? "danger" : 
+                                      item.Status == ApprovalStatus.Returned ? "info" : "warning")">
+                        سطح @item.ApprovalLevel
+                    </span>
+                </div>
+                
+                <div>
+                    <i class="fas fa-user bg-blue"></i>
+                    <div class="timeline-item">
+                        <span class="time"><i class="fas fa-clock"></i> @item.RequestDate</span>
+                        <h3 class="timeline-header">
+                            @item.Approver!.FirstName @item.Approver.LastName
+                            <small>@item.Approver.Semat - @item.Organization!.Name</small>
+                        </h3>
+                        <div class="timeline-body">
+                            @if (!string.IsNullOrEmpty(item.Comment))
+                            {
+                                <p>@item.Comment</p>
+                            }
+                            <p>
+                                وضعیت: 
+                                @switch (item.Status)
+                                {
+                                    case ApprovalStatus.Pending:
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>در انتظار
+                                        </span>
+                                        break;
+                                    case ApprovalStatus.Approved:
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>تایید شده
+                                        </span>
+                                        break;
+                                    case ApprovalStatus.Rejected:
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>رد شده
+                                        </span>
+                                        break;
+                                    case ApprovalStatus.Returned:
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-undo me-1"></i>بازگشت داده شده
+                                        </span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

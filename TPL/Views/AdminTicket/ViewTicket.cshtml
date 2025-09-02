@@ -1,0 +1,269 @@
+﻿@using BE
+@using BE.Ticketing.SupportTicketSystem.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.Ticketing.TicketViewModel
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = Model.Ticket!.Title;
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+        <h4 class="mb-1">@Model.Ticket.Title</h4>
+    </div>
+    <div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-right"></i>
+            بازگشت
+        </a>
+    </div>
+</div>
+<br/>
+<div class="row g-4 mb-4">
+    <!-- جزئیات تیکت -->
+    <div class="col-lg-4 order-lg-2">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0">جزئیات</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted">وضعیت</span>
+                        <span class="badge rounded-pill bg-label-@GetStatusBadge(Model.Ticket.Status)">@GetStatusText(Model.Ticket.Status)</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted">اولویت</span>
+                        <span class="badge rounded-pill bg-label-secondary">@Model.Ticket.Priority</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted">دسته‌بندی</span>
+                        <span class="badge rounded-pill bg-label-secondary">@Model.Ticket.Category?.Name</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted">تاریخ ایجاد</span>
+                        <span>@Model.Ticket.CreatedDate.ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted">آخرین بروزرسانی</span>
+                        <span>@Model.Ticket.UpdatedDate.ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ناحیه چت مانند پیام‌رسان با تایم‌لاین مشترک -->
+    <div class="col-lg-8 order-lg-1">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0">گفتگو</h6>
+            </div>
+            <div id="chatBody" class="card-body" style="max-height: 60vh; overflow-y: auto;">
+                @{
+                    var allUsers = UserManager.Users.ToList();
+                    var currentUserId = UserManager.GetUserId(User);
+                    var comments = Model.Comments ?? new List<BE.Ticketing.SupportTicketSystem.Models.TicketComment>();
+                    var attachments = Model.Attachments ?? new List<BE.Ticketing.SupportTicketSystem.Models.Attachment>();
+                    var timeline = comments.Select(c => new { Date = c.CreatedDate, IsComment = true, Text = (string?)c.Content, IsMine = c.CreatedByUserId == currentUserId, UserId = c.CreatedByUserId, FilePath = (string?)null, FileName = (string?)null, FileSize = 0L, IsImage = false })
+                        .Concat(attachments.Select(a => new { Date = a.UploadDate, IsComment = false, Text = (string?)null, IsMine = a.UploadedByUserId == currentUserId, UserId = a.UploadedByUserId, FilePath = (string?)(a.FilePath ?? ""), FileName = (string?)(a.FileName ?? ""), FileSize = a.FileSize, IsImage = IsImageFile(a.FilePath ?? "") }))
+                        .OrderBy(x => x.Date)
+                        .ToList();
+                    var lastOwn = timeline.Where(x => x.IsMine).Select(x => x.Date).DefaultIfEmpty(DateTime.MinValue).Max();
+                }
+                @if (timeline.Any())
+                {
+                    foreach (var item in timeline)
+                    {
+                        var us = allUsers.FirstOrDefault(x => x.Id == item.UserId);
+                        var isMine = item.IsMine;
+                        var firstName = us?.FirstName ?? "؟";
+                        var initial = firstName.Length > 0 ? firstName.Substring(0, 1) : "؟";
+                        <div class="d-flex mb-3 @(isMine ? "justify-content-end" : "justify-content-start")">
+                            @if (!isMine)
+                            {
+                                <div class="avatar avatar-sm me-2">
+                                    <span class="avatar-initial rounded-circle bg-label-secondary">@initial</span>
+                                </div>
+                            }
+                            <div class="@(isMine ? "bg-primary text-white" : "bg-white border") rounded-4 shadow-sm p-3" style="max-width:70%">
+                                <div class="small mb-1 @(isMine ? "text-white-50" : "text-muted")">
+                                    @(us != null ? $"{us.FirstName} {us.LastName}" : "کاربر")
+                                </div>
+                                @if (item.IsComment)
+                                {
+                                    <div class="mb-1">@item.Text</div>
+                                }
+                                else if (item.IsImage)
+                                {
+                                    <a href="@item.FilePath" class="thumb-image" data-full="@item.FilePath" title="@item.FileName">
+                                        <img src="@item.FilePath" alt="@item.FileName" style="max-width:100%; height:auto; max-height:300px; border-radius:.5rem" />
+                                    </a>
+                                    <div class="small mt-1 @(isMine ? "text-white-50" : "text-muted")">@item.FileName</div>
+                                }
+                                else
+                                {
+                                    <a href="@item.FilePath" target="_blank" class="d-inline-flex align-items-center gap-2">
+                                        <i class="fas fa-paperclip"></i>
+                                        <span>@item.FileName</span>
+                                        <span class="badge bg-secondary">@FormatFileSize(item.FileSize)</span>
+                                    </a>
+                                }
+                                <div class="d-flex align-items-center justify-content-between small mt-2 @(isMine ? "text-white-50" : "text-muted")">
+                                    <span><i class="fas fa-clock"></i> @item.Date.ToString("yyyy/MM/dd HH:mm")</span>
+                                    @if (isMine)
+                                    {
+                                        <span title="ارسال شد"><i class="fas fa-check-double"></i></span>
+                                    }
+                                </div>
+                            </div>
+                            @if (isMine)
+                            {
+                                <div class="avatar avatar-sm ms-2">
+                                    <span class="avatar-initial rounded-circle bg-label-primary">@initial</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">هنوز پیامی ثبت نشده است</div>
+                }
+            </div>
+            <div class="card-footer">
+                <form asp-action="AddComment" asp-controller="TicketUser" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TicketId" value="@Model.Ticket.Id" />
+                    <div class="input-group">
+                        <button type="button" class="btn btn-outline-secondary" id="btnAttach" title="افزودن پیوست">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="chatMessage" name="Content" class="form-control" rows="1" placeholder="پیام خود را بنویسید..." required></textarea>
+                        <button type="submit" class="btn btn-primary" id="btnSend">
+                            <i class="fas fa-paper-plane"></i>
+                            ارسال
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2">راهنما: با فشردن Shift+Enter پیام ارسال می‌شود؛ برای افزودن پیوست از آیکون سنجاق استفاده کنید.</small>
+                </form>
+
+                <form id="uploadAttachmentForm" asp-action="UploadAttachment" asp-controller="TicketUser" method="post" enctype="multipart/form-data" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ticketId" value="@Model.Ticket.Id" />
+                    <input type="file" id="chatAttachmentInput" name="file" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xlsx,.zip" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadge(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "secondary",
+            TicketStatus.Open => "primary",
+            TicketStatus.InProgress => "info",
+            TicketStatus.Resolved => "success",
+            TicketStatus.Closed => "dark",
+            _ => "secondary"
+        };
+    }
+
+    string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        while (bytes >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            bytes /= 1024;
+        }
+        return $"{bytes:0.##} {sizes[order]}";
+    }
+
+    string GetStatusText(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.New => "جدید",
+            TicketStatus.Open => "باز",
+            TicketStatus.InProgress => "درحال انجام",
+            TicketStatus.Resolved => "حل‌شده",
+            TicketStatus.Closed => "بسته",
+            _ => status.ToString()
+        };
+    }
+
+    bool IsImageFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var p = path.ToLowerInvariant();
+        return p.EndsWith(".png") || p.EndsWith(".jpg") || p.EndsWith(".jpeg") || p.EndsWith(".gif") || p.EndsWith(".webp");
+    }
+}
+
+@section pagejs {
+    <script>
+        (function(){
+            const msg = document.getElementById('chatMessage');
+            const form = msg ? msg.closest('form') : null;
+            const chatBody = document.getElementById('chatBody');
+            const attachBtn = document.getElementById('btnAttach');
+            const attachInput = document.getElementById('chatAttachmentInput');
+            if (msg && form) {
+                msg.addEventListener('keydown', function(e){
+                    if (e.key === 'Enter' && e.shiftKey) {
+                        e.preventDefault();
+                        const sendBtn = document.getElementById('btnSend');
+                        sendBtn ? sendBtn.click() : form.submit();
+                    }
+                });
+            }
+            if (chatBody) {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            if (attachBtn && attachInput) {
+                attachBtn.addEventListener('click', function(){
+                    attachInput.click();
+                });
+                attachInput.addEventListener('change', function(){
+                    if (attachInput.files && attachInput.files.length > 0) {
+                        document.getElementById('uploadAttachmentForm')?.submit();
+                    }
+                });
+            }
+
+            document.querySelectorAll('a.thumb-image').forEach(function(a){
+                a.addEventListener('click', function(ev){
+                    ev.preventDefault();
+                    const src = a.getAttribute('data-full') || a.getAttribute('href');
+                    const img = document.getElementById('lightboxImage');
+                    if (img) {
+                        img.src = src;
+                    }
+                    const modalEl = document.getElementById('imageLightboxModal');
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                });
+            });
+        })();
+    </script>
+}
+
+<!-- Modal for image lightbox -->
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <img id="lightboxImage" src="" alt="image" class="img-fluid w-100" />
+            </div>
+        </div>
+    </div>
+</div>

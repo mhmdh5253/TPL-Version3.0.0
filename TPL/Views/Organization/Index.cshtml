@@ -1,0 +1,404 @@
+﻿@model BE.LetterAutomation.OrganizationViewModel
+@{
+    ViewData["Title"] = "مدیریت سازمان‌ها و ادارات";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-sitemap me-2"></i>ساختار سازمانی
+                    <span class="badge bg-primary ms-2" id="orgCount">0</span>
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-info btn-sm" id="expandAllBtn">
+                        <i class="fas fa-expand-alt me-1"></i>گسترش همه
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" id="collapseAllBtn">
+                        <i class="fas fa-compress-alt me-1"></i>جمع کردن همه
+                    </button>
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> سازمان جدید
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-search me-2"></i>جستجو و فیلتر
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white">
+                                            <i class="fas fa-search text-muted"></i>
+                                        </span>
+                                        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="جستجوی سازمان..." />
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label class="form-label small text-muted">نوع سازمان</label>
+                                    <select id="orgTypeFilter" class="form-select form-select-sm">
+                                        <option value="">همه انواع</option>
+                                        <option value="main">سازمان اصلی</option>
+                                        <option value="department">اداره</option>
+                                        <option value="unit">واحد</option>
+                                        <option value="section">بخش</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label class="form-label small text-muted">وضعیت</label>
+                                    <select id="statusFilter" class="form-select form-select-sm">
+                                        <option value="">همه وضعیت‌ها</option>
+                                        <option value="active">فعال</option>
+                                        <option value="inactive">غیرفعال</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn">
+                                        <i class="fas fa-times me-1"></i>پاک کردن فیلترها
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm mt-3">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-sitemap me-2"></i>ساختار سازمانی
+                                </h6>
+                                <small class="text-muted" id="treeInfo">0 سازمان</small>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="orgTree" class="treeview">
+                                    @await Html.PartialAsync("_OrganizationTree", Model.MainOrganizations)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>جزئیات سازمان
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="orgDetail">
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-sitemap fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">انتخاب سازمان</h5>
+                                        <p class="text-muted">لطفاً یک سازمان از لیست سمت چپ انتخاب کنید تا جزئیات آن نمایش داده شود</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pagecss {
+    <style>
+        .treeview {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .org-item {
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        
+        .org-item:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            transform: translateX(-5px);
+        }
+        
+        .org-item.active {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+        }
+        
+        .org-item .org-name {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .org-item .org-type {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .org-children {
+            margin-right: 1.5rem;
+            border-right: 2px solid #e9ecef;
+            padding-right: 1rem;
+        }
+        
+        .org-actions {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .org-item:hover .org-actions {
+            opacity: 1;
+        }
+        
+        .org-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            margin: 0 0.1rem;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            border-bottom: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .input-group-text {
+            border-radius: 8px 0 0 8px;
+            border-right: none;
+        }
+        
+        .form-control.border-start-0 {
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+@section pagejs {
+    <script>
+        $(document).ready(function() {
+            let currentFilters = {
+                search: '',
+                type: '',
+                status: ''
+            };
+            
+            // شمارش تعداد سازمان‌ها
+            function updateOrgCount() {
+                const visibleOrgs = $('.org-item:visible').length;
+                const totalOrgs = $('.org-item').length;
+                $('#orgCount').text(visibleOrgs);
+                $('#treeInfo').text(`${visibleOrgs} از ${totalOrgs} سازمان`);
+            }
+            
+            // مدیریت کلیک روی آیتم‌های سازمانی
+            $(document).on('click', '.org-item', function(e) {
+                e.stopPropagation();
+                
+                if ($(e.target).closest('.org-actions').length > 0) {
+                    return;
+                }
+
+                $('.org-item').removeClass('active');
+                $(this).addClass('active');
+
+                const orgId = $(this).data('id');
+                loadOrganizationDetails(orgId);
+            });
+
+            // بارگذاری جزئیات سازمان
+            function loadOrganizationDetails(orgId) {
+                $('#orgDetail').html(`
+                    <div class="text-center py-4 fade-in">
+                        <div class="loading-spinner mb-3"></div>
+                        <p class="text-muted">در حال بارگذاری اطلاعات سازمان...</p>
+                    </div>
+                `);
+
+                $.get(`/Organization/Details?id=${orgId}`)
+                    .done(function(data) {
+                        $('#orgDetail').html(data).addClass('fade-in');
+                    })
+                    .fail(function() {
+                        $('#orgDetail').html(`
+                            <div class="alert alert-danger fade-in">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                خطا در بارگذاری اطلاعات سازمان
+                            </div>
+                        `);
+                    });
+            }
+
+            // جستجو و فیلتر
+            function applyFilters() {
+                const searchText = currentFilters.search.toLowerCase().trim();
+                const typeFilter = currentFilters.type;
+                const statusFilter = currentFilters.status;
+
+                $('.org-item').each(function() {
+                    const $item = $(this);
+                    const orgName = $item.find('.org-name').text().toLowerCase();
+                    const orgType = $item.data('type') || '';
+                    const orgStatus = $item.data('status') || 'active';
+                    
+                    let show = true;
+                    
+                    // فیلتر جستجو
+                    if (searchText && !orgName.includes(searchText)) {
+                        show = false;
+                    }
+                    
+                    // فیلتر نوع
+                    if (typeFilter && orgType !== typeFilter) {
+                        show = false;
+                    }
+                    
+                    // فیلتر وضعیت
+                    if (statusFilter && orgStatus !== statusFilter) {
+                        show = false;
+                    }
+                    
+                    if (show) {
+                        $item.show();
+                        $item.parents('.org-children').show();
+                    } else {
+                        $item.hide();
+                    }
+                });
+                
+                updateOrgCount();
+            }
+
+            // رویدادهای فیلتر
+            $('#searchInput').on('input', function() {
+                currentFilters.search = $(this).val();
+                applyFilters();
+            });
+
+            $('#orgTypeFilter').on('change', function() {
+                currentFilters.type = $(this).val();
+                applyFilters();
+            });
+
+            $('#statusFilter').on('change', function() {
+                currentFilters.status = $(this).val();
+                applyFilters();
+            });
+
+            $('#clearFiltersBtn').on('click', function() {
+                currentFilters = { search: '', type: '', status: '' };
+                $('#searchInput').val('');
+                $('#orgTypeFilter').val('');
+                $('#statusFilter').val('');
+                applyFilters();
+            });
+
+            // گسترش و جمع کردن همه
+            $('#expandAllBtn').on('click', function() {
+                $('.org-children').slideDown(300);
+                $(this).addClass('btn-info').removeClass('btn-outline-info');
+                $('#collapseAllBtn').addClass('btn-outline-secondary').removeClass('btn-secondary');
+            });
+
+            $('#collapseAllBtn').on('click', function() {
+                $('.org-children').slideUp(300);
+                $(this).addClass('btn-secondary').removeClass('btn-outline-secondary');
+                $('#expandAllBtn').addClass('btn-outline-info').removeClass('btn-info');
+            });
+
+            // نمایش اطلاعات سازمان در tooltip
+            $('.org-item').tooltip({
+                placement: 'right',
+                trigger: 'hover',
+                html: true
+            });
+
+            // انتخاب اولین سازمان به صورت خودکار
+            if ($('.org-item').length > 0) {
+                $('.org-item').first().trigger('click');
+            }
+            
+            // به‌روزرسانی شمارنده اولیه
+            updateOrgCount();
+            
+            // انیمیشن ورود
+            $('.card').addClass('fade-in');
+        });
+    </script>
+}

@@ -1,0 +1,131 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BE.Ticketing.SupportTicketSystem.Models.Ticket
+
+@{
+    ViewData["Title"] = "ویرایش تیکت";
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">@ViewData["Title"]</h5>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="EditTicket" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedByUserId" />
+            <input type="hidden" asp-for="CreatedDate" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="CategoryId" class="form-label"></label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                            <option value="">-- انتخاب دسته‌بندی --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-select"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Priority" class="form-label"></label>
+                        <select asp-for="Priority" asp-items="ViewBag.PriorityList" class="form-select"></select>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div hidden class="form-group mb-3">
+                <label asp-for="AssignedToUserId" class="form-label"></label>
+                <input asp-for="AssignedToUserId" class="form-control" />
+                <span asp-validation-for="AssignedToUserId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> ذخیره تغییرات
+                </button>
+                <a asp-action="ManageTickets" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+@section pagecss
+{
+    <link rel="stylesheet" href="~/assets/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css">
+}
+@section pagejs {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // اعتبارسنجی سمت کلاینت
+            $('form').submit(function() {
+                if (!$(this).valid()) {
+                    $('.is-invalid').first().focus();
+                    return false;
+                }
+                return true;
+            });
+
+            // علامت گذاری فیلدهای نامعتبر
+            $('input,select,textarea').each(function() {
+                if ($(this).next('span.text-danger').length > 0) {
+                    $(this).addClass('is-invalid');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 5px;
+            padding: 8px 12px;
+        }
+
+            .form-control:focus, .form-select:focus {
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+
+        textarea {
+            resize: none;
+        }
+
+        .btn {
+            border-radius: 5px;
+            padding: 8px 16px;
+        }
+    </style>
+}

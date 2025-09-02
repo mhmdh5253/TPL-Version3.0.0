@@ -1,0 +1,23 @@
+﻿@model string
+@{
+    Layout = null;
+}
+
+<div style="direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background-color: #f9f9f9;">
+    <h1 style="color: #d32f2f; text-align: center; font-size: 24px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px;">سپاس از ثبت نام شما!</h1>
+    
+    <p style="font-size: 16px; color: #333; text-align: center; line-height: 1.6; margin-bottom: 30px;">
+        لطفاً برای تکمیل فرآیند ثبت‌نام، حساب کاربری خود را با کلیک بر روی دکمه زیر تأیید کنید:
+    </p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="@Model" 
+           style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s ease;">
+            تأیید حساب کاربری
+        </a>
+    </div>
+    
+    <p style="font-size: 14px; color: #777; text-align: center; line-height: 1.5; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">
+        اگر این درخواست از طرف شما نبوده است، لطفاً این ایمیل را نادیده بگیرید.
+    </p>
+</div>

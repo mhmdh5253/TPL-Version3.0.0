@@ -1,0 +1,840 @@
+﻿@{
+    ViewData["Title"] = "شرکت شیلنگ های مسلح قم";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <partial name="FirstPage/_FirstpageMeta" />
+    <title> @ViewData["Title"]</title>
+    <partial name="FirstPage/_FirstpageLinks_Styles" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/plyr/plyr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
+    <style type="text/css">
+        .plyr-video-player {
+            min-width: 100% !important;
+            min-height: 100% !important;
+            object-fit: contain !important;
+        }</style>
+    <style>
+        /* استایل‌های سفارشی */
+        .video-title {
+            color: #fff;
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            font-size: 1.5rem;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-title:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, #4b6cb7, #182848);
+        }
+
+        .title-icon {
+            margin-left: 10px;
+            font-size: 1.2em;
+            vertical-align: middle;
+        }
+
+        .video-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: #1a1a2e;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-gradient-danger {
+            background: linear-gradient(135deg, #f83600 0%, #f9d423 100%);
+        }
+
+        .video-card-wrapper {
+            position: relative;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+
+</head>
+<body>
+    <div class="loader-mask d-none">
+        <div class="loader">
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <!-- navbar section -->
+    <partial name="FirstPage/_FirstpageHeader" />
+    <!-- navbar section -->
+    <!-- banner section -->
+    <section class="index2-banner-sec w-100 float-left bg-light-black">
+        <div class="wrapper2">
+            <div class="banner-left-sec">
+                <h1 data-aos="fade-up" data-aos-duration="600" style="font-family: 'estedad-verybold';">
+                    <br><span>شرکت شیلنگ های مسلح قم</span>
+                </h1>
+            </div>
+        </div>
+        <div class="social-box">
+            <ul class="mb-0 list-unstyled">
+                <li><a href="#"><img src="~/Firstpage/images/cart-icon.png" alt="cart-icon"></a></li>
+                <li><a href="#"><img src="~/Firstpage/images/image-icon.png" alt="image-icon"></a></li>
+                <li><a href="#"><img src="~/Firstpage/images/comment-icon.png" alt="comment-icon"></a></li>
+            </ul>
+        </div>
+    </section>
+    <!-- banner section -->
+    <!-- services section -->
+    <div id="service-slider-sec" class="service-slider-sec w-100 float-left padding-top padding-bottom bg-dark-black">
+        <div class="service-slider-box">
+            <div id="owlsliderone" class="owl-carousel owl-theme index2-slider" data-aos="fade-up" data-aos-duration="600">
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img1.png" alt="slider-img1">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img2.png" alt="slider-img2">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img3.png" alt="slider-img3">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img4.png" alt="slider-img4">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img5.png" alt="slider-img5">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img1.png" alt="slider-img1">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img2.png" alt="slider-img2">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img3.png" alt="slider-img3">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img4.png" alt="slider-img4">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img5.png" alt="slider-img5">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img1.png" alt="slider-img1">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img2.png" alt="slider-img2">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img3.png" alt="slider-img3">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img4.png" alt="slider-img4">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img5.png" alt="slider-img5">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img1.png" alt="slider-img1">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img2.png" alt="slider-img2">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img3.png" alt="slider-img3">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img4.png" alt="slider-img4">
+                    </figure>
+                </div>
+                <div class="item">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/slider-img5.png" alt="slider-img5">
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- services section -->
+    <div id="news" class="container-fluid p-3 p-md-5">
+        <div class="row g-4">
+            <!-- Video 1 -->
+            <div class="col-md-6">
+                <div class="video-card-wrapper">
+                    <h2 class="video-title animate__animated animate__fadeInDown">
+                        <span class="title-icon">🎬</span>
+                        افتتاح رسمی شرکت شیلنگ های فشار قوی رهام
+                    </h2>
+                    <div class="card h-100 border-0 shadow-lg video-card">
+                        <div class="card-body p-0 d-flex flex-column" style="aspect-ratio: 16/9;">
+                            <video poster="@Url.Content("~/Firstpage/images/postervideo.jpg")" class="w-100 h-100 plyr-video-player" playsinline controls preload="metadata" onerror="console.error('Video error:', this.error)">
+                                <source src="@Url.Content("~/Firstpage/videos/افتتاحیه.mp4")" type="video/mp4" />
+                                <p class="text-white text-center p-3">مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.</p>
+                            </video>
+                        </div>
+                        <div class="card-footer bg-gradient-primary text-white text-center py-2">
+                            <small>افتتاحیه رسمی</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="col-md-6">
+                <div class="video-card-wrapper">
+                    <h2 class="video-title animate__animated animate__fadeInDown">
+                        <span class="title-icon">🏭</span>
+                        افتتاحیه فاز دوم خط تولید رهام لاستیک
+                    </h2>
+                    <div class="card h-100 border-0 shadow-lg video-card">
+                        <div class="card-body p-0 d-flex flex-column" style="aspect-ratio: 16/9;">
+                            <video poster="@Url.Content("~/Firstpage/images/vedio-img.jpg")" class="w-100 h-100 plyr-video-player" playsinline controls preload="metadata" onerror="console.error('Video error:', this.error)">
+                                <source src="@Url.Content("~/Firstpage/videos/افتتاحیه رهام لاستیک.mp4")" type="video/mp4" />
+                                <p class="text-white text-center p-3">مرورگر شما از پخش ویدیو پشتیبانی نمی‘کند.</p>
+                            </video>
+                        </div>
+                        <div class="card-footer bg-gradient-danger text-white text-center py-2">
+                            <small>رهام لاستیک - خط تولید جدید</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- solution section -->
+    <section class="w-100 float-left Solution-con bg-dark-black glow-img position-relative">
+        <div class="wrapper2">
+            <div class="generic-title text-center">
+                <span class="text-uppercase" data-aos="fade-up" data-aos-duration="600"></span>
+                <h2 data-aos="fade-up" data-aos-duration="600" style="  font-family: 'estedad-semibold';">
+                </h2>
+            </div>
+            <div class="Solution-box">
+                <div class="Solution-box-item text-center" data-aos="fade-up" data-aos-duration="600">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sloution-img1.jpg" alt="sloution-img">
+                    </figure>
+                    <div class="Solution-box-content">
+                        <a>
+                            <h3 class="mb-0" style="  font-family: 'estedad-semibold';">
+                            </h3>
+                        </a>
+                    </div>
+                </div>
+                <div class="Solution-box-item text-center" data-aos="fade-up" data-aos-duration="600">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sloution-img2.jpg" alt="sloution-img">
+                    </figure>
+                    <div class="Solution-box-content">
+                        <a>
+                            <h3 class="mb-0" style="  font-family: 'estedad-semibold';">
+                            </h3>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- solution section -->
+  @*  
+    <!-- gallery section -->
+    <section class="gallery-section index-gallery index-gallery2 w-100 float-left padding-top padding-bottom bg-dark-black">
+        <div class="generic-title text-center">
+            <span data-aos="fade-up" data-aos-duration="600">گالری جذاب</span>
+            <h2 data-aos="fade-up" data-aos-duration="600" style="  font-family: 'estedad-semibold';            ">طراحی شده با هوش مصنوعی</h2>
+        </div>
+        <div class="tabset mb-0" data-aos="fade-up" data-aos-duration="600">
+            <!-- Tab 1 -->
+            <input type="radio" name="tabset" id="tab1" aria-controls="art">
+            <label for="tab1">هنر تجسمی</label>
+            <!-- Tab 2 -->
+            <input type="radio" name="tabset" id="tab2" aria-controls="illustration">
+            <label for="tab2">تصاویر</label>
+            <!-- Tab 3 -->
+            <input type="radio" name="tabset" id="tab3" aria-controls="design">
+            <label for="tab3">طراحی</label>
+            <!-- Tab 4 -->
+            <input type="radio" name="tabset" id="tab4" aria-controls="creative" checked="">
+            <label for="tab4">خلاقانه</label>
+
+            <div class="tab-panels" data-aos="fade-up" data-aos-duration="600">
+                <div id="art" class="tab-panel pb-0">
+                    <div class="gallery-images-box">
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img1.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img2.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img3.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-images-box">
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img4.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img5.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gallery-container">
+                            <div class="gallery-item">
+                                <div class="images">
+                                    <img src="~/Firstpage/images/design-img6.jpg" alt="design-img">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="illustration" class="tab-panel gallery-second-tab">
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img1.jpg" alt="gallery-img1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img2.jpg" alt="gallery-img2">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img4.jpg" alt="gallery-img4">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img5.jpg" alt="gallery-img5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="design" class="tab-panel gallery-third-tab">
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img6.jpg" alt="gallery-img6">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img7.jpg" alt="gallery-img7">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img8.jpg" alt="gallery-img8">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img9.jpg" alt="gallery-img9">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="creative" class="tab-panel gallery-fourth-tab">
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images"><img src="~/Firstpage/images/gallery-img9.jpg" alt="gallery-img9"></div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img4.jpg" alt="gallery-img4">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img2.jpg" alt="gallery-img2">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-container w-1 h-2">
+                        <div class="gallery-item">
+                            <div class="images">
+                                <img src="~/Firstpage/images/gallery-img6.jpg" alt="gallery-img6">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- gallery section-->
+    <!--  -->
+    <section class="w-100 float-left testimonial-slider">
+        <div class="wrapper2">
+            <div class="generic-title text-center">
+                <span class="text-uppercase" data-aos="fade-up" data-aos-duration="600">دیدگاه کاربران در مورد ما</span>
+                <h2 data-aos="fade-up" data-aos-duration="600" style="  font-family: 'estedad-semibold';                ">نظرات ارزشمند شما</h2>
+            </div>
+            <div id="carouselExampleControls" class="carousel slide" data-ride="carousel" data-aos="fade-up" data-aos-duration="600">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="testimonial-content text-center">
+                            <figure>
+                                <img src="~/Firstpage/images/quote-icon.png" alt="quote-icon">
+                            </figure>
+                            <p>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است <br>لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                            </p>
+                            <div class="auther-con">
+                                <figure>
+                                    <img src="~/Firstpage/images/cilent-img.jpg" alt="cilent-img">
+                                </figure>
+                                <h5>محسن دادار</h5>
+                                <span class="d-block">طراح</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="testimonial-content text-center">
+                            <figure>
+                                <img src="~/Firstpage/images/quote-icon.png" alt="quote-icon">
+                            </figure>
+                            <p>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ<br>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است <br> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                            </p>
+                            <div class="auther-con">
+                                <figure>
+                                    <img src="~/Firstpage/images/cilent-img.jpg" alt="cilent-img">
+                                </figure>
+                                <h5>نیما نوبخت</h5>
+                                <span class="d-block">مهندس</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="testimonial-content text-center">
+                            <figure>
+                                <img src="~/Firstpage/images/quote-icon.png" alt="quote-icon">
+                            </figure>
+                            <p>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br>
+                                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است <br> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                            </p>
+                            <div class="auther-con">
+                                <figure>
+                                    <img src="~/Firstpage/images/cilent-img.jpg" alt="cilent-img">
+                                </figure>
+                                <h5>رضا اکبری</h5>
+                                <span class="d-block">مهندس</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true">
+                        <img src="~/Firstpage/images/long-arrow-lft.png" alt="long-arrow-lft">
+                    </span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true">
+                        <img src="~/Firstpage/images/long-arrow-rt.png" alt="long-arrow-rt">
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+    <!--  -->
+    <!-- logos section-->
+    <div class="w-100 float-left padding-top padding-bottom bg-dark-black logo-slider">
+        <div class="swiper">
+            <!-- Additional required wrapper -->
+            <div class="swiper-wrapper">
+                <!-- Slides -->
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser1.png" alt="sponser1">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser2.png" alt="sponser2">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser3.png" alt="sponser3">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser4.png" alt="sponser4">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser5.png" alt="sponser5">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser6.png" alt="sponser6">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser7.png" alt="sponser7">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser1.png" alt="sponser1">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser2.png" alt="sponser2">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser3.png" alt="sponser3">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser4.png" alt="sponser4">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser5.png" alt="sponser5">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser6.png" alt="sponser6">
+                    </figure>
+                </div>
+                <div class="swiper-slide">
+                    <figure class="mb-0">
+                        <img src="~/Firstpage/images/sponser7.png" alt="sponser7">
+                    </figure>
+                </div>
+            </div>
+
+            <!-- If we need scrollbar -->
+
+            <div class="swiper-scrollbar"></div>
+        </div>
+    </div>
+    <!-- logos section-->
+    <!-- BLOG POST SECTION -->
+    <section class="w-100 float-left blog-post2 padding-top bg-dark-black">
+        <div class="wrapper2">
+            <div class="generic-title text-center">
+                <span class="text-uppercase" data-aos="fade-up" data-aos-duration="600">پست های جدید</span>
+                <h2 data-aos="fade-up" data-aos-duration="600" style="  font-family: 'estedad-semibold';                ">اخبار و مقالات</h2>
+            </div>
+            <div class="blog-post2-box">
+                <div class="blog-post2-item" data-aos="fade-up" data-aos-duration="600">
+                    <div class="blog-post-content-box" style="text-align: right;">
+                        <figure class="mb-0">
+                            <img src="~/Firstpage/images/home-blog-post-img1.jpg" alt="home-blog-post-img">
+                        </figure>
+                        <div class="blog-post2-content">
+                            <div class="blog-admin d-flex align-items-center" style="flex-direction: row-reverse;">
+                                <figure class="mb-0">
+                                    <img src="~/Firstpage/images/post-admin-icon.png" alt="post-admin-icon">
+                                </figure>
+                                نیما نوبخت
+                            </div>
+                            <h4 class="mb-0">
+                                <a href="single-blog.html">
+                                    مهمترین مزایای هوش مصنوعی برای بازاریابان،
+                                    وضعیت داده های هوش مصنوعی
+                                </a>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="blog-post2-item" data-aos="fade-up" data-aos-duration="600">
+                    <div class="blog-post-content-box" style="text-align: right;">
+                        <figure class="mb-0">
+                            <img src="~/Firstpage/images/home-blog-post-img2.jpg" alt="home-blog-post-img">
+                        </figure>
+                        <div class="blog-post2-content">
+                            <div class="blog-admin d-flex align-items-center" style="flex-direction: row-reverse;">
+
+                                <figure class="mb-0">
+                                    <img src="~/Firstpage/images/post-admin-icon.png" alt="post-admin-icon">
+                                </figure>
+                                نیما نوبخت
+                            </div>
+                            <h4 class="mb-0">
+                                <a href="single-blog.html">
+                                    ابزارهای هوش مصنوعی برای کمک به رشد شما
+                                    تجارت گرافیک هوش مصنوعی
+                                </a>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="blog-post-content-box" style="text-align: right;">
+                        <figure class="mb-0">
+                            <img src="~/Firstpage/images/home-blog-post-img3.jpg" alt="home-blog-post-img">
+                        </figure>
+                        <div class="blog-post2-content">
+                            <div class="blog-admin d-flex align-items-center" style="flex-direction: row-reverse;">
+
+                                <figure class="mb-0">
+                                    <img src="~/Firstpage/images/post-admin-icon.png" alt="post-admin-icon">
+                                </figure>
+                                نیما نوبخت
+                            </div>
+                            <h4 class="mb-0">
+                                <a href="single-blog.html">
+                                    بهترین زمان برای ارسال چه زمانی است
+                                    در اینستاگرام در سال ۱۴۰۳
+                                </a>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+     *@
+    
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
+    <script src="~/assets/vendor/libs/plyr/plyr.js"></script>
+    <script src="~/assets/js/extended-ui-media-player.js"></script>
+    <!-- BLOG POST SECTION -->
+    <!-- footer section-->
+    <partial name="FirstPage/_FirstpageFooter" />
+    <a id="button" class="show"></a>
+    <!-- footer section-->
+    <partial name="FirstPage/_FirstpageScripts" />
+    <div id="lightbox"></div>
+    <script>
+        // Function to initialize Plyr players
+        function initializePlyrPlayers() {
+            try {
+                console.log('Initializing Plyr players...');
+                
+                // Check if Plyr is available
+                if (typeof Plyr === 'undefined') {
+                    console.error('Plyr library not loaded, retrying in 100ms...');
+                    setTimeout(initializePlyrPlayers, 100);
+                    return;
+                }
+                
+                console.log('Plyr library found:', typeof Plyr);
+
+                const initPlyr = (player) => {
+                    try {
+                        console.log('Initializing player:', player);
+                        
+                        // Check if player element is valid
+                        if (!player || !player.tagName || player.tagName.toLowerCase() !== 'video') {
+                            console.warn('Invalid player element:', player);
+                            return null;
+                        }
+
+                        // Check if video source exists and log the resolved URL
+                        const source = player.querySelector('source');
+                        if (!source) {
+                            console.warn('No source element found for video:', player);
+                            return null;
+                        }
+                        
+                        console.log('Video source element:', source);
+                        console.log('Video source src:', source.src);
+                        console.log('Video source type:', source.type);
+                        
+                        if (!source.src) {
+                            console.warn('No valid source src found for video:', player);
+                            return null;
+                        }
+
+                        // Test if the video URL is accessible
+                        fetch(source.src, { method: 'HEAD' })
+                            .then(response => {
+                                console.log('Video URL accessibility check:', response.status, response.statusText);
+                            })
+                            .catch(error => {
+                                console.error('Video URL accessibility error:', error);
+                            });
+
+                        const instance = new Plyr(player, {
+                            ratio: '16:9',
+                            hideControls: false,
+                            debug: true,
+                            captions: { active: false },
+                            controls: ['play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen']
+                        });
+
+                        instance.on('ready', () => {
+                            console.log('Plyr player ready:', player);
+                            if (instance.isHTML5) {
+                                instance.resize();
+                                setTimeout(() => instance.resize(), 500);
+                            }
+                        });
+
+                        instance.on('error', (event) => {
+                            console.error('Plyr error:', event.detail);
+                        });
+
+                        instance.on('loadedmetadata', () => {
+                            console.log('Video metadata loaded:', player);
+                        });
+
+                        return instance;
+                    } catch (error) {
+                        console.error('Error initializing Plyr for player:', player, error);
+                        return null;
+                    }
+                };
+
+                const players = document.querySelectorAll('.plyr-video-player');
+                console.log('Found video players:', players.length);
+                
+                if (players.length === 0) {
+                    console.warn('No video players found, retrying in 500ms...');
+                    setTimeout(initializePlyrPlayers, 500);
+                    return;
+                }
+                
+                players.forEach((player, index) => {
+                    console.log(`Initializing player ${index}:`, player);
+                    console.log('Player poster:', player.poster);
+                    console.log('Player sources:', player.querySelectorAll('source'));
+                    initPlyr(player);
+                });
+            } catch (error) {
+                console.error('Error in Plyr initialization:', error);
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePlyrPlayers);
+        } else {
+            initializePlyrPlayers();
+        }
+
+        // Also try to initialize after a short delay to catch any late-loaded elements
+        setTimeout(initializePlyrPlayers, 1000);
+
+        // Final attempt after 3 seconds
+        setTimeout(() => {
+            const players = document.querySelectorAll('.plyr-video-player');
+            if (players.length > 0) {
+                console.log('Final attempt to initialize Plyr players...');
+                players.forEach((player, index) => {
+                    if (!player.classList.contains('plyr--initialized')) {
+                        console.log(`Player ${index} not initialized, trying again...`);
+                        initializePlyrPlayers();
+                    }
+                });
+            }
+        }, 3000);
+
+        // Debug information
+        console.log('Current location:', window.location.href);
+        console.log('Current port:', window.location.port);
+        console.log('Video elements found:', document.querySelectorAll('video').length);
+        console.log('Plyr video elements found:', document.querySelectorAll('.plyr-video-player').length);
+    </script>
+</body>
+</html>

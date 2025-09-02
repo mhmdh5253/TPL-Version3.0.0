@@ -1,0 +1,91 @@
+﻿@using BE.Ticketing.SupportTicketSystem.Models
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TPLWeb.Models.Ticketing.CreateTicketViewModel
+
+@{
+    ViewData["Title"] = "ایجاد تیکت جدید";
+}
+
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+        <h4 class="mb-1">@ViewData["Title"]</h4>
+        <small class="text-muted">برای پیگیری بهتر، عنوان و شرح دقیق وارد کنید.</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-right"></i>
+            بازگشت
+        </a>
+    </div>
+    </div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0">فرم ثبت تیکت</h5>
+                <span class="text-muted small">فیلدهای ستاره‌دار الزامی هستند</span>
+            </div>
+            <div class="card-body">
+                <form asp-action="CreateTicket" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">عنوان</label>
+                        <input asp-for="Title" class="form-control" placeholder="عنوان تیکت را وارد کنید" />
+                        <span asp-validation-for="Title" class="invalid-feedback d-block"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">شرح</label>
+                        <textarea asp-for="Description" class="form-control" rows="6" placeholder="شرح کامل مشکل یا درخواست خود را بنویسید"></textarea>
+                        <span asp-validation-for="Description" class="invalid-feedback d-block"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Priority" class="form-label">اولویت</label>
+                            <select asp-for="Priority" class="form-select">
+                                <option value="@Priority.Low">کم اهمیت</option>
+                                <option value="@Priority.Medium" selected>متوسط</option>
+                                <option value="@Priority.High">مهم</option>
+                                <option value="@Priority.Critical">بحرانی</option>
+                            </select>
+                            <span asp-validation-for="Priority" class="invalid-feedback d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label">دسته‌بندی</label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="">-- انتخاب دسته‌بندی --</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (Category item in ViewBag.Categories)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="invalid-feedback d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            ارسال تیکت
+                        </button>
+                        <a asp-action="Dashboard" class="btn btn-outline-secondary">انصراف</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,127 @@
+﻿@model int
+@{
+    ViewData["Title"] = "خطا";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en" class="light-style  customizer-hide" dir="ltr" data-theme="theme-default" data-assets-path="/" data-template="vertical-menu-template">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>خطا</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/CompanyVariables/favicon/favicon.ico" />
+    <!-- Fonts -->
+    <!-- Icons -->
+    <link rel="stylesheet" href="~/assets/vendor/fonts/materialdesignicons.css" />
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/css/rtl/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="~/assets/css/demo.css" />
+    <link rel="stylesheet" href="~/assets/vendor/fonts/IRANSans.css" />
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/node-waves/node-waves.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/typeahead-js/typeahead.css" />
+    <!-- Page CSS -->
+    <!-- Page -->
+    <link rel="stylesheet" href="~/assets/vendor/css/pages/page-misc.css">
+    <!-- Helpers -->
+    <script src="~/assets/vendor/js/helpers.js"></script>
+
+    <script src="~/assets/vendor/js/template-customizer.js"></script>
+    <script src="~/assets/js/config.js"></script>
+</head>
+
+<body>
+
+    <!-- Server Error -->
+    <div class="misc-wrapper">
+
+        @{
+
+            if (Model == 500)
+            {
+                <h1 style="font-size: 4rem;">
+                    @Model
+                </h1>
+                <h4 class=" fw-semibold">خطای داخلی سرور🔐</h4>
+                <p> مشکلی در سرور رخ داده</p>
+            }
+            else if (Model == 404)
+            {
+                <h1 style="font-size: 4rem;">
+                    @Model
+                </h1>
+                <h4 class=" fw-semibold">
+                    صفحه مورد نظر پیدا نشد ⚠️
+                </h4>
+                <p>
+                    ما قادر به یافتن صفحه‌ای که به دنبال آن بودید نشدیم
+                </p>
+            }
+
+            else if (Model == 401)
+            {
+                <h1 style="font-size: 4rem;">
+                    @Model
+                </h1>
+                <h4 class=" fw-semibold">
+                    شما مجاز نیستید! 🔐
+
+                </h4>
+                <p>
+                    شما مجوز دسترسی به این صفحه را ندارید.
+                </p>
+            }
+            else
+            {
+
+                <h1 style="font-size: 4rem;">
+                    @Model
+                </h1>
+                <h4 class=" fw-semibold">خطای داخلی سرور🔐</h4>
+                <p> مشکلی در سرور رخ داده</p>
+
+            }
+        }
+        <div class="alert alert-outline-danger" role="alert">
+            <a asp-action="Index" asp-controller="Home" class="btn btn-primary text-center my-5">بازگشت به صفحه اصلی</a>
+
+        </div>
+        <div class="d-flex justify-content-center mt-5">
+            <img src="~/assets/img/illustrations/misc-error-object.png" alt="misc-server-error" class="img-fluid misc-object d-none d-lg-inline-block" width="160">
+            <img src="~/assets/img/illustrations/misc-bg-light.png" alt="misc-server-error" class="misc-bg d-none d-lg-inline-block" data-app-light-img="illustrations/misc-bg-light.png" data-app-dark-img="illustrations/misc-bg-dark.html">
+            <div class="d-flex flex-column align-items-center">
+                <img src="~/assets/img/illustrations/misc-server-error-illustration.png" alt="misc-server-error" class="img-fluid zindex-1" width="230">
+            </div>
+        </div>
+    </div>
+    <!-- /Server Error -->
+    <!-- / Content -->
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="~/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="~/assets/vendor/libs/popper/popper.js"></script>
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="~/assets/vendor/libs/node-waves/node-waves.js"></script>
+
+    <script src="~/assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="~/assets/vendor/libs/i18n/i18n.js"></script>
+    <script src="~/assets/vendor/libs/typeahead-js/typeahead.js"></script>
+
+    <script src="~/assets/vendor/js/menu.js"></script>
+    <!-- endbuild -->
+    <!-- Vendors JS -->
+    <!-- Main JS -->
+    <script src="~/assets/js/main.js"></script>
+
+    <!-- Page JS -->
+
+</body>
+
+</html>
+
+<!-- beautify ignore:end -->

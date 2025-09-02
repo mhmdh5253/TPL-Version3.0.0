@@ -1,0 +1,262 @@
+@using TPLWeb.Models.Chat
+@model List<ChatRoomViewModel>
+@{
+    ViewData["Title"] = "چت";
+    Layout = "_LayoutAdmin";
+}
+
+<!-- Modern Chat Application with Vanilla JS -->
+<div class="chat-container" id="chatApp">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <!-- User Header -->
+        <div class="chat-header">
+            <div class="avatar-container">
+                <div class="avatar">
+                    <img src="@Url.Content($"~/CompanyVariables/avatars/{ViewBag.CurrentUserAvatar ?? "1.png"}")" alt="@ViewBag.CurrentUserName" id="currentUserAvatar">
+                </div>
+                <div class="user-info">
+                    <h4 id="currentUserName">@ViewBag.CurrentUserName</h4>
+                    <span class="user-role">@(ViewBag.CurrentUserRole ?? "کاربر سیستم")</span>
+                </div>
+            </div>
+            <div class="status-indicator" title="آنلاین">
+                <div class="status-dot"></div>
+                <span>آنلاین</span>
+            </div>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="جستجوی کاربران...">
+                <i class="fas fa-times clear-search" id="clearSearch" style="display: none;"></i>
+            </div>
+            <div class="search-results" id="searchResults" style="display: none;">
+                <!-- Search results will be populated here -->
+            </div>
+        </div>
+
+        <!-- Chat Rooms Section -->
+        <div class="chat-section">
+            <div class="section-header">
+                <h6 class="section-title">
+                    <i class="fas fa-comments"></i>
+                    چت ها
+                </h6>
+                <span class="chat-count" id="chatCount" style="display: none;">0</span>
+            </div>
+            <ul class="chat-list" id="chatList">
+                <!-- Chat rooms will be populated here -->
+            </ul>
+        </div>
+
+        <!-- Contacts Section -->
+        <div class="contacts-section">
+            <div class="section-header">
+                <h6 class="section-title">
+                    <i class="fas fa-users"></i>
+                    مخاطبین
+                </h6>
+                <span class="contacts-count" id="contactsCount" style="display: none;">0</span>
+            </div>
+            <ul class="contacts-list" id="contactsList">
+                <!-- Contacts will be populated here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-content">
+                <div class="welcome-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h2>به چت خوش آمدید! 👋</h2>
+                <p>با دوستان و همکاران خود در ارتباط باشید. پیام‌های فوری، فایل‌ها و پیام‌های صوتی را به راحتی ارسال کنید.</p>
+                <div class="welcome-actions">
+                    <button class="btn btn-primary" id="startNewChatBtn">
+                        <i class="fas fa-plus"></i>
+                        <span>شروع چت جدید</span>
+                    </button>
+                    <button class="btn btn-secondary" id="createSelfChatBtn">
+                        <i class="fas fa-user"></i>
+                        <span>یادداشت‌های من</span>
+                    </button>
+                </div>
+                <div class="welcome-features">
+                    <div class="feature-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>پیام‌های فوری</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-paperclip"></i>
+                        <span>ارسال فایل تا 1GB</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-microphone"></i>
+                        <span>پیام‌های صوتی</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-smile"></i>
+                        <span>شکلک‌های زیبا</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-interface" id="chatInterface" style="display: none;">
+            <!-- Chat Header -->
+            <div class="chat-main-header">
+                <div class="chat-info">
+                    <div class="avatar">
+                        <img id="currentChatAvatar" src="" alt="">
+                        <div class="online-indicator" id="currentChatOnlineIndicator" style="display: none;"></div>
+                    </div>
+                    <div class="chat-details">
+                        <h5 id="currentChatName"></h5>
+                        <div class="chat-status">
+                            <span class="status-dot" id="currentChatStatusDot"></span>
+                            <span id="currentChatStatus">آفلاین</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn" id="searchInChatBtn" title="جستجو در چت">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn" id="showParticipantsBtn" title="شرکت‌کنندگان" style="display: none;">
+                        <i class="fas fa-users"></i>
+                    </button>
+                    <button class="btn" id="backToWelcomeBtn" title="بازگشت">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be populated here -->
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <span id="typingText">در حال تایپ...</span>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <button class="btn" id="fileBtn" title="ارسال فایل">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="btn" id="voiceBtn" title="ارسال پیام صوتی">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <input type="text" id="messageInput" placeholder="پیام خود را بنویسید...">
+                    <button class="btn" id="emojiBtn" title="شکلک">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <button class="btn send" id="sendBtn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <!-- File Upload Info -->
+                <div class="file-upload-info" id="fileUploadInfo" style="display: none;">
+                    <div class="file-info">
+                        <i class="fas fa-file"></i>
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                    </div>
+                    <button class="btn-remove-file" id="removeFileBtn" title="حذف فایل">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar" max="1073741824">
+            </div>
+
+            <!-- Emoji Picker -->
+            <div class="emoji-picker" id="emojiPicker" style="display: none;">
+                <div class="emoji-header">
+                    <span>شکلک‌ها</span>
+                    <button class="btn-close-emoji" id="closeEmojiBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="emoji-grid" id="emojiGrid">
+                    <!-- Emojis will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Context Menu -->
+<div class="message-context-menu" id="messageContextMenu" style="display: none;">
+    <div class="context-menu-item" id="editMessageBtn">
+        <i class="fas fa-edit"></i>
+        <span>ویرایش</span>
+    </div>
+    <div class="context-menu-item" id="copyMessageBtn">
+        <i class="fas fa-copy"></i>
+        <span>کپی</span>
+    </div>
+    <div class="context-menu-item danger" id="deleteMessageBtn">
+        <i class="fas fa-trash"></i>
+        <span>حذف</span>
+    </div>
+
+</div>
+
+<!-- Hidden Data -->
+<input type="hidden" id="currentUserId" value="@ViewBag.CurrentUserId">
+<input type="hidden" id="currentUserName" value="@ViewBag.CurrentUserName">
+<input type="hidden" id="currentUserAvatar" value="@ViewBag.CurrentUserAvatar">
+
+@section pagecss {
+    <link rel="stylesheet" href="~/css/chat.css" />
+}
+
+@section pagejs {
+    <script src="~/js/signalr.min.js"></script>
+    <script src="~/js/chat-app.js"></script>
+    <script>
+        // Initialize chat app with data
+        window.chatRoomsData = @Html.Raw(Json.Serialize(Model));
+        window.currentUserId = '@ViewBag.CurrentUserId';
+        window.currentUserName = '@ViewBag.CurrentUserName';
+        window.sendMessageUrl = '@Url.Action("SendMessage", "Chat")';
+        window.sendFileMessageUrl = '@Url.Action("SendFileMessage", "Chat")';
+        window.sendVoiceMessageUrl = '@Url.Action("SendVoiceMessage", "Chat")';
+        window.uploadFileUrl = '@Url.Action("UploadFile", "Chat")';
+        window.uploadVoiceUrl = '@Url.Action("UploadVoice", "Chat")';
+        window.searchUsersUrl = '@Url.Action("SearchUsers", "Chat")';
+        window.getAllUsersUrl = '@Url.Action("GetAllUsers", "Chat")';
+        window.createChatRoomUrl = '@Url.Action("CreateChatRoom", "Chat")';
+        window.pinMessageUrl = '@Url.Action("PinMessage", "Chat")';
+        window.editMessageUrl = '@Url.Action("EditMessage", "Chat")';
+        window.forwardMessageUrl = '@Url.Action("ForwardMessage", "Chat")';
+        window.searchMessagesUrl = '@Url.Action("SearchMessages", "Chat")';
+        window.getPinnedMessageUrl = '@Url.Action("GetPinnedMessage", "Chat")';
+        window.markAsReadUrl = '@Url.Action("MarkAsRead", "Chat")';
+        window.getChatParticipantsUrl = '@Url.Action("GetChatParticipants", "Chat")';
+        window.removeParticipantUrl = '@Url.Action("RemoveParticipant", "Chat")';
+        window.deleteMessageUrl = '@Url.Action("DeleteMessage", "Chat")';
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            ChatApp.init();
+        });
+    </script>
+}

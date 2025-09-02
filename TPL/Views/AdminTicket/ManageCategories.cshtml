@@ -1,0 +1,195 @@
+﻿@model IEnumerable<BE.Ticketing.SupportTicketSystem.Models.Category>
+
+@{
+    ViewData["Title"] = "مدیریت دسته‌بندی‌ها";
+}
+<partial name="Admin/_ProfileParitial" />
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-tags me-1"></i>@ViewData["Title"]</h5>
+        <button type="button" class="btn btn-primary btn-sm waves-effect" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+            <i class="fas fa-plus"></i> افزودن دسته‌بندی
+        </button>
+    </div>
+
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover" id="categoriesTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th>نام</th>
+                        <th>توضیحات</th>
+                        <th>تعداد تیکت‌ها</th>
+                        <th>عملیات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <td>@category.Name</td>
+                            <td>@(category.Description ?? "-")</td>
+                            <td>
+                                <span class="badge bg-label-primary rounded-pill">@category.Tickets?.Count</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-primary waves-effect"
+                                            data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                            data-id="@category.Id" data-name="@category.Name"
+                                            data-description="@category.Description">
+                                        <i class="fas fa-edit"></i> ویرایش
+                                    </button>
+                                    <form asp-action="DeleteCategory" asp-controller="AdminTicket" method="post" class="d-inline">
+                                        <input type="hidden" name="categoryId" value="@category.Id" />
+                                        <button type="submit" class="btn btn-outline-danger waves-effect"
+                                                onclick="return confirm('آیا از حذف این دسته‌بندی اطمینان دارید؟')">
+                                            <i class="fas fa-trash"></i> حذف
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">تایید حذف دسته‌بندی</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>آیا از حذف دسته‌بندی <span id="categoryNameToDelete" class="fw-bold"></span> اطمینان دارید؟</p>
+                                <p class="text-muted small">تیکت‌های این دسته‌بندی به دسته‌بندی "عمومی" منتقل خواهند شد.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-label-secondary waves-effect" data-bs-dismiss="modal">انصراف</button>
+                                <button type="button" class="btn btn-danger waves-effect" id="confirmDelete">حذف</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+               
+
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                هیچ دسته‌بندی ثبت نشده است
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal افزودن دسته‌بندی جدید -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">افزودن دسته‌بندی جدید</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateCategory" asp-controller="AdminTicket" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">نام دسته‌بندی <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="Name" required maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات (اختیاری)</label>
+                        <textarea class="form-control" name="Description" rows="3" maxlength="200"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary waves-effect" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary waves-effect">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ویرایش دسته‌بندی -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ویرایش دسته‌بندی</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateCategory" asp-controller="AdminTicket" method="post">
+                <input type="hidden" name="Id" id="editCategoryId" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">نام دسته‌بندی <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="Name" id="editCategoryName" required maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات (اختیاری)</label>
+                        <textarea class="form-control" name="Description" id="editCategoryDescription" rows="3" maxlength="200"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary waves-effect" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary waves-effect">ذخیره تغییرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section pagejs {
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var deleteForm;
+            var categoryName;
+            
+            $('.delete-btn').click(function() {
+                deleteForm = $(this).closest('form');
+                categoryName = $(this).data('category-name');
+                $('#categoryNameToDelete').text(categoryName);
+                $('#deleteConfirmModal').modal('show');
+            });
+            
+            $('#confirmDelete').click(function() {
+                deleteForm.submit();
+                $('#deleteConfirmModal').modal('hide');
+            });
+        });
+    </script>
+
+    <script>
+        // فعال کردن DataTable
+        $(document).ready(function() {
+            $('#categoriesTable').DataTable();
+
+            // پر کردن فرم ویرایش با داده‌های دسته‌بندی
+            $('#editCategoryModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var name = button.data('name');
+                var description = button.data('description');
+
+                var modal = $(this);
+                modal.find('#editCategoryId').val(id);
+                modal.find('#editCategoryName').val(name);
+                modal.find('#editCategoryDescription').val(description);
+            });
+        });
+    </script>
+   
+}
+@section pagecss
+{
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css"/>
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css"/>
+}

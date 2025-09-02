@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "اعتبارسنجی توکن";
+}
+<partial name="Admin/_ProfileParitial" />
+<div class="container mt-5">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Validate" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group mb-3">
+                    <label for="tokenValue" class="form-label">مقدار توکن</label>
+                    <textarea name="tokenValue" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle"></i> اعتبارسنجی
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
