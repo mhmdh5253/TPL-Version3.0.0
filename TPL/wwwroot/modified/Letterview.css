@@ -1,4 +1,4 @@
-﻿.content-frame {
+.content-frame {
     width: 100%; /* یا عرض دلخواه */
     word-wrap: break-word; /* شکستن کلمات طولانی */
     overflow-wrap: break-word; /* روش مدرن‌تر برای شکستن کلمات */
@@ -512,6 +512,19 @@
         color: #27ae60;
     }
 
+/* Scoped to success message to avoid overriding list badges */
+.success-message .action-id {
+    background: rgba(46, 204, 113, 0.1);
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    font-size: 0.9em;
+}
+    .success-message .action-id span {
+        font-weight: bold;
+        color: #27ae60;
+    }
+
 /* استایل خطا */
 .error-action {
     display: flex;
@@ -858,6 +871,15 @@
     margin-bottom: 20px;
 }
 
+/* Scope to error animation block to prevent leaking to other error icons */
+.error-animation .error-icon {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
 .error-x-mark {
     position: relative;
     width: 100%;
@@ -1013,7 +1035,7 @@
         height: 12px;
         background: #3498db;
         border-radius: 50%;
-        animation: bounce 1.4s infinite ease-in-out both;
+        animation: bounceDots 1.4s infinite ease-in-out both;
     }
 
         .loading-reject div:nth-child(1) {
@@ -1045,7 +1067,7 @@
     color: #e74c3c;
 }
 
-@keyframes bounce {
+@keyframes bounceDots {
     0%, 80%, 100% {
         transform: scale(0);
     }
@@ -1284,7 +1306,7 @@
         height: 12px;
         background: #4dabf7;
         border-radius: 50%;
-        animation: bounce 1.4s infinite ease-in-out both;
+        animation: bounceDots 1.4s infinite ease-in-out both;
     }
 
         .loader-animation div:nth-child(1) {
@@ -1295,7 +1317,7 @@
             animation-delay: -0.16s;
         }
 
-@keyframes bounce {
+@keyframes bounceDots {
     0%, 80%, 100% {
         transform: scale(0);
     }
@@ -2048,5 +2070,35 @@
     color: white;
     width: 100%;
     margin-top: 20px;
+}
+
+/* Scope success content styles to the success popup only */
+.success-swal-popup .letter-info {
+    background: rgba(46, 204, 113, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+.success-swal-popup .info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.success-swal-popup .info-label {
+    font-weight: bold;
+    color: #7f8c8d;
+}
+.success-swal-popup .info-value {
+    font-weight: bold;
+    color: #2c3e50;
+}
+.success-swal-popup .success-button {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
