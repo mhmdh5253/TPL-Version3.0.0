@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1a73e8" />
+    <meta name="description" content="سامانه اتوماسیون مکاتبات سازمانی | گردش کار نامه‌ها، تأییدات، چت سازمانی، تیکتینگ، تقویم، اعلان‌ها و گزارش‌ها در یک پلتفرم واحد" />
+    <title>سامانه اتوماسیون مکاتبات سازمانی</title>
+    <style>
+        :root { --primary:#1a73e8; --accent:#0f9d58; --warning:#fbbc05; --danger:#ea4335; --text:#1f2937; --muted:#6b7280; --bg:#f7f7fb; }
+        html,body{height:100%}
+        body{margin:0;font-family:Tahoma, Verdana, Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--text);}
+        a{color:inherit;text-decoration:none}
+        .container{max-width:1200px;margin:0 auto;padding:0 16px}
+        .nav{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;z-index:10}
+        .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+        .brand{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--primary)}
+        .brand-logo{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--primary),#6ea8fe)}
+        .nav a{font-size:14px;color:#374151;margin-inline:10px}
+        .btn{display:inline-block;padding:12px 18px;border-radius:10px;font-weight:600}
+        .btn-primary{background:var(--primary);color:#fff}
+        .btn-outline{border:1px solid var(--primary);color:var(--primary);background:#fff}
+        .hero{padding:72px 0;background:#ffffff}
+        .hero .title{font-size:28px;line-height:1.6;margin:0 0 16px}
+        .hero .subtitle{color:var(--muted);margin:0 0 24px}
+        .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+        .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:28px}
+        .stat{background:#f3f6ff;border:1px solid #e5edff;border-radius:12px;padding:14px}
+        .section{padding:56px 0}
+        .section h2{font-size:22px;margin:0 0 18px}
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+        .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+        .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px}
+        .card h3{margin:0 0 10px;font-size:16px}
+        .muted{color:var(--muted)}
+        .badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:12px;background:#eef2ff;color:#1e40af;margin-inline:4px;margin-block:4px}
+        .list{margin:0;padding:0;list-style:none}
+        .list li{padding:6px 0}
+        .pricing{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+        .price-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px;display:flex;flex-direction:column}
+        .price{font-weight:800;font-size:22px;margin:12px 0}
+        .foot{background:#0f172a;color:#e5e7eb;padding:28px 0;margin-top:48px}
+        .chip{display:inline-block;font-size:12px;background:#f4f4f5;border:1px solid #e4e4e7;color:#3f3f46;border-radius:999px;padding:6px 10px;margin:4px}
+        .table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        .table td{background:#fff;border:1px solid #eee;padding:10px;border-right:none}
+        .table td:first-child{border-radius:12px 0 0 12px;border-right:1px solid #eee}
+        .table td:last-child{border-radius:0 12px 12px 0}
+        @media (max-width: 1024px){ .grid-3{grid-template-columns:1fr 1fr} .grid-4, .pricing{grid-template-columns:1fr 1fr} }
+        @media (max-width: 640px){ .grid-3, .grid-4, .pricing{grid-template-columns:1fr} .hero{padding:48px 0} .stats{grid-template-columns:1fr} }
+    </style>
+    <link rel="manifest" href="/TPL/wwwroot/manifest.json" />
+</head>
+<body>
+    <nav class="nav">
+        <div class="container wrap">
+            <div class="brand"><span class="brand-logo"></span><span>سامانه اتوماسیون مکاتبات</span></div>
+            <div>
+                <a href="#features">امکانات</a>
+                <a href="#tech">فناوری</a>
+                <a href="#solutions">رفع نیازها</a>
+                <a href="#pricing">قیمت‌گذاری</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h1 class="title">اتوماسیون مکاتبات، گردش کار تأییدات، چت سازمانی و تیکتینگ در یک پلتفرم</h1>
+            <p class="subtitle">از ثبت و آرشیو نامه تا پیگیری تأییدات، پیام‌رسان درون‌سازمانی، تقویم و اعلان‌ها — همه‌چیز آماده بهره‌برداری سازمانی با کارایی بالا و رابط کاربری فارسی.</p>
+            <div class="hero-cta">
+                <a class="btn btn-primary" href="#pricing">شروع استفاده (دموی رایگان)</a>
+                <a class="btn btn-outline" href="#features">مشاهده امکانات</a>
+            </div>
+            <div class="stats">
+                <div class="stat">تعریف ساختار سازمانی، نقش‌ها و سطوح دسترسی پیشرفته</div>
+                <div class="stat">ارتباطات آنی (Real‑Time) با SignalR برای چت و اعلان‌ها</div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="section">
+        <div class="container">
+            <h2>امکانات کلیدی سامانه</h2>
+            <div class="grid-3">
+                <div class="card">
+                    <h3>اتوماسیون مکاتبات و آرشیو</h3>
+                    <ul class="list muted">
+                        <li>ثبت، ویرایش، مشاهده و آرشیو نامه‌ها (PDF/Docx)</li>
+                        <li>پیوست‌ها، مدیریت نسخه‌ها و ارجاع چندگانه</li>
+                        <li>جست‌وجوی پیشرفته و فیلترهای حرفه‌ای</li>
+                        <li>تولید خروجی Word/Excel و نمایش PDF</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>گردش کار تأییدات</h3>
+                    <ul class="list muted">
+                        <li>شروع فرآیند تأیید، تأیید/رد/عودت با توضیحات</li>
+                        <li>بازگشت به سطح قبلی و ارجاع گروهی</li>
+                        <li>اقدامات روی نامه (Action) و تاریخچه وضعیت</li>
+                        <li>آرشیو سریع و داشبورد وضعیت</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>چت سازمانی Real‑Time</h3>
+                    <ul class="list muted">
+                        <li>اتاق‌های گفتگو، مشارکت‌کنندگان و وضعیت آنلاین</li>
+                        <li>ارسال پیام، فایل و ویس، ویرایش/حذف/پین/فوروارد</li>
+                        <li>جست‌وجوی پیام‌ها و اعلان تایپ‌کردن</li>
+                        <li>همگام‌سازی آنی با SignalR</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>تیکتینگ و پشتیبانی</h3>
+                    <ul class="list muted">
+                        <li>ثبت تیکت، دسته‌بندی، وضعیت و کامنت‌ها</li>
+                        <li>گزارش‌های مدیریتی و تغییر وضعیت انبوه</li>
+                        <li>پیوست‌ها، اعلان‌ها و گزارش‌های وضعیت</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>تقویم و رویدادها</h3>
+                    <ul class="list muted">
+                        <li>ایجاد/ویرایش رویداد، یادآور و دسته‌بندی</li>
+                        <li>مدیریت شرکت‌کنندگان و دسترسی‌ها</li>
+                        <li>اعلان‌های مرتبط با رویداد</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>سازمان و دسترسی‌ها</h3>
+                    <ul class="list muted">
+                        <li>مدیریت سازمان‌ها، واحدها و کاربران</li>
+                        <li>نقش‌ها و سطح‌بندی دسترسی با سیاست‌ها</li>
+                        <li>میانجی مجوز سفارشی (Middleware)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>اطلاع‌رسانی، ایمیل و پیامک</h3>
+                    <ul class="list muted">
+                        <li>اعلان‌های درون‌سیستمی و رویدادمحور</li>
+                        <li>ارسال ایمیل (SMTP) با الگوهای فارسی</li>
+                        <li>ارسال پیامک (OTP/عادی/انبوه) از طریق API</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>گزارش‌ها و خروجی‌ها</h3>
+                    <ul class="list muted">
+                        <li>گزارش وضعیت تیکت‌ها و عملکرد واحدها</li>
+                        <li>خروجی Excel (EPPlus/ClosedXML) و CSV</li>
+                        <li>تولید اسناد Word (FreeSpire.Doc)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>کیف پول و توکن</h3>
+                    <ul class="list muted">
+                        <li>مدیریت موجودی و تراکنش‌ها</li>
+                        <li>زیرساخت توکن برای یکپارچه‌سازی داخلی</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="section" style="background:#ffffff">
+        <div class="container">
+            <h2>فناوری‌ها و زیرساخت</h2>
+            <div class="grid-4">
+                <div class="card">
+                    <h3>.NET 9 و ASP.NET Core MVC</h3>
+                    <p class="muted">EF Core (SQL Server)، Identity، سیاست‌های امنیتی، Session، کوکی ایمن</p>
+                    <span class="badge">Entity Framework Core</span>
+                    <span class="badge">Identity</span>
+                </div>
+                <div class="card">
+                    <h3>ارتباطات بلادرنگ</h3>
+                    <p class="muted">Microsoft SignalR برای چت و اعلان‌های آنی</p>
+                    <span class="badge">SignalR</span>
+                </div>
+                <div class="card">
+                    <h3>کارایی و بهینه‌سازی</h3>
+                    <p class="muted">WebMarkupMin، کش پاسخ، بهینه‌سازی فایل‌های استاتیک و PWA</p>
+                    <span class="badge">WebMarkupMin</span>
+                    <span class="badge">PWA</span>
+                </div>
+                <div class="card">
+                    <h3>لاگ و مانیتورینگ</h3>
+                    <p class="muted">Serilog با مقصد Seq برای ردیابی وقایع</p>
+                    <span class="badge">Serilog</span>
+                    <span class="badge">Seq</span>
+                </div>
+                <div class="card">
+                    <h3>ایمیل و پیامک</h3>
+                    <p class="muted">SMTP، API پیامک (OTP/عادی/انبوه)</p>
+                    <span class="badge">SMTP</span>
+                    <span class="badge">SMS API</span>
+                </div>
+                <div class="card">
+                    <h3>Front‑End</h3>
+                    <p class="muted">Bootstrap، jQuery، Quill، Webpack و Gulp</p>
+                    <span class="badge">Bootstrap</span>
+                    <span class="badge">Webpack</span>
+                    <span class="badge">Gulp</span>
+                </div>
+                <div class="card">
+                    <h3>اسناد و خروجی‌ها</h3>
+                    <p class="muted">EPPlus، ClosedXML، FreeSpire.Doc، CsvHelper</p>
+                    <span class="badge">Excel/PDF/Word</span>
+                </div>
+                <div class="card">
+                    <h3>API و توسعه‌پذیری</h3>
+                    <p class="muted">آماده‌سازی برای Swagger و توسعه سرویس‌ها</p>
+                    <span class="badge">Swagger Ready</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="solutions" class="section">
+        <div class="container">
+            <h2>رفع نیازهای سازمانی</h2>
+            <table class="table">
+                <tr>
+                    <td>کاهش زمان چرخه تأیید و ارجاع</td>
+                    <td>افزایش شفافیت و ردیابی وضعیت نامه‌ها</td>
+                    <td>چابک‌سازی ارتباطات درون‌سازمانی</td>
+                </tr>
+                <tr>
+                    <td>تمرکز اطلاعات و آرشیو امن</td>
+                    <td>گزارش‌دهی مدیریتی و قابل سفارشی‌سازی</td>
+                    <td>کاهش هزینه‌های چاپ و کاغذ</td>
+                </tr>
+                <tr>
+                    <td>یکپارچگی با ایمیل/پیامک و اعلان‌ها</td>
+                    <td>مدیریت دسترسی مبتنی بر نقش و واحد سازمانی</td>
+                    <td>قابلیت استقرار ابری یا درون‌سازمانی</td>
+                </tr>
+            </table>
+            <div style="margin-top:10px" class="muted">پشتیبانی کامل از زبان فارسی و تقویم شمسی.</div>
+        </div>
+    </section>
+
+    <section id="pricing" class="section" style="background:#ffffff">
+        <div class="container">
+            <h2>قیمت‌گذاری نسخه‌ها</h2>
+            <div class="pricing">
+                <div class="price-card">
+                    <h3>نسخه پایه (Basic)</h3>
+                    <div class="price">۹,۹۰۰,۰۰۰ تومان / ماه</div>
+                    <ul class="list muted">
+                        <li>اتوماسیون نامه، پیوست و جست‌وجو</li>
+                        <li>گردش کار ساده تأیید/رد</li>
+                        <li>تیکتینگ پایه و اعلان‌ها</li>
+                        <li>۵۰ کاربر، ۱ سازمان</li>
+                    </ul>
+                    <div style="margin-top:auto"><a class="btn btn-primary" href="#">درخواست دمو</a></div>
+                </div>
+                <div class="price-card" style="border-color:#c7d2fe;box-shadow:0 6px 16px rgba(26,115,232,.12)">
+                    <h3>نسخه استاندارد</h3>
+                    <div class="price">۱۹,۹۰۰,۰۰۰ تومان / ماه</div>
+                    <ul class="list muted">
+                        <li>همه امکانات پایه + تقویم و یادآورها</li>
+                        <li>چت سازمانی Real‑Time</li>
+                        <li>گزارش‌های مدیریتی و خروجی Excel</li>
+                        <li>۲۰۰ کاربر، تا ۳ سازمان</li>
+                    </ul>
+                    <div style="margin-top:auto"><a class="btn btn-primary" href="#">شروع سریع</a></div>
+                </div>
+                <div class="price-card">
+                    <h3>نسخه پیشرفته (Enterprise)</h3>
+                    <div class="price">تماس بگیرید</div>
+                    <ul class="list muted">
+                        <li>گردش کار سفارشی چندسطحی</li>
+                        <li>گزارش‌های سفارشی و KPI</li>
+                        <li>یکپارچه‌سازی با سامانه‌های موجود</li>
+                        <li>کاربران نامحدود</li>
+                    </ul>
+                    <div style="margin-top:auto"><a class="btn btn-primary" href="#">مشاوره رایگان</a></div>
+                </div>
+                <div class="price-card">
+                    <h3>نسخه درون‌سازمانی/دولتی (On‑Prem)</h3>
+                    <div class="price">قراردادی</div>
+                    <ul class="list muted">
+                        <li>استقرار در دیتاسنتر سازمان</li>
+                        <li>کنترل کامل داده و امنیت</li>
+                        <li>پشتیبانی SLA و آموزش</li>
+                        <li>توسعه اختصاصی</li>
+                    </ul>
+                    <div style="margin-top:auto"><a class="btn btn-primary" href="#">درخواست پیش‌فاکتور</a></div>
+                </div>
+            </div>
+            <div class="muted" style="margin-top:12px">قیمت‌ها بدون احتساب مالیات هستند و بسته به سفارشی‌سازی قابل تغییرند.</div>
+        </div>
+    </section>
+
+    <footer class="foot">
+        <div class="container">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between">
+                <div>سامانه اتوماسیون مکاتبات سازمانی — نسخه فارسی، مقیاس‌پذیر و ایمن</div>
+                <div>
+                    <span class="chip">بدون نیاز به نصب کلاینت</span>
+                    <span class="chip">پشتیبانی از مرورگرهای مدرن</span>
+                    <span class="chip">دموی رایگان</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
