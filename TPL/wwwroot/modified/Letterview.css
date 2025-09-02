@@ -1,4 +1,4 @@
-﻿.content-frame {
+.content-frame {
     width: 100%; /* یا عرض دلخواه */
     word-wrap: break-word; /* شکستن کلمات طولانی */
     overflow-wrap: break-word; /* روش مدرن‌تر برای شکستن کلمات */
@@ -2048,5 +2048,27 @@
     color: white;
     width: 100%;
     margin-top: 20px;
+}
+
+/* ------------------------------------------------------------- */
+/* Fix: make users list scrollable inside SweetAlert referral modal */
+.swal2-popup:has(.referral-modal-container),
+.custom-swal-popup:has(.referral-modal-container),
+.modern-swal-popup:has(.referral-modal-container) {
+    overflow-y: hidden !important;
+}
+
+.swal2-popup:has(.referral-modal-container) .swal2-html-container,
+.custom-swal-popup:has(.referral-modal-container) .swal2-html-container,
+.modern-swal-popup:has(.referral-modal-container) .swal2-html-container {
+    overflow: visible !important;
+}
+
+.referral-modal-container .users-list {
+    /* Ensure nested scroll works across devices */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+    overscroll-behavior: contain;      /* prevent scroll chaining to modal */
+    touch-action: pan-y;               /* allow vertical panning */
 }
 
