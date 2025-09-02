@@ -1,4 +1,4 @@
-﻿.content-frame {
+.content-frame {
     width: 100%; /* یا عرض دلخواه */
     word-wrap: break-word; /* شکستن کلمات طولانی */
     overflow-wrap: break-word; /* روش مدرن‌تر برای شکستن کلمات */
@@ -1071,7 +1071,7 @@
     height: 100%;
 }
 
-.referral-header {
+.referral-modal-container .referral-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1080,19 +1080,19 @@
     color: white;
 }
 
-.header-title {
+.referral-modal-container .header-title {
     display: flex;
     align-items: center;
     gap: 10px;
     font-size: 18px;
 }
 
-.search-box {
+.referral-modal-container .search-box {
     position: relative;
     width: 250px;
 }
 
-    .search-box input {
+    .referral-modal-container .search-box input {
         width: 100%;
         padding: 8px 35px 8px 15px;
         border: none;
@@ -1101,18 +1101,18 @@
         color: white;
     }
 
-        .search-box input::placeholder {
+        .referral-modal-container .search-box input::placeholder {
             color: rgba(255,255,255,0.7);
         }
 
-.search-icon {
+.referral-modal-container .search-icon {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
 }
 
-.referral-body {
+.referral-modal-container .referral-body {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -1121,14 +1121,14 @@
     max-height: 70vh;
 }
 
-.common-comment-box {
+.referral-modal-container .common-comment-box {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 15px;
     border: 1px solid #e9ecef;
 }
 
-.input-label {
+.referral-modal-container .input-label {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1137,8 +1137,8 @@
     color: #495057;
 }
 
-.common-comment-box textarea,
-.personal-comment-box textarea {
+.referral-modal-container .common-comment-box textarea,
+.referral-modal-container .personal-comment-box textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ced4da;
@@ -1148,13 +1148,13 @@
     font-family: inherit;
 }
 
-.users-list-container {
+.referral-modal-container .users-list-container {
     border: 1px solid #e9ecef;
     border-radius: 8px;
     overflow: hidden;
 }
 
-.list-header {
+.referral-modal-container .list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1163,36 +1163,36 @@
     border-bottom: 1px solid #e9ecef;
 }
 
-.select-all {
+.referral-modal-container .select-all {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.users-list {
+.referral-modal-container .users-list {
     max-height: 400px;
     overflow-y: auto;
 }
 
-.user-item {
+.referral-modal-container .user-item {
     display: flex;
     padding: 15px;
     border-bottom: 1px solid #f1f3f5;
     gap: 20px;
 }
 
-    .user-item:last-child {
+    .referral-modal-container .user-item:last-child {
         border-bottom: none;
     }
 
-.user-info {
+.referral-modal-container .user-info {
     display: flex;
     align-items: center;
     gap: 12px;
     flex: 1;
 }
 
-.user-avatar {
+.referral-modal-container .user-avatar {
     width: 40px;
     height: 40px;
     background: linear-gradient(135deg, #74b9ff, #0984e3);
@@ -1205,35 +1205,35 @@
     font-size: 14px;
 }
 
-.user-details {
+.referral-modal-container .user-details {
     flex: 1;
 }
 
-.user-name {
+.referral-modal-container .user-name {
     font-weight: 500;
     margin-bottom: 3px;
 }
 
-.user-meta {
+.referral-modal-container .user-meta {
     display: flex;
     gap: 10px;
     font-size: 12px;
     color: #868e96;
 }
 
-.personal-comment-box {
+.referral-modal-container .personal-comment-box {
     flex: 1;
     min-width: 300px;
 }
 
-.char-counter {
+.referral-modal-container .char-counter {
     text-align: left;
     font-size: 12px;
     color: #868e96;
     margin-top: 5px;
 }
 
-.referral-footer {
+.referral-modal-container .referral-footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -1242,7 +1242,7 @@
     border-top: 1px solid #e9ecef;
 }
 
-.btn {
+.referral-modal-container .btn {
     padding: 8px 20px;
     border-radius: 6px;
     font-weight: 500;
@@ -1254,32 +1254,32 @@
     transition: all 0.2s;
 }
 
-.submit-btn {
+.referral-modal-container .submit-btn {
     background: #2b8a3e;
     color: white;
 }
 
-    .submit-btn:hover {
+    .referral-modal-container .submit-btn:hover {
         background: #2f9e44;
     }
 
-.cancel-btn {
+.referral-modal-container .cancel-btn {
     background: #f1f3f5;
     color: #495057;
 }
 
-    .cancel-btn:hover {
+    .referral-modal-container .cancel-btn:hover {
         background: #e9ecef;
     }
 
-.loader-animation {
+.referral-modal-container .loader-animation {
     display: flex;
     gap: 8px;
     justify-content: center;
     padding: 20px 0;
 }
 
-    .loader-animation div {
+    .referral-modal-container .loader-animation div {
         width: 12px;
         height: 12px;
         background: #4dabf7;
@@ -1287,11 +1287,11 @@
         animation: bounce 1.4s infinite ease-in-out both;
     }
 
-        .loader-animation div:nth-child(1) {
+        .referral-modal-container .loader-animation div:nth-child(1) {
             animation-delay: -0.32s;
         }
 
-        .loader-animation div:nth-child(2) {
+        .referral-modal-container .loader-animation div:nth-child(2) {
             animation-delay: -0.16s;
         }
 
