@@ -1,4 +1,4 @@
-﻿@using System.Text.RegularExpressions
+@using System.Text.RegularExpressions
 @using BE
 @using BE.LetterAutomation
 @using BLL.LetterAutomation
@@ -655,7 +655,7 @@
         <div class="referral-modal-container">
             <div class="referral-header">
                 <div class="header-title">
-                    <i class="icon">📤</i>
+                    <div class="header-icon">📤</div>
                     <h3>ارجاع گروهی نامه</h3>
                 </div>
                 <div class="search-box">
@@ -784,7 +784,7 @@
                                     () => {
                                         const maxLength = textarea.classList.contains('personal-comment') ? 200 : 500;
                                         counter.textContent = `${textarea.value.length}/${maxLength}`;
-                                        counter.style.color = textarea.value.length > maxLength ? '#ff4757' : '#57606f';
+                                        counter.style.color = textarea.value.length > maxLength ? '#e74c3c' : '#868e96';
                                     });
                             });
                         }
@@ -836,7 +836,8 @@
                                     </div>
                                 </div>
                                 `,
-                                            icon: 'success'
+                                            icon: 'success',
+                                            customClass: { popup: 'custom-swal-popup success-swal-popup' }
                                         });
                                     } else {
                                         throw new Error(result.Message);
@@ -844,8 +845,17 @@
                                 } catch (error) {
                                     Swal.fire({
                                         title: 'خطا',
-                                        text: error.message,
-                                        icon: 'error'
+                                        html: `
+                                <div class="error-message">
+                                    <div class="error-icon">❌</div>
+                                    <div>
+                                        <p>خطا در پردازش درخواست</p>
+                                        <small>${error.message}</small>
+                                    </div>
+                                </div>
+                                `,
+                                        icon: 'error',
+                                        customClass: { popup: 'custom-swal-popup error-swal-popup' }
                                     });
                                 }
                             });
@@ -870,7 +880,8 @@
                 </div>
             </div>
             `,
-                    icon: 'error'
+                    icon: 'error',
+                    customClass: { popup: 'custom-swal-popup error-swal-popup' }
                 });
             }
 
