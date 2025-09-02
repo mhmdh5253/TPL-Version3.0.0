@@ -6,13 +6,19 @@
     <meta name="theme-color" content="#1a73e8" />
     <meta name="description" content="سامانه اتوماسیون مکاتبات سازمانی | گردش کار نامه‌ها، تأییدات، چت سازمانی، تیکتینگ، تقویم، اعلان‌ها و گزارش‌ها در یک پلتفرم واحد" />
     <title>سامانه اتوماسیون مکاتبات سازمانی</title>
+    <!-- Persian Webfonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.fontcdn.ir/Font/Persian/Shabnam/Shabnam.css" rel="stylesheet" />
+    <link href="https://cdn.fontcdn.ir/Font/Persian/Vazir/Vazir.css" rel="stylesheet" />
     <style>
         :root { --primary:#1a73e8; --accent:#0f9d58; --warning:#fbbc05; --danger:#ea4335; --text:#1f2937; --muted:#6b7280; --bg:#f7f7fb; }
         html,body{height:100%}
-        body{margin:0;font-family:Tahoma, Verdana, Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--text);}
+        body{margin:0;font-family:'Vazirmatn','Shabnam','Vazir',Tahoma, Verdana, Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--text);}
         a{color:inherit;text-decoration:none}
         .container{max-width:1200px;margin:0 auto;padding:0 16px}
-        .nav{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;z-index:10}
+        .nav{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid #eee;z-index:10}
         .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
         .brand{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--primary)}
         .brand-logo{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--primary),#6ea8fe)}
@@ -20,17 +26,17 @@
         .btn{display:inline-block;padding:12px 18px;border-radius:10px;font-weight:600}
         .btn-primary{background:var(--primary);color:#fff}
         .btn-outline{border:1px solid var(--primary);color:var(--primary);background:#fff}
-        .hero{padding:72px 0;background:#ffffff}
-        .hero .title{font-size:28px;line-height:1.6;margin:0 0 16px}
-        .hero .subtitle{color:var(--muted);margin:0 0 24px}
+        .hero{padding:96px 0;background:radial-gradient(1200px 600px at 80% -10%, #e9f1ff, transparent), #ffffff}
+        .hero .title{font-size:36px;line-height:1.7;margin:0 0 16px;font-weight:800}
+        .hero .subtitle{color:#475569;margin:0 0 24px;font-size:15px}
         .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
         .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:28px}
-        .stat{background:#f3f6ff;border:1px solid #e5edff;border-radius:12px;padding:14px}
+        .stat{background:linear-gradient(135deg,#f3f6ff,#f8fbff);border:1px solid #e5edff;border-radius:12px;padding:14px}
         .section{padding:56px 0}
         .section h2{font-size:22px;margin:0 0 18px}
         .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
         .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-        .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px}
+        .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px;box-shadow:0 6px 24px rgba(0,0,0,.04)}
         .card h3{margin:0 0 10px;font-size:16px}
         .muted{color:var(--muted)}
         .badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:12px;background:#eef2ff;color:#1e40af;margin-inline:4px;margin-block:4px}
@@ -45,8 +51,33 @@
         .table td{background:#fff;border:1px solid #eee;padding:10px;border-right:none}
         .table td:first-child{border-radius:12px 0 0 12px;border-right:1px solid #eee}
         .table td:last-child{border-radius:0 12px 12px 0}
+        /* Hero composition */
+        .hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+        .hero-media{position:relative}
+        .glow{position:absolute;inset:-20px -20px auto auto;width:220px;height:220px;background:radial-gradient(closest-side, rgba(26,115,232,.25), transparent);filter:blur(12px);border-radius:50%}
+        .img-card{position:relative;background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;box-shadow:0 20px 40px rgba(2,6,23,.08)}
+        .img-card img{display:block;width:100%;height:auto}
+        .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+        .kpi{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px;text-align:center}
+        .kpi b{font-size:18px}
+        /* Icon bullets */
+        .icon-bullet{display:flex;gap:10px;align-items:flex-start}
+        .icon-bullet svg{flex:0 0 22px;color:var(--primary)}
+        /* Feature matrix */
+        .feature-matrix{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:12px}
+        .feature-matrix .card{padding:14px}
+        /* Showcase */
+        .showcase{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+        .showcase .img-card.small{height:100%}
+        .showcase .img-card.small img{height:100%;object-fit:cover}
+        /* Testimonials */
+        .testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+        .quote{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
+        .quote .who{display:flex;align-items:center;gap:10px;margin-top:10px;color:#111827}
+        /* FAQ */
+        .faq{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
         @media (max-width: 1024px){ .grid-3{grid-template-columns:1fr 1fr} .grid-4, .pricing{grid-template-columns:1fr 1fr} }
-        @media (max-width: 640px){ .grid-3, .grid-4, .pricing{grid-template-columns:1fr} .hero{padding:48px 0} .stats{grid-template-columns:1fr} }
+        @media (max-width: 640px){ .grid-3, .grid-4, .pricing{grid-template-columns:1fr} .hero{padding:48px 0} .stats{grid-template-columns:1fr} .hero-grid{grid-template-columns:1fr} .kpis{grid-template-columns:1fr 1fr} .feature-matrix,.faq,.testimonials{grid-template-columns:1fr} .showcase{grid-template-columns:1fr} }
     </style>
     <link rel="manifest" href="/TPL/wwwroot/manifest.json" />
 </head>
@@ -64,16 +95,25 @@
     </nav>
 
     <header class="hero">
-        <div class="container">
-            <h1 class="title">اتوماسیون مکاتبات، گردش کار تأییدات، چت سازمانی و تیکتینگ در یک پلتفرم</h1>
-            <p class="subtitle">از ثبت و آرشیو نامه تا پیگیری تأییدات، پیام‌رسان درون‌سازمانی، تقویم و اعلان‌ها — همه‌چیز آماده بهره‌برداری سازمانی با کارایی بالا و رابط کاربری فارسی.</p>
-            <div class="hero-cta">
-                <a class="btn btn-primary" href="#pricing">شروع استفاده (دموی رایگان)</a>
-                <a class="btn btn-outline" href="#features">مشاهده امکانات</a>
+        <div class="container hero-grid">
+            <div>
+                <h1 class="title">اتوماسیون مکاتبات مدرن برای سازمان‌های هوشمند</h1>
+                <p class="subtitle">از ثبت و آرشیو نامه تا گردش کار تأییدات چندسطحی، چت بلادرنگ، تیکتینگ، تقویم و گزارش‌های مدیریتی — همه در یک پلتفرم یکپارچه و فارسی.</p>
+                <div class="hero-cta">
+                    <a class="btn btn-primary" href="#pricing">دموی رایگان</a>
+                    <a class="btn btn-outline" href="#features">مشاهده امکانات</a>
+                </div>
+                <div class="kpis">
+                    <div class="kpi"><b>+50%</b><div class="muted">افزایش سرعت فرآیند</div></div>
+                    <div class="kpi"><b>Real‑Time</b><div class="muted">چت و اعلان‌ها</div></div>
+                    <div class="kpi"><b>فارسی</b><div class="muted">تقویم شمسی و RTL</div></div>
+                </div>
             </div>
-            <div class="stats">
-                <div class="stat">تعریف ساختار سازمانی، نقش‌ها و سطوح دسترسی پیشرفته</div>
-                <div class="stat">ارتباطات آنی (Real‑Time) با SignalR برای چت و اعلان‌ها</div>
+            <div class="hero-media">
+                <span class="glow"></span>
+                <div class="img-card">
+                    <img alt="اتوماسیون مکاتبات سازمانی" src="https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?q=80&w=1200&auto=format&fit=crop" />
+                </div>
             </div>
         </div>
     </header>
@@ -155,6 +195,55 @@
                         <li>مدیریت موجودی و تراکنش‌ها</li>
                         <li>زیرساخت توکن برای یکپارچه‌سازی داخلی</li>
                     </ul>
+                </div>
+            </div>
+            <!-- More granular features -->
+            <div class="feature-matrix">
+                <div class="card">
+                    <h3>کارتابل‌ها و جریانات</h3>
+                    <ul class="list muted">
+                        <li>کارتابل وارد/صادر، فالوآپ و پیگیری</li>
+                        <li>ارجاع تکی/گروهی، بازگشت به سطح قبلی</li>
+                        <li>اقدامات روی نامه (Action) و تاریخچه کامل</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>کاربران و سازمان</h3>
+                    <ul class="list muted">
+                        <li>مدیریت کاربران، نقش‌ها، واحدها، سلسله‌مراتب</li>
+                        <li>سیاست‌های دسترسی و مجوزهای سفارشی</li>
+                        <li>پروفایل کاربر و تصویر آواتار</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>اعلان‌ها و اطلاع‌رسانی</h3>
+                    <ul class="list muted">
+                        <li>اعلان‌های سیستمی و رویدادمحور</li>
+                        <li>ارسال ایمیل تأیید/بازیابی رمز</li>
+                        <li>ارسال پیامک OTP/عادی/انبوه</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>امنیت و انطباق</h3>
+                    <ul class="list muted">
+                        <li>Identity، کوکی امن و DataProtection</li>
+                        <li>قفل حساب و سیاست رمز عبور قوی</li>
+                        <li>میانجی مجوز و سیاست‌های نقش</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background:#ffffff">
+        <div class="container">
+            <h2>نمایش امکانات</h2>
+            <div class="showcase">
+                <div class="img-card">
+                    <img alt="داشبورد اتوماسیون و گزارش‌ها" src="https://images.unsplash.com/photo-1551281044-8b67ae29ad0d?q=80&w=1400&auto=format&fit=crop" />
+                </div>
+                <div class="img-card small">
+                    <img alt="چت سازمانی و اعلان‌های آنی" src="https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=900&auto=format&fit=crop" />
                 </div>
             </div>
         </div>
@@ -288,6 +377,50 @@
                 </div>
             </div>
             <div class="muted" style="margin-top:12px">قیمت‌ها بدون احتساب مالیات هستند و بسته به سفارشی‌سازی قابل تغییرند.</div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2>نظرات کاربران</h2>
+            <div class="testimonials">
+                <div class="quote">
+                    <div>روند تأییدات ما نصف شد و خطاها به حداقل رسید.</div>
+                    <div class="who"><span style="width:28px;height:28px;border-radius:50%;background:#e5e7eb;display:inline-block"></span> مدیر فناوری اطلاعات</div>
+                </div>
+                <div class="quote">
+                    <div>چت سازمانی و اعلان‌های فوری واقعاً ارتباطات داخلی را متحول کرد.</div>
+                    <div class="who"><span style="width:28px;height:28px;border-radius:50%;background:#e5e7eb;display:inline-block"></span> سرپرست پشتیبانی</div>
+                </div>
+                <div class="quote">
+                    <div>گزارش‌های مدیریتی و خروجی‌های Excel برای جلسات حیاتی است.</div>
+                    <div class="who"><span style="width:28px;height:28px;border-radius:50%;background:#e5e7eb;display:inline-block"></span> مدیر عملیاتی</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background:#ffffff">
+        <div class="container">
+            <h2>سوالات متداول</h2>
+            <div class="faq">
+                <div class="card">
+                    <h3>آیا استقرار درون‌سازمانی امکان‌پذیر است؟</h3>
+                    <p class="muted">بله، نسخه On‑Prem با استقرار در دیتاسنتر سازمان و SLA ارائه می‌شود.</p>
+                </div>
+                <div class="card">
+                    <h3>یکپارچه‌سازی با سامانه‌های موجود چطور؟</h3>
+                    <p class="muted">از طریق API و توکن، امکان اتصال به سامانه‌های دیگر فراهم است.</p>
+                </div>
+                <div class="card">
+                    <h3>پشتیبانی و آموزش چگونه انجام می‌شود؟</h3>
+                    <p class="muted">بسته به نسخه انتخابی، آموزش، مستندات و کانال پشتیبانی ارائه می‌گردد.</p>
+                </div>
+                <div class="card">
+                    <h3>امنیت داده‌ها تضمین می‌شود؟</h3>
+                    <p class="muted">با استفاده از Identity، DataProtection و سیاست‌های دسترسی، امنیت تضمین می‌گردد.</p>
+                </div>
+            </div>
         </div>
     </section>
 
