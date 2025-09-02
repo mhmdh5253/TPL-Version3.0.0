@@ -2050,3 +2050,107 @@
     margin-top: 20px;
 }
 
+
+/* --------------------------------------------- */
+/* ریسپانسیو اختصاصی برای مدال ارجاع گروهی */
+@media (max-width: 768px) {
+    .referral-modal-container .referral-header {
+        padding: 12px 15px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .referral-modal-container .header-title {
+        font-size: 16px;
+    }
+
+    .referral-modal-container .search-box {
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    .referral-modal-container .users-list {
+        max-height: 50vh;
+    }
+
+    .referral-modal-container .user-item {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .referral-modal-container .user-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .referral-modal-container .user-name {
+        font-size: 14px;
+    }
+
+    .referral-modal-container .user-meta {
+        font-size: 11px;
+    }
+
+    .referral-modal-container .referral-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .referral-modal-container .btn {
+        padding: 8px 16px;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 576px) {
+    .referral-modal-container .referral-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .referral-modal-container .header-title {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .referral-modal-container .search-box {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .referral-modal-container .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .referral-modal-container .personal-comment-box {
+        min-width: 0;
+    }
+
+    .referral-modal-container .loader-animation {
+        padding: 12px 0;
+    }
+
+    .referral-modal-container .btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .referral-modal-container .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 11px;
+    }
+
+    .referral-modal-container .user-item {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .referral-modal-container .btn {
+        width: 100%;
+        min-width: 0;
+    }
+}
