@@ -1,4 +1,4 @@
-﻿@using BE
+@using BE
 @using BE.LetterAutomation
 @using BLL.LetterAutomation
 @using Microsoft.AspNetCore.Identity
@@ -759,7 +759,7 @@
                     $('#Receiver').val(id);
                     $('#ReceiverText').val(full);
                     // بازسازی درخت رونوشت بدون نمایش گیرنده اصلی
-                    buildCopyTree(id);
+                    if (window.buildCopyTree) { window.buildCopyTree(id); }
                     const el = document.getElementById('ReceiverSelectModal');
                     if (window.bootstrap && bootstrap.Modal) {
                         bootstrap.Modal.getOrCreateInstance(el).hide();
@@ -1012,14 +1012,17 @@
                 $('#organizationTreeJs').jstree({
                     core: { data: data, themes: { stripes: true } },
                     checkbox: { keep_selected_style: false, three_state: true },
-                    plugins: ['checkbox', 'search']
+                    plugins: ['checkbox', 'search', 'wholerow']
                 }).on('ready.jstree', function(){
                     if (excludedId) {
                         var core = $('#organizationTreeJs').jstree(true);
-                        try { core.hide_node(excludedId.toString()); } catch(e){}
+                        try { core.disable_node(excludedId.toString()); } catch(e){}
                     }
                 });
             }
+
+            // در دسترس قراردادن تابع جهت فراخوانی از سایر اسکریپت‌ها
+            window.buildCopyTree = buildCopyTree;
 
             // مقداردهی اولیه درخت رونوشت با حذف گیرنده اصلی در صورت وجود
             buildCopyTree($('#Receiver').val());
@@ -1106,6 +1109,22 @@
             });
 
             // حذف تمام رویدادهای تغییر که باعث انتخاب خودکار می‌شدند
+            
+            // رندر/بازآرایی درخت هنگام نمایش مودال برای اطمینان از عملکرد باز/بست
+            $('#Copyreciversmodal').on('shown.bs.modal', function(){
+                try { $('#organizationTreeJs').jstree(true).redraw(true); } catch(e){}
+            });
+
+            // تضمین عملکرد آیکون باز/بستن زیرشاخه‌ها در صورت تداخل اوورلی‌ها
+            $(document).on('click', '#organizationTreeJs .jstree-ocl', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    var inst = $.jstree.reference('#organizationTreeJs');
+                    var node = inst.get_node($(this).closest('li'));
+                    if (inst.is_open(node)) { inst.close_node(node); } else { inst.open_node(node); }
+                } catch(ex){}
+            });
         });
     </script>
     <script>
@@ -1175,6 +1194,9 @@
             theme: 'snow'
           });
 
+          // دسترسی سراسری جهت استفاده ایمن در سایر هندلرها
+          window.quill = quill;
+
           // Update character and line counter
           function updateCounter() {
             if (!counterElement) return;
@@ -1211,9 +1233,9 @@
         });
 
 
-        // Update hidden input before form submission
+        // Update hidden input before form submission (ایمن در صورت عدم وجود ویرایشگر)
         $('form').on('submit', function() {
-            var content = quill.root.innerHTML;
+            var content = (window.quill && window.quill.root) ? window.quill.root.innerHTML : '';
             $('#letterContent').val(content);
             return true;
         });
