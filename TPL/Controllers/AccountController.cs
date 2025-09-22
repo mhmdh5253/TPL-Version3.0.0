@@ -477,7 +477,7 @@ namespace TPLWeb.Controllers
                     var res = await _userManager.ResetPasswordAsync(user, token, newPass);
                     await _userManager.UpdateAsync(user);
                     // ارسال رمز عبور جدید با سرویس SMS جدید
-                    await _smsSender.SendSmsAsync($"با سلام \n اطلاعات ورود سایت \n نام کاربری: {user.UserName} \n رمزعبور: {newPass}", user.PhoneNumber!);
+                    await _smsSender.SendNormalSmsAsync($"با سلام \n اطلاعات ورود سایت \n نام کاربری: {user.UserName} \n رمزعبور: {newPass}", user.PhoneNumber!);
                     await _signInManager.RefreshSignInAsync(user);
                     return RedirectToAction("Login", "Account");
                 }
@@ -547,7 +547,7 @@ namespace TPLWeb.Controllers
                 
                 // Send new password via SMS
                 var smsMessage = $"با سلام اطلاعات ورود به اتوماسیون مکاتباتی \n نام کاربری: {user.UserName} \n رمزعبور: {newPass}";
-                await _smsSender.SendSmsAsync(newPass, user.PhoneNumber!);
+                await _smsSender.SendNormalSmsAsync(smsMessage, user.PhoneNumber!);
                 
                 _logger.LogInformation("Password reset successful for user: {Phone}", phone);
                 

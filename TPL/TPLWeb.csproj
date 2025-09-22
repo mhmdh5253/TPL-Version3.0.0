@@ -26,6 +26,12 @@
 		<Optimize>True</Optimize>
 	</PropertyGroup>
 
+	<!-- Disable tsc during MSBuild; we build JS via npm/gulp/webpack -->
+	<PropertyGroup>
+		<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+		<TypeScriptNoEmit>true</TypeScriptNoEmit>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -46,143 +52,63 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
+	
+
+	<ItemGroup>
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\dotnetcore.npoi\1.2.3\contentFiles\any\netstandard2.0\NOTICE.TXT" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\cs\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\de\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\es\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\fr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\it\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ja\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ko\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.Build.Locator.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.IO.Redist.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Newtonsoft.Json.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\pl\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\pt-BR\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ru\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Buffers.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Collections.Immutable.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.CommandLine.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Memory.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Numerics.Vectors.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Runtime.CompilerServices.Unsafe.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Threading.Tasks.Extensions.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\tr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\zh-Hans\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\zh-Hant\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\cs\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\de\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\es\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\fr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\it\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ja\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ko\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.Build.Locator.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll.config" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Newtonsoft.Json.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\pl\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\pt-BR\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ru\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\System.Collections.Immutable.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\System.CommandLine.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\tr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
+	</ItemGroup>
 	<!--Pre-build events for frontend assets-->
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="npm install" WorkingDirectory="$(ProjectDir)" ContinueOnError="false" />
 		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)" ContinueOnError="false" />
 		<Exec Command="npm run gulp:build" WorkingDirectory="$(ProjectDir)" ContinueOnError="false" />
 	</Target>
-
-
-	<ItemGroup>
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.min.css" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.min.css.map" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\dotnetcore.npoi\1.2.3\contentFiles\any\netstandard2.0\NOTICE.TXT" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\cs\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\de\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\es\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\fr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\it\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\ja\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\ko\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\Microsoft.Build.Locator.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\Microsoft.IO.Redist.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\Newtonsoft.Json.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\pl\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\pt-BR\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\ru\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Buffers.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Collections.Immutable.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.CommandLine.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Memory.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Numerics.Vectors.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Runtime.CompilerServices.Unsafe.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\System.Threading.Tasks.Extensions.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\tr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\zh-Hans\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-net472\zh-Hant\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\cs\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\de\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\es\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\fr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\it\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\ja\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\ko\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Microsoft.Build.Locator.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll.config" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\Newtonsoft.Json.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\pl\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\pt-BR\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\ru\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\System.Collections.Immutable.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\System.CommandLine.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\tr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.13.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\cs\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\de\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\es\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\fr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\it\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ja\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ko\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.Build.Locator.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Microsoft.IO.Redist.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\Newtonsoft.Json.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\pl\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\pt-BR\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\ru\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Buffers.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Collections.Immutable.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.CommandLine.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Memory.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Numerics.Vectors.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Runtime.CompilerServices.Unsafe.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\System.Threading.Tasks.Extensions.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\tr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\zh-Hans\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-net472\zh-Hant\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\cs\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\de\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\es\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\fr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\it\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ja\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ko\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.Build.Locator.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll.config" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\Newtonsoft.Json.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\pl\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\pt-BR\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\ru\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\System.Collections.Immutable.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\System.CommandLine.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\tr\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll" />
-		<Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
-		<Content Remove="wwwroot\dist\webpack.config.js" />
-	</ItemGroup>
-
 
 	<ItemGroup>
 		<PackageReference Include="Blurhash.System.Drawing.Common" Version="4.0.0" />
@@ -221,6 +147,7 @@
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="9.0.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
 		<PackageReference Include="NPOI" Version="2.7.4" />
+		<PackageReference Include="PARSGREEN.CORE" Version="3.7.0" />
 		<PackageReference Include="Serilog" Version="4.3.0" />
 		<PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -239,11 +166,12 @@
 		<Folder Include="wwwroot\CompanyVariables\Chat\" />
 		<Folder Include="wwwroot\CompanyVariables\files\" />
 		<Folder Include="wwwroot\CompanyVariables\voices\" />
+		<Folder Include="wwwroot\PeyvastNameha\" />
+		<Folder Include="wwwroot\wordfiles\" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\.editorconfig" Link=".editorconfig" />
-		<None Include="wwwroot\dist\webpack.config.js" />
 	</ItemGroup>
 
 	<ItemGroup>

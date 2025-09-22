@@ -4,14 +4,32 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.EntityFrameworkCore
+@using System.Text.Json
 @model BE.LetterAutomation.Letter
-@inject Blkelaseh KlBlkelaseh
-@inject UserManager<ApplicationUser> UserManager
-@inject BlRecivers BlRecivers
+@inject BLL.LetterAutomation.Blkelaseh KlBlkelaseh
+@inject UserManager<BE.ApplicationUser> UserManager
+@inject BLL.LetterAutomation.BlRecivers BlRecivers
 @{
-    List<Organization> orgs = ViewBag.ParentOrganizations;
+    List<Organization>? orgs = ViewBag.ParentOrganizations;
     ViewData["Title"] = "ویرایش نامه";
-    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // دریافت پیام‌های اختصاصی گیرندگان از ViewBag
+    var ccNotes = new Dictionary<string, string>();
+    if (ViewBag.CCNotes != null)
+    {
+        ccNotes = ViewBag.CCNotes as Dictionary<string, string> ?? new Dictionary<string, string>();
+    }
+
+    // مسیر کامل گیرنده (برای نمایش در input و JS) — مقداردهی سروری تا از await در attribute جلوگیری شود
+    string receiverFullPath = "";
+    if (!String.IsNullOrEmpty(Model.Receiver))
+    {
+        try {
+            receiverFullPath = await BlRecivers.GetReceiverFullPath(Model.Receiver);
+        } catch  {
+            receiverFullPath = "";
+        }
+    }
 }
 
 @section pagecss {
@@ -27,181 +45,12 @@
     <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-select/bootstrap-select.css">
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
-
+    <link href="~/modified/createletter.css" rel="stylesheet" />
     <style>
-        #girandeganselect {
-            width: -webkit-fill-available !important;
-        }
-        #btnOpenFileCodeModal {
-            border-top-left-radius: 10px !important;
-            border-bottom-left-radius: 10px!important;
-        }
-        .org-group {
-            margin-bottom: 15px;
-            padding-left: 10px;
-            border-left: 2px solid #007bff;
-        }
-
-        .sub-orgs {
-            margin-left: 20px;
-            margin-top: 5px;
-        }
-
-        .child-orgs {
-            margin-left: 20px;
-        }
-
-        .grandchild-orgs {
-            margin-left: 20px;
-        }
-
-        .main-org {
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        label {
-            display: block;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-
-        input[type="checkbox"] {
-            margin-left: 5px;
-        }
-
-        .input-group-text {
-            color: blue !important;
-        }
-
-        .form-group {
-            margin-top: 20px;
-        }
-
-        button.btn-success, a.btn-secondary {
-            min-width: 120px;
-            text-align: center;
-        }
-
-        .d-flex {
-            display: flex;
-        }
-
-        .justify-content-between {
-            justify-content: space-between;
-        }
-
-        .form-control {
-            appearance: revert !important;
-        }
-
-        .progress-bar {
-            display: block;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background-color: #007bff;
-            transition: width 0.3s ease-in-out;
-            border-radius: 2px;
-        }
-
-        .btn-info {
-            color: #fff;
-            background-color: #17a2b8;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-info:hover {
-            background-color: #138496;
-        }
-
-        .form-control-sm {
-            background: #e9ecef;
-            border: 1px solid #ced4da;
-            font-size: 0.85rem;
-        }
-
-        .d-none {
-            display: none !important;
-        }
-
-        .control-label {
-        }
-
-        /* فاصله و عدم شکست نام‌ها در درخت‌ها */
-        #ReceiverTree .jstree-anchor,
-        #organizationTreeJs .jstree-anchor {
-            padding: 6px 10px;
-            line-height: 1.8;
-            white-space: nowrap;
-        }
-
-        #ReceiverTree .jstree-node,
-        #organizationTreeJs .jstree-node {
-            margin: 4px 0;
-        }
-
-        /* چیدمان یادداشت‌های انتخابی */
-        #selectedNotes {
-            padding-top: 6px;
-        }
-
-        #selectedNotes .note-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        #selectedNotes .note-item label {
-            margin: 0;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        #selectedNotes .note-item input.org-note {
-            flex: 1;
-            height: 38px;
-            padding: 6px 10px;
-        }
-
-        /* مودال‌ها عریض‌تر + اسکرول داخلی */
-        #Copyreciversmodal .modal-dialog {
-            max-width: 50%;
-        }
-
-        #Copyreciversmodal .modal-body {
-            max-height: 70vh;
-            overflow: auto;
-        }
-
-        #ReceiverSelectModal .modal-dialog {
-            max-width: 60%;
-        }
-
-        /* استایل برای نمایش پیوست فعلی */
-        .current-attachment {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
-
-        .current-attachment a {
-            margin-right: 10px;
-            color: #007bff;
-        }
-
-        .current-attachment .remove-attachment {
-            color: #dc3545;
-            cursor: pointer;
-            margin-right: 5px;
-        }
+        /* Ensure SweetAlert overlays above Bootstrap modals */
+        .swal2-container { z-index: 200000 !important; }
+        /* Header row for content label and AI button */
+        .content-ai-header .input-group-text { background: transparent; border: none; padding-right: 0; }
     </style>
 }
 
@@ -210,8 +59,9 @@
         <h6 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h6>
     </div>
     <div class="card-body">
-        <form asp-action="Edit" enctype="multipart/form-data" method="post" class="needs-validation" novalidate>
-            <input type="hidden" asp-for="Id" />
+        @using (Html.BeginForm("Edit", "Letter", FormMethod.Post, new { enctype = "multipart/form-data", @class = "needs-validation", novalidate = "novalidate" }))
+        {
+            <input asp-for="Id" type="hidden" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <!-- بخش نوع مکاتبه و ارتباط -->
@@ -269,6 +119,7 @@
                         <span asp-validation-for="Priority" class="text-danger"></span>
                     </div>
                 </div>
+
             </div>
 
             <!-- بخش تاریخ‌ها و اولویت‌ها -->
@@ -293,16 +144,7 @@
                         <div class="invalid-feedback">لطفا نوع ارتباط نامه را انتخاب کنید</div>
                     </div>
                 </div>
-                <div class="col-md-4" id="relatedLetterContainer" @if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
-                     {
-                                                                          <text> style = "display: inline-block;"</text>
-                                                                  }
-                                                                                                                                    else
-                                                                  {
-                                                                          <text> style = "display: none;"</text>
-
-                                                                  }
->
+                <div class="col-md-4" id="relatedLetterContainer" style="display: @(string.IsNullOrEmpty(Model.RelatedLetterId?.ToString()) ? "none" : "inline-block");">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">
@@ -311,7 +153,8 @@
                             </span>
                             <input type="text" class="form-control" id="relatedLetterText" readonly placeholder="انتخاب نامه سابقه"@if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
                                                                                                                                    {
-                                                                                                                                           <text> value="@ViewBag.relatedtext"</text>
+                                  @:value="@Model.RelatedLetter!.LetterNumber _ @Model.RelatedLetter.Subject"
+                                  
 
                                                                                                                                    }
 >
@@ -336,60 +179,62 @@
                         <span asp-validation-for="FollowUpDate" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
 
+
+            </div>
             <div class="row mb-4">
                 <div class="col-md-9 position-relative">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">
-                                <i class="fas fa-file-archive"></i>&nbsp;
-                                <label for="MostadatFile" class="mb-0">فایل مستندات:</label>
+                                <i class="fas fa-paperclip"></i>&nbsp;
+                                <label for="attachmentFiles" class="mb-0">فایل‌های پیوست:</label>
                             </span>
-                            <input class="form-control" type="file" id="MostadatFile" accept=".zip,.rar">
-                            <button class="btn btn-info btn-sm ms-2" type="button" id="uploadButton">
-                                <i class="fas fa-upload"></i> آپلود
+                            <input class="form-control" type="text" id="attachmentFiles" readonly 
+                                   value="@(!string.IsNullOrEmpty(Model.AttachmentName) ? $"{Model.AttachmentName.Split(',').Length} فایل" : "")"
+                                   placeholder="انتخاب فایل‌های پیوست">
+                            <button class="btn btn-info btn-sm ms-2" type="button" id="openAttachmentModal">
+                                <i class="fas fa-plus"></i> انتخاب فایل‌ها
                             </button>
+                            <input type="hidden" id="initialAttachments" value="@Model.AttachmentName">
                         </div>
 
-                        <!-- Progress bar container -->
-                        <div class="progress mt-2" style="height: 6px;">
-                            <div id="uploadProgressBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
-                        </div>
-
-                        <div id="progressText" class="small text-muted text-center mt-1">0%</div>
-
-                        <!-- نمایش پیوست فعلی -->
-                        @if (!string.IsNullOrEmpty(Model.AttachmentName))
-                        {
-                            <div class="current-attachment">
-                                <a href="~/PeyvastNameha/@Model.AttachmentName" download="@Model.AttachmentName">
-                                    <i class="fas fa-paperclip"></i> @Model.AttachmentName
-                                </a>
-                                <span class="remove-attachment" onclick="removeAttachment(@Model.Id)">
-                                    <i class="fas fa-times"></i> حذف
-                                </span>
+                        <!-- لیست فایل‌های انتخاب شده -->
+                        <div id="selectedFilesList" class="mt-3" style="display: none;">
+                            <h6 class="text-primary mb-2">
+                                <i class="fas fa-list"></i> فایل‌های انتخاب شده:
+                            </h6>
+                            <div id="filesContainer" class="border rounded p-3 bg-light">
+                                <!-- فایل‌ها اینجا نمایش داده می‌شوند -->
                             </div>
-                        }
-                        <input hidden class="form-control form-control-sm mt-2" id="fileaddress" asp-for="AttachmentName" type="text" readonly placeholder="آدرس فایل">
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <span id="filesCount">0</span> فایل انتخاب شده |
+                                    حجم کل: <span id="totalSize">0</span> مگابایت
+                                </small>
+                            </div>
+                        </div>
+
+                        <input hidden class="form-control form-control-sm mt-2" id="fileaddress" asp-for="AttachmentName" type="text" readonly placeholder="آدرس فایل‌ها">
+                        <input hidden id="attachmentsData" name="AttachmentsData" type="text">
                         <span asp-validation-for="AttachmentName" class="text-danger mt-2"></span>
-                        <small class="text-muted d-block mt-1">حداکثر حجم فایل: 500 مگابایت</small>
+                        <small class="text-muted d-block mt-1">حداکثر 20 فایل و مجموعاً 500 مگابایت</small>
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
-                            <div class="input-group-text">
+                            <div class="input-group-text" style="margin-top: 5px; margin-bottom: 5px;">
                                 <input class="form-check-input" type="checkbox" asp-for="ShowOnDashboard">
                             </div>
-                            <label class="form-control bg-light" asp-for="ShowOnDashboard">نمایش در تابلو اعلانات</label>
+                            <label class="form-control dashboard-badge" asp-for="ShowOnDashboard">نمایش در تابلو اعلانات</label>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- بخش کلاسه نامه -->
+            <!-- بخش کلاسه نامه (Modal Selector) -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -398,8 +243,8 @@
                                 <i class="fas fa-barcode"></i>&nbsp;
                                 <label class="control-label font-weight-bold">کلاسه نامه</label>
                             </span>
-                            <input type="hidden" asp-for="FileCode" id="FileCode" required />
-                            <input type="text" id="FileCodeText" class="form-control" placeholder="انتخاب کلاسه نامه" readonly value="@Model.FileDescription" />
+                            <input type="hidden" asp-for="FileCode" id="FileCode" />
+                            <input type="text" id="FileCodeText" class="form-control" placeholder="انتخاب کلاسه نامه" readonly required value="@(Model.FileCode ?? "")" />
                             <button class="btn btn-outline-secondary" type="button" id="btnOpenFileCodeModal" data-bs-toggle="modal" data-bs-target="#FileCodeSelectModal">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -410,7 +255,9 @@
                 </div>
             </div>
 
+
             <div class="row mb-4">
+
                 <div class="col-md-12">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
@@ -420,63 +267,93 @@
                             </span>
                             @{
                                 var organizationId = await UserManager.Users
-                                .Where(x => x.UserName == User.Identity!.Name)
-                                .Select(x => x.OrganizationId)
-                                .FirstOrDefaultAsync();
+                                    .Where(x => x.UserName == User.Identity!.Name)
+                                    .Select(x => x.OrganizationId)
+                                    .FirstOrDefaultAsync();
 
+                                int? senderOrgId = null;
+                                string senderFullPath = "";
                                 if (organizationId.HasValue)
                                 {
                                     var userorg = await BlRecivers.GetOrganizationByIdAsync(organizationId.Value);
-                                    <input hidden="" value="@userorg.Id" asp-for="Sender" class="form-control" required readonly="" placeholder="فرستنده" />
-                                    <input value="@await BlRecivers.GetReceiverFullPath(userorg.Id.ToString())" asp-for="Sender" class="form-control" required readonly="" placeholder="فرستنده" />
+                                    if (userorg != null) {
+                                        senderOrgId = userorg.Id;
+                                        try { senderFullPath = await BlRecivers.GetReceiverFullPath(userorg.Id.ToString()); } catch (Exception) { senderFullPath = ""; }
+                                    }
                                 }
-
                             }
+                            @if (senderOrgId.HasValue)
+                            {
+                                <input hidden value="@senderOrgId" asp-for="Sender" class="form-control" required readonly placeholder="فرستنده" />
+                                <input value="@senderFullPath" asp-for="Sender" class="form-control" required readonly placeholder="فرستنده" />
+                            }
+
                         </div>
                         <span asp-validation-for="Sender" class="text-danger"></span>
                         <div class="invalid-feedback">لطفا فرستنده را وارد کنید</div>
                     </div>
                 </div>
             </div>
-
             <div class="row mb-4">
+
                 <div class="col-md-10">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">
                                 <i class="fas fa-user"></i>&nbsp;
-                                <label asp-for="Receiver" class="control-label font-weight-bold"></label>
+                                <label class="control-label font-weight-bold">گیرنده</label>
                             </span>
-                            <select asp-for="Receiver" class="form-control" data-placeholder="انتخاب گیرنده نامه">
-                                @foreach (Organization mainOrg in orgs.Where(o => o.IsMain))
-                                {
-                                    <optgroup label="@mainOrg.Name">
-                                        <option value="@mainOrg.Id" selected="@(Model.Receiver == mainOrg.Id.ToString())">@mainOrg.Name</option>
-                                        @foreach (Organization subOrg in orgs.Where(o => o.ParentId == mainOrg.Id))
-                                        {
-                                            <option value="@subOrg.Id" selected="@(Model.Receiver == subOrg.Id.ToString())">@mainOrg.Name-@subOrg.Name</option>
-
-                                            @foreach (Organization childOrg in orgs.Where(o => o.ParentId == subOrg.Id))
-                                            {
-                                                <option value="@childOrg.Id" selected="@(Model.Receiver == childOrg.Id.ToString())">@mainOrg.Name-@subOrg.Name-@childOrg.Name</option>
-                                                @foreach (Organization childch in orgs.Where(o => o.ParentId == childOrg.Id))
-                                                {
-                                                    <option value="@childch.Id" selected="@(Model.Receiver == childch.Id.ToString())">@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name</option>
-                                                }
-                                            }
-                                        }
-                                    </optgroup>
-                                }
-                            </select>
+                            <input type="hidden" asp-for="Receiver" id="Receiver" />
+                            <input type="text" id="ReceiverText" class="form-control" placeholder="انتخاب گیرنده نامه" readonly required value="@receiverFullPath" />
+                            <button class="btn btn-outline-secondary" type="button" id="btnOpenReceiverModal" data-bs-toggle="modal" data-bs-target="#ReceiverSelectModal">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                         <span asp-validation-for="Receiver" class="text-danger"></span>
                         <div class="invalid-feedback">لطفا گیرنده را انتخاب کنید</div>
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <a style="margin-top: 20px !important; padding: 15px;" class="btn btn-outline-info waves-effect" id="girandeganselect">انتخاب سایر گیرندگان</a>
+                    <a style="margin-top: 20px !important; padding: 15px;" class="btn btn-outline-info waves-effect" id="girandeganselect" data-bs-toggle="modal" data-bs-target="#Copyreciversmodal">انتخاب سایر گیرندگان</a>
                 </div>
-                <input type="hidden" asp-for="CopyReceivers" id="selectedOrganizations" />
+                <input type="hidden" id="selectedOrganizations" name="CopyReceivers[0]" />
+                <input type="hidden" id="selectedOrganizationsNotes" name="CopyReceivers[1]" />
+
+            </div>
+
+            <!-- Modal: انتخاب گیرنده اصلی -->
+            <div class="modal fade" id="ReceiverSelectModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">انتخاب گیرنده اصلی</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-white border-bottom">
+                                            <h6 class="mb-0 text-dark fw-bold">
+                                                <i class="fas fa-building me-2"></i>درخت سازمان‌ها
+                                            </h6>
+                                            <small class="text-info">توجه: سازمان های والد با علامت * مشخص شده اند</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <label for="receiverTreeSearch" class="form-label">جستجو در سازمان‌ها:</label>
+                                            <input type="text" id="receiverTreeSearch" name="receiverTreeSearch" class="form-control mb-3" placeholder="جستجو در سازمان‌ها...">
+                                            <div id="receiverTreeContainer" style="height: 400px; overflow: auto;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+                            <button type="button" class="btn btn-primary" id="confirmReceiverSelection">تأیید انتخاب</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- بخش موضوع -->
@@ -494,25 +371,27 @@
                         <div class="invalid-feedback">لطفا موضوع نامه را وارد کنید</div>
                     </div>
                 </div>
-            </div>
 
+            </div>
             <!-- بخش متن نامه با ویرایشگر پیشرفته -->
             <div class="form-group mb-4">
-                <div class="input-group input-group-lg">
+                <div class="d-flex align-items-center justify-content-between mb-2 content-ai-header">
                     <span style="border: none;" class="input-group-text">
                         <i class="fas fa-align-left"></i>&nbsp;
                         <label asp-for="Content" class="control-label font-weight-bold"></label>
                     </span>
-                    <div style="width: 100%;">
-                        <input type="hidden" asp-for="Content" id="letterContent" />
-                        <div id="editor" style="height: 400px;">@Html.Raw(Model.Content)</div>
-                        <span asp-validation-for="Content" class="text-danger"></span>
-                        <div class="invalid-feedback">لطفا متن نامه را وارد کنید</div>
-                    </div>
-                    <div id="counter" class="text-muted mt-2">تعداد کاراکتر: 0 | تعداد خطوط: 0</div>
+                    <button type="button" id="btnOpenAi" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-magic me-1"></i> تولید با هوش مصنوعی
+                    </button>
                 </div>
+                <input type="hidden" asp-for="Content" id="letterContent" value="@Html.Raw(Model.Content)" />
+                <div id="editor" style="height: 400px; border: 1px solid #ced4da; border-radius: 0.375rem;">
+                    @Html.Raw(Model.Content)
+                </div>
+                <span asp-validation-for="Content" class="text-danger"></span>
+                <div class="invalid-feedback">لطفا متن نامه را وارد کنید</div>
+                <div id="counter" class="text-muted mt-2">تعداد کاراکتر: 0 | تعداد خطوط: 0</div>
             </div>
-
             <!-- بخش امضاکننده -->
             <div class="row mb-4">
                 <div class="col-md-6">
@@ -522,12 +401,13 @@
                                 <i class="fas fa-tags"></i>&nbsp;
                                 <label asp-for="Keywords" class="control-label font-weight-bold"></label>
                             </span>
-                            <input id="TagifyBasic" class="form-control tagifyy" name="Keywords" asp-for="Keywords" multiple />
+                            <input id="TagifyBasic" class="form-control tagifyy" name="Keywords" asp-for="Keywords" multiple value="@(Model.Keywords ?? "")" />
                         </div>
                     </div>
                     <span asp-validation-for="Keywords" class="text-danger"></span>
                     <small class="form-text text-muted">برای افزودن کلیدواژه جدید، Enter بزنید</small>
                 </div>
+                    <!-- مقادیر اولیه در همین ورودی‌های بالا مقداردهی می‌شوند تا از تکرار ID جلوگیری شود -->
                 <div class="col-md-6">
                     <div class="form-group">
                         <div class="input-group input-group-lg">
@@ -539,27 +419,30 @@
                                 var u2 = UserManager.Users.FirstOrDefault(x => x.UserName == User.Identity!.Name);
                                 if (u2!.HaqEmza)
                                 {
-                                    <select asp-for="SignerName" class="form-control">
-                                        <option value="@u2.Id" selected="@(Model.SignerName == u2.Id)">@u2.Semat : @u2.FirstName @u2.LastName</option>
+                                    <select asp-for="SignerName" class="form-control" data-placeholder="انتخاب گیرنده نامه">
+                                        <option value="@u2.Id">@u2.Semat : @u2.FirstName @u2.LastName</option>
                                     </select>
                                 }
                                 else
                                 {
+
                                     var u3 = UserManager.Users.Where(x => x.HaqEmza == true).ToList();
-                                    <select asp-for="SignerName" class="form-control">
+                                    <select asp-for="SignerName" class="form-control" data-placeholder="انتخاب گیرنده نامه">
                                         @foreach (var item in u3)
                                         {
-                                            <option value="@item.Id" selected="@(Model.SignerName == item.Id)">@item.Semat : @item.FirstName @item.LastName</option>
+                                            <option value="@item.Id">@item.Semat : @item.FirstName @item.LastName</option>
+
                                         }
                                     </select>
+
                                 }
                             }
+                        </div>
                         </div>
                         <span asp-validation-for="SignerName" class="text-danger"></span>
                         <div class="invalid-feedback">لطفا نام امضاکننده را وارد کنید</div>
                     </div>
                 </div>
-            </div>
 
             <div class="form-group mt-4 d-flex justify-content-between">
                 <!-- دکمه سمت چپ -->
@@ -568,560 +451,1290 @@
                 </a>
                 <!-- دکمه سمت راست -->
                 <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i>&nbsp; ذخیره تغییرات
+                    <i class="fas fa-save"></i>&nbsp; ویرایش نامه
                 </button>
             </div>
-        </form>
+        }
     </div>
 </div>
+
+<!-- مودال انتخاب فایل‌های پیوست -->
+
 
 <!-- مودال جستجوی نامه -->
 <div class="modal fade" id="letterSearchModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title  text-white" id="letterSearchModalLabel">جستجوی نامه سابقه</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="letterSearchModalLabel">
+                    <i class="fas fa-search me-2"></i>جستجوی نامه سابقه
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="Subjectsearch" class="font-weight-bold">موضوع نامه</label>
-                            <input type="text" class="form-control" id="Subjectsearch" name="Subjectsearch" placeholder="موضوع نامه">
-                        </div>
+            <div class="modal-body p-4">
+                <!-- بخش فیلترهای جستجو -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h6 class="mb-0 text-dark fw-bold">
+                            <i class="fas fa-filter me-2"></i>فیلترهای جستجو
+                        </h6>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="LetterNumber" class="font-weight-bold">شماره نامه</label>
-                            <input type="text" class="form-control" id="LetterNumber" name="LetterNumber" placeholder="شماره نامه">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="font-weight-bold">تاریخ ثبت نامه</label>
-                            <div class="input-daterange input-group">
-                                <input type="text" class="form-control flatpickr-datesearch" id="FromDate" name="FromDate" placeholder="از تاریخ">
-                                <div class="input-group-prepend input-group-append">
-                                    <span class="input-group-text">تا</span>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="Subjectsearch" class="form-label fw-bold">
+                                        <i class="fas fa-file-alt me-1"></i>موضوع نامه
+                                    </label>
+                                    <input type="text" class="form-control" id="Subjectsearch" name="Subjectsearch"
+                                           placeholder="موضوع نامه را وارد کنید...">
                                 </div>
-                                <input type="text" class="form-control flatpickr-datesearch" id="ToDate" name="ToDate" placeholder="تا تاریخ">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="LetterNumber" class="form-label fw-bold">
+                                        <i class="fas fa-hashtag me-1"></i>شماره نامه
+                                    </label>
+                                    <input type="text" class="form-control" id="LetterNumber" name="LetterNumber"
+                                           placeholder="شماره نامه را وارد کنید...">
+                                </div>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-calendar-alt me-1"></i>تاریخ ثبت نامه
+                                    </label>
+                                    <div class="input-daterange input-group">
+                                        <input type="text" class="form-control flatpickr-datesearch" id="FromDate"
+                                               name="FromDate" placeholder="از تاریخ">
+                                        <div class="input-group-prepend input-group-append">
+                                            <span class="input-group-text">تا</span>
+                                        </div>
+                                        <input type="text" class="form-control flatpickr-datesearch" id="ToDate"
+                                               name="ToDate" placeholder="تا تاریخ">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button class="btn btn-primary me-2" type="button" id="searchLetterBtn">
+                                <i class="fas fa-search me-1"></i> جستجوی نامه‌ها
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" id="resetSearchBtn">
+                                <i class="fas fa-sync me-1"></i> بازنشانی فیلترها
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group text-center mt-3">
-                    <button class="btn btn-primary" type="button" id="searchLetterBtn">
-                        <i class="fas fa-search"></i> جستجوی نامه‌ها
-                    </button>
-                    <button class="btn btn-outline-secondary" type="button" id="resetSearchBtn">
-                        <i class="fas fa-sync-alt"></i> بازنشانی فیلترها
-                    </button>
-                </div>
-
-                <hr>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover" id="letterSearchResults">
-                        <thead class="thead-light">
-                            <tr>
-                                <th width="50px">انتخاب</th>
-                                <th>شماره نامه</th>
-                                <th>موضوع</th>
-                                <th>تاریخ ثبت</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="searchLoading" class="text-center py-3" style="display:none;">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">در حال جستجو...</span>
+                <!-- بخش نتایج جستجو -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light border-bottom">
+                        <h6 class="mb-0 text-dark fw-bold">
+                            <i class="fas fa-list me-2"></i>نتایج جستجو
+                        </h6>
                     </div>
-                    <p class="mt-2">در حال جستجو...</p>
-                </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="letterSearchResults">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50px" class="text-center">
+                                            <i class="fas fa-check-square"></i>
+                                        </th>
+                                        <th>
+                                            <i class="fas fa-hashtag me-1"></i>شماره نامه
+                                        </th>
+                                        <th>
+                                            <i class="fas fa-file-alt me-1"></i>موضوع
+                                        </th>
+                                        <th>
+                                            <i class="fas fa-calendar me-1"></i>تاریخ ثبت
+                                        </th>
+                                        <th style="display: none;">
+                                            <i class="fas fa-user me-1"></i>فرستنده
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
+                                </tbody>
+                            </table>
+                        </div>
 
-                <div id="noResults" class="text-center py-3" style="display:none;">
-                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-                    <p class="mt-2">نتیجه‌ای یافت نشد</p>
+                        <!-- Loading -->
+                        <div id="searchLoading" class="text-center py-5" style="display:none;">
+                            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="sr-only">در حال جستجو...</span>
+                            </div>
+                            <h6 class="text-muted">در حال جستجو...</h6>
+                            <p class="text-muted small">لطفاً صبر کنید</p>
+                        </div>
+
+                        <!-- No Results -->
+                        <div id="noResults" class="text-center py-5" style="display:none;">
+                            <i class="fas fa-search text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h6 class="text-muted">نتیجه‌ای یافت نشد</h6>
+                            <p class="text-muted small">لطفاً فیلترهای جستجو را تغییر دهید</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>بستن
+                </button>
                 <button type="button" class="btn btn-primary" id="selectLetterBtn" disabled>
-                    <i class="fas fa-check"></i> انتخاب نامه
+                    <i class="fas fa-check me-1"></i> انتخاب نامه
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="Copyreciversmodal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<!-- Modal: AI Content Generator -->
+<div class="modal fade" id="aiModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-magic me-2"></i>تولید/بهبود متن با هوش مصنوعی</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">متن فعلی (نمایش)</label>
+                        <div class="border rounded p-3" style="max-height:200px; overflow:auto; background:#fff">
+                            @Html.Raw(Model.Content)
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">موضوع (اختیاری)</label>
+                        <input type="text" id="aiSubject" class="form-control" placeholder="موضوع نامه (در صورت نیاز)" value="@Model.Subject">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">شرح درخواست</label>
+                        <textarea id="aiPrompt" class="form-control" rows="5" placeholder="شرح دهید چه متنی نیاز دارید..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">لحن (اختیاری)</label>
+                        <select id="aiTone" class="form-select">
+                            <option value="" selected>پیش‌فرض (رسمی و فاخر)</option>
+                            <option value="رسمی">رسمی</option>
+                            <option value="بسیار رسمی">بسیار رسمی</option>
+                            <option value="مودبانه">مودبانه</option>
+                            <option value="قاطع">قاطع</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="aiRefine" checked>
+                            <label class="form-check-label" for="aiRefine">بهبود متن فعلی</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-12">
+                        <label class="form-label">سرویس</label>
+                        <select id="aiProvider" class="form-select"></select>
+                    </div>
+                    <div class="col-md-3 col-12">
+                        <label class="form-label">مدل</label>
+                        <select id="aiModel" class="form-select"></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">پیش‌نمایش خروجی</label>
+                        <div id="aiPreview" class="border rounded p-3" style="min-height:160px; background:#fafafa; white-space:pre-wrap; overflow:auto"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="btn btn-info" id="btnAiGenerate">
+                    <i class="fas fa-wand-magic-sparkles me-1"></i>تولید/بهبود متن
+                </button>
+                <button type="button" class="btn btn-primary" id="btnAiApply" disabled>
+                    <i class="fas fa-check me-1"></i>تایید و جایگزینی در متن نامه
+                </button>
+            </div>
+        </div>
+    </div>
+ </div>
+<!-- مودال انتخاب کلاسه نامه -->
+<div class="modal fade" id="FileCodeSelectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">انتخاب کلاسه نامه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    var klss = await KlBlkelaseh.GetAllKelasehnamehsAsync(UserManager.GetUserId(User)!);
+                }
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="50">انتخاب</th>
+                                <th>کد کلاسه</th>
+                                <th>نام کلاسه</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var k in klss)
+                            {
+                                <tr data-id="@k.CodeKelaseh" data-name="@k.NameKelaseh">
+                                    <td><input type="checkbox" name="selectedFileCode" id="fileCode-@k.CodeKelaseh" value="@k.CodeKelaseh"></td>
+                                    <td>@k.CodeKelaseh</td>
+                                    <td>@k.NameKelaseh</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="btn btn-primary" id="selectFileCodeBtn" disabled>انتخاب</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال انتخاب فایل‌های پیوست -->
+<div class="modal fade" id="attachmentModal" tabindex="-1" role="dialog" aria-labelledby="attachmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white" id="attachmentModalLabel">
+                    <i class="fas fa-paperclip me-2"></i>انتخاب فایل‌های پیوست
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- منطقه کشیدن و رها کردن فایل -->
+                <div id="dropZone" class="border border-dashed border-primary rounded p-5 text-center mb-4" style="min-height: 200px;">
+                    <div class="drop-zone-content">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="text-primary">فایل‌های خود را انتخاب و یا اینجا بکشید و رها کنید</h5>
+                        <p class="text-muted mb-3">یا روی دکمه زیر کلیک کنید</p>
+                        <input type="file" id="fileInput" name="fileInput" multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.mp4,.avi,.mov,.mp3,.wav,.txt" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- اطلاعات محدودیت‌ها -->
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>محدودیت‌های آپلود
+                    </h6>
+                    <ul class="mb-0">
+                        <li><strong>تعداد فایل:</strong> حداکثر 20 فایل</li>
+                        <li><strong>حجم کل:</strong> حداکثر 500 مگابایت</li>
+                        <li><strong>فرمت‌های مجاز:</strong></li>
+                    </ul>
+                    <div class="row mt-2">
+                        <div class="col-md-3">
+                            <small><strong>تصاویر:</strong> JPG, PNG, GIF, BMP, WebP, SVG</small>
+                        </div>
+                        <div class="col-md-3">
+                            <small><strong>اسناد:</strong> PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX</small>
+                        </div>
+                        <div class="col-md-3">
+                            <small><strong>آرشیو:</strong> ZIP, RAR, 7Z</small>
+                        </div>
+                        <div class="col-md-3">
+                            <small><strong>رسانه:</strong> MP4, AVI, MOV, MP3, WAV, TXT</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- لیست فایل‌های انتخاب شده در مودال -->
+                <div id="modalFilesList" class="mt-4" style="display: none;">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-list me-2"></i>فایل‌های انتخاب شده
+                    </h6>
+                    <div id="modalFilesContainer" class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                        <!-- فایل‌ها اینجا نمایش داده می‌شوند -->
+                    </div>
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <small>
+                                تعداد فایل‌ها: <span id="modalFilesCount">0</span> |
+                                حجم کل: <span id="modalTotalSize">0</span> مگابایت
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="clearAllFiles">
+                            <i class="fas fa-trash me-1"></i>پاک کردن همه
+                        </button>
+                    </div>
+                </div>
+
+                <!-- نوار پیشرفت آپلود -->
+                <div id="uploadProgressSection" class="mt-4" style="display: none;">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-upload me-2"></i>وضعیت آپلود
+                    </h6>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div id="overallProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%">
+                            <span id="overallProgressText">0%</span>
+                        </div>
+                    </div>
+                    <div id="currentFileProgress" class="small text-muted"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>بستن
+                </button>
+                <button type="button" class="btn btn-success" id="uploadFilesBtn" disabled>
+                    <i class="fas fa-upload me-1"></i>آپلود فایل‌ها
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="Copyreciversmodal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">انتخاب سایر گیرندگان</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="tree-container">
-                    <h6 class="tree-title mb-3">
-                        <i class="fas fa-sitemap me-2"></i>
-                        انتخاب سازمان‌های گیرنده رونوشت
-                    </h6>
-                    <div id="organizationTree">
-                        @foreach (Organization mainOrg in orgs.Where(o => o.IsMain))
-                        {
-                            <div class="org-group">
-                                <label class="main-org">
-                                    <input type="checkbox" value="@mainOrg.Id" data-name="@mainOrg.Name" class="org-checkbox"
-                                           @(Model.CopyReceiversList.Any(x => x.Id == mainOrg.Id) ? "checked" : "") />
-                                    <span>@mainOrg.Name</span>
-                                </label>
-                                <div class="sub-orgs">
-                                    @foreach (Organization subOrg in orgs.Where(o => o.ParentId == mainOrg.Id))
-                                    {
-                                        <div class="sub-org">
-                                            <label>
-                                                <input type="checkbox" value="@subOrg.Id" data-name="@mainOrg.Name-@subOrg.Name" class="org-checkbox"
-                                                       @(Model.CopyReceiversList.Any(x => x.Id == subOrg.Id) ? "checked" : "") />
-                                                <span>@mainOrg.Name-@subOrg.Name</span>
-                                            </label>
-                                            <div class="child-orgs">
-                                                @foreach (Organization childOrg in orgs.Where(o => o.ParentId == subOrg.Id))
-                                                {
-                                                    <div class="child-org">
-                                                        <label>
-                                                            <input type="checkbox" value="@childOrg.Id" data-name="@mainOrg.Name-@subOrg.Name-@childOrg.Name" class="org-checkbox"
-                                                                   @(Model.CopyReceiversList.Any(x => x.Id == childOrg.Id) ? "checked" : "") />
-                                                            <span>@mainOrg.Name-@subOrg.Name-@childOrg.Name</span>
-                                                        </label>
-                                                        <div class="grandchild-orgs">
-                                                            @foreach (Organization childch in orgs.Where(o => o.ParentId == childOrg.Id))
-                                                            {
-                                                                <label>
-                                                                    <input type="checkbox" value="@childch.Id" data-name="@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name" class="org-checkbox"
-                                                                           @(Model.CopyReceiversList.Any(x => x.Id == childch.Id) ? "checked" : "") />
-                                                                    <span>@mainOrg.Name-@subOrg.Name-@childOrg.Name-@childch.Name</span>
-                                                                </label>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
+            <div class="modal-body p-4">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0 text-dark fw-bold">
+                                    <i class="fas fa-sitemap me-2"></i>درخت سازمان‌ها
+                                </h6>
+                                <small class="text-info">توجه: سازمان های والد با علامت * مشخص شده اند</small>
                             </div>
-                        }
+                            <div class="card-body">
+                                <label for="treeSearch" class="form-label">جستجو در سازمان‌ها:</label>
+                                <input type="text" id="treeSearch" name="treeSearch" class="form-control mb-3" placeholder="جستجو در سازمان‌ها...">
+                                <div id="treeContainer" style="height: 400px; overflow: auto;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
-            <button type="button" class="btn btn-primary" id="confirmSelection">تایید انتخاب</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="btn btn-primary" id="confirmSelection">تایید انتخاب</button>
+            </div>
         </div>
     </div>
 </div>
-
 @section pagejs {
-    <!-- ابتدا کتابخانه‌های پایه و ضروری -->
-    <script src="~/assets/vendor/js/bootstrap.js"></script>
-    <script src="~/firstpage/js/bootstrap.min.js"></script>
 
     <!-- کتابخانه‌های تاریخ و زمان -->
-    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <!-- Removed moment.js (dev build used eval) - not required here -->
     <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
     <script src="~/assets/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
     <script src="~/assets/vendor/libs/flatpickr/fa-jdate.js"></script>
     <script src="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
 
     <!-- کتابخانه‌های دیگر -->
-    <script src="~/assets/vendor/libs/swiper/swiper.js"></script>
-    <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
-    <script src="~/assets/vendor/libs/tagify/tagify.js" type="module"></script>
-    <script src="~/assets/vendor/libs/bloodhound/bloodhound.js"></script>
-    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-    <script src="~/dist/libs/sweetalert2/sweetalert2.js" type="module"></script>
-    <script src="~/assets/vendor/libs/quill/katex.js" type="module"></script>
-    <script src="~/assets/vendor/libs/quill/quill.js" type="module"></script>
-
-    <!-- فایل‌های اسکریپت اختصاصی -->
-    <script src="~/assets/js/forms-tagify.js" type="module"></script>
-    <script src="~/assets/js/ui-modals.js" type="module"></script>
+    <!-- Removed swiper.js, pickr.js, bloodhound.js (unused here; dev builds used eval) -->
+    <!-- Tagify (local build) -->
+    <script src="~/assets/vendor/libs/tagify/tagify.js"></script>
+    <!-- Quill (local build) -->
+    <script src="~/assets/vendor/libs/quill/quill.js"></script>
+    <!-- SweetAlert2 (local minified build) -->
+    <script src="~/assets/vendor/libs/sweetalert2/dist/sweetalert2.all.min.js"></script>
     <script src="~/assets/js/forms-selects.js"></script>
-    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
-    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
-
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
+    <!-- Removed theme demo initializers that may import eval-using libs: ui-modals.js, tables-datatables-advanced.js -->
+    <!-- اسکریپت ابتدایی: Initialize Tagify و مدیریت چک‌باکس‌ها در مودال انتخاب کلاسه نامه -->
     <script>
-        $(document).ready(function() {
-            // مقداردهی درخت انتخاب گیرنده اصلی (مانند ایجاد نامه)
-            try {
-                var receiverTreeData = [
-                    @foreach (var main in orgs.Where(o => o.IsMain))
-                    {
-                            @: { "id": "@main.Id", "parent": "#", "text": "@main.Name", "icon": "fas fa-building", "full": "@main.Name" },
-                            foreach (var sub in orgs.Where(o => o.ParentId == main.Id))
-                            {
-                                    @: { "id": "@sub.Id", "parent": "@main.Id", "text": "@sub.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name" },
-                                    foreach (var child in orgs.Where(o => o.ParentId == sub.Id))
-                                    {
-                                            @: { "id": "@child.Id", "parent": "@sub.Id", "text": "@child.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name-@child.Name" },
-                                            foreach (var leaf in orgs.Where(o => o.ParentId == child.Id))
-                                            {
-                                                    @: { "id": "@leaf.Id", "parent": "@child.Id", "text": "@leaf.Name", "icon": "fas fa-sitemap", "full": "@main.Name-@sub.Name-@child.Name-@leaf.Name" },
-                                            }
-                                    }
-                            }
+        // Initialize Tagify only if the element exists
+        document.addEventListener('DOMContentLoaded', function () {
+                var tagEl = document.getElementById('TagifyBasic');
+                if (tagEl && window.Tagify) {
+                        try { new Tagify(tagEl); } catch (e) { console.warn('Tagify init error', e); }
                     }
-                ];
-
-                $('#ReceiverTree').jstree({
-                    core: { data: receiverTreeData, themes: { stripes: true } },
-                    plugins: ['search']
-                });
-
-                $('#ReceiverTree').off('select_node.jstree').on('select_node.jstree', function (e, data) {
-                    var id = data.node.id;
-                    var node = data.instance.get_node(id);
-                    var full = (node && node.original && node.original.full) ? node.original.full : data.node.text;
-                    $('#Receiver').val(id);
-                    $('#ReceiverText').val(full);
-                    const el = document.getElementById('ReceiverSelectModal');
-                    if (window.bootstrap && bootstrap.Modal) {
-                        bootstrap.Modal.getOrCreateInstance(el).hide();
-                    }
-                });
-            } catch (err) { console.warn('Receiver tree init error', err); }
-            // مقداردهی اولیه برای نوع ارتباط نامه
-            toggleRelatedLetterField($('#letterRelationType').val());
-
-            // اگر نامه مرتبطی وجود دارد، مقدار آن را تنظیم کنید
-            @if (Model.RelatedLetterId.HasValue)
-            {
-                        <text>
-                        $('#relatedLetterText').val('@Model.RelatedLetter!.LetterNumber - @Model.RelatedLetter.Subject');
-                        $('#relatedLetterId').val('@Model.RelatedLetterId');
-                        </text>
-            }
-
-            // مقداردهی اولیه برای کلیدواژه‌ها
-            if ($('#TagifyBasic').length > 0) {
-                var input = document.querySelector('#TagifyBasic');
-                var tagify = new Tagify(input, {
-                    whitelist: @Html.Raw(Json.Serialize(Model.KeywordsList ?? new List<string>())),
-                    dropdown: {
-                        maxItems: 20,
-                        classname: "tags-look",
-                        enabled: 0,
-                        closeOnSelect: false
-                    }
-                });
-            }
-
-            // مقداردهی اولیه برای گیرندگان رونوشت
-            var selectedOrgs = [];
-            @foreach (var org in Model.CopyReceiversList)
-            {
-                        <text>
-                        selectedOrgs.push({
-                            id: '@org.Id',
-                            name: '@org.Name'
-                        });
-                        </text>
-            }
-
-            $("#selectedOrganizations").val(selectedOrgs.map(org => org.id).join(','));
-
-            // باز کردن مودال انتخاب گیرندگان
-            $("#girandeganselect").off('click').on('click', function() {
-                const el = document.getElementById('Copyreciversmodal');
-                if (window.bootstrap && bootstrap.Modal) {
-                    bootstrap.Modal.getOrCreateInstance(el).show();
-                }
+            });
+    </script>
+    <script>
+        $(document).ready(function(){
+            // انتخاب کلاسه نامه از مودال
+            $(document).on('change', '#FileCodeSelectModal tbody tr input[type="checkbox"]', function(){
+                var checkedBoxes = $('#FileCodeSelectModal tbody tr input[type="checkbox"]:checked');
+                $('#selectFileCodeBtn').prop('disabled', checkedBoxes.length === 0);
             });
 
-            // تایید انتخاب گیرندگان
-            $("#confirmSelection").click(function() {
-                selectedOrgs = [];
+            $('#selectFileCodeBtn').on('click', function(){
+                var checkedBoxes = $('#FileCodeSelectModal tbody tr input[type="checkbox"]:checked');
+                if (checkedBoxes.length === 0) return;
 
-                $("#Copyreciversmodal input.org-checkbox:checked").each(function() {
-                    selectedOrgs.push({
-                        id: $(this).val(),
-                        name: $(this).data('name')
-                    });
+                var selectedCodes = [];
+                var selectedNames = [];
+                checkedBoxes.each(function(){
+                    var row = $(this).closest('tr');
+                    selectedCodes.push(row.data('id'));
+                    selectedNames.push(row.data('name'));
                 });
 
-                $("#selectedOrganizations").val(selectedOrgs.map(org => org.id).join(','));
-                const el = document.getElementById('Copyreciversmodal');
+                $('#FileCode').val(selectedCodes.join(','));
+                $('#FileCodeText').val(selectedNames.join(', ') + ' (' + selectedCodes.join(', ') + ')');
+                const el = document.getElementById('FileCodeSelectModal');
                 if (window.bootstrap && bootstrap.Modal) {
                     bootstrap.Modal.getOrCreateInstance(el).hide();
                 }
             });
-        });
 
-        // Show/hide related letter field based on letter relation type
-        function toggleRelatedLetterField(value) {
-            const relatedLetterContainer = document.getElementById('relatedLetterContainer');
-            const relatedLetterId = document.getElementById('relatedLetterId');
-            const relatedLetterText = document.getElementById('relatedLetterText');
-
-            if (value === '0') {
-                relatedLetterContainer.style.display = 'none';
-                if (relatedLetterId) relatedLetterId.value = '';
-                if (relatedLetterText) relatedLetterText.value = '';
-            } else {
-                relatedLetterContainer.style.display = 'block';
-            }
-        }
-
-        flatpickr(".flatpickr-date", {
-            monthSelectorType: 'static',
-            locale: 'fa',
-            altInput: true,
-            altFormat: 'Y/m/d',
-            disableMobile: true,
-            minDate:'today'
-        });
-
-        flatpickr(".flatpickr-datesearch", {
-            monthSelectorType: 'static',
-            locale: 'fa',
-            altInput: true,
-            altFormat: 'Y/m/d',
-            disableMobile: true,
-            maxDate:'today'
-        });
-
-        // مدیریت ویرایشگر متن
-        document.addEventListener('DOMContentLoaded', function() {
-            const editorElement = document.getElementById('editor');
-            const counterElement = document.getElementById('counter');
-            const form = document.querySelector('form.needs-validation');
-
-            if (!editorElement) return;
-
-            // Initialize Quill editor
-            var quill = new Quill('#editor', {
-                modules: {
-                    toolbar: [
-                        [{ 'font': [] }, { 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'script': 'super' }, { 'script': 'sub' }],
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                        [{ 'indent': '-1' }, { 'indent': '+1' }],
-                        [{ 'align': [] }],
-                        ['blockquote', 'code-block'],
-                        ['clean']
-                    ],
-                    history: {
-                        delay: 1000,
-                        maxStack: 200,
-                        userOnly: false
-                    },
-                    clipboard: { matchVisual: true }
-                },
-                placeholder: 'متن خود را اینجا وارد کنید...',
-                theme: 'snow'
-            });
-
-            // Update character and line counter
-            function updateCounter() {
-                if (!counterElement) return;
-
-                const text = quill.getText().trim();
-                const lines = text.split('\n').filter(line => line.trim() !== '').length;
-
-                counterElement.textContent = `تعداد کاراکتر: ${text.length} | تعداد خطوط: ${lines}`;
-            }
-
-            quill.on('text-change', updateCounter);
-
-            // Update hidden input before form submission
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (form.checkValidity() === false) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    form.classList.add('was-validated');
-
-                    const contentInput = document.getElementById('letterContent');
-                    if (contentInput) {
-                        contentInput.value = quill.root.innerHTML;
-                    }
-                });
-            }
-
-            updateCounter();
-        });
-
-        // مدیریت آپلود فایل
-        document.getElementById('uploadButton').addEventListener('click', function () {
-            const fileInput = document.getElementById('MostadatFile');
-            const file = fileInput.files[0];
-            const progressBar = document.getElementById('uploadProgressBar');
-            const progressText = document.getElementById('progressText');
-            const fileAddressField = document.getElementById('fileaddress');
-
-            if (!file) {
-                Swal.fire({
-                    title: 'خطا!',
-                    text: 'لطفا یک فایل انتخاب کنید.',
-                    icon: 'error',
-                    confirmButtonText: 'باشه'
-                });
-                return;
-            }
-
-            if (file.size > 500 * 1024 * 1024) {
-                Swal.fire({
-                    title: 'خطا!',
-                    text: 'حجم فایل نباید بیش از 500 مگابایت باشد.',
-                    icon: 'error',
-                    confirmButtonText: 'باشه'
-                });
-                return;
-            }
-
-            progressBar.style.width = '0%';
-            progressBar.style.backgroundColor = '#0d6efd';
-            progressText.innerText = '0%';
-            fileAddressField.value = 'در حال آپلود...';
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/Letter/UploadFile', true);
-
-            xhr.upload.onprogress = function (e) {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = `${percentComplete}%`;
-                    progressText.innerText = `${percentComplete}%`;
-
-                    if (percentComplete === 100) {
-                        progressBar.style.backgroundColor = '#28a745';
-                        progressText.innerText = 'آماده!';
-                    }
-                }
-            };
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        fileAddressField.value = response.filePath;
-
-                        Swal.fire({
-                            title: 'موفقیت‌آمیز!',
-                            text: 'فایل با موفقیت آپلود شد.',
-                            icon: 'success',
-                            confirmButtonText: 'باشه'
-                        });
-                    } else {
-                        progressBar.style.backgroundColor = '#dc3545';
-                        progressText.innerText = 'خطا!';
-
-                        Swal.fire({
-                            title: 'خطا!',
-                            text: 'خطا در آپلود فایل: ' + response.message,
-                            icon: 'error',
-                            confirmButtonText: 'باشه'
-                        });
-                    }
-                } else {
-                    progressBar.style.backgroundColor = '#dc3545';
-                    progressText.innerText = 'خطا!';
-
-                    Swal.fire({
-                        title: 'خطا!',
-                        text: 'خطا در ارتباط با سرور.',
-                        icon: 'error',
-                        confirmButtonText: 'باشه'
-                    });
-                }
-            };
-
-            xhr.onerror = function () {
-                progressBar.style.backgroundColor = '#dc3545';
-                progressText.innerText = 'خطا!';
-
-                Swal.fire({
-                    title: 'خطا!',
-                    text: 'خطا در ارتباط با سرور.',
-                    icon: 'error',
-                    confirmButtonText: 'باشه'
-                });
-            };
-
-            xhr.send(formData);
-        });
-
-        // حذف پیوست فعلی
-        function removeAttachment(letterId) {
-            Swal.fire({
-                title: 'آیا مطمئن هستید؟',
-                text: 'آیا می‌خواهید این پیوست را حذف کنید؟',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'بله، حذف شود',
-                cancelButtonText: 'انصراف'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/Letter/RemoveAttachment',
-                        type: 'POST',
-                        data: { id: letterId },
-                        success: function(response) {
-                            if (response.success) {
-                                $('.current-attachment').remove();
-                                $('#fileaddress').val('');
-                                Swal.fire({
-                                    title: 'موفقیت',
-                                    text: 'پیوست با موفقیت حذف شد',
-                                    icon: 'success'
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'خطا',
-                                    text: response.message,
-                                    icon: 'error'
-                                });
+            // بارگذاری کلاسه نامه در حالت ویرایش
+            const fileCodeValue = '@Model.FileCode';
+            const fileCodeInput = document.getElementById('FileCode');
+            const fileCodeTextInput = document.getElementById('FileCodeText');
+            if (fileCodeInput && fileCodeTextInput && fileCodeValue) {
+                fileCodeInput.value = fileCodeValue;
+                const modal = document.getElementById('FileCodeSelectModal');
+                if (modal) {
+                    const checkboxes = modal.querySelectorAll('input[name="selectedFileCode"]');
+                    checkboxes.forEach(checkbox => {
+                        if (checkbox.value === fileCodeValue) {
+                            checkbox.checked = true;
+                            const row = checkbox.closest('tr');
+                            if (row) {
+                                const nameCell = row.cells[2];
+                                if (nameCell) {
+                                    fileCodeTextInput.value = fileCodeValue + ' - ' + nameCell.textContent;
+                                }
                             }
-                        },
-                        error: function() {
-                            Swal.fire({
-                                title: 'خطا',
-                                text: 'خطا در ارتباط با سرور',
-                                icon: 'error'
-                            });
                         }
                     });
                 }
-            });
-        }
+            }
+        });
+    </script>
 
-        // مدیریت جستجوی نامه
+    <script>
+        $(document).ready(function() {
+            if ($.fn && $.fn.DataTable) {
+                $('#letterSearchResults').DataTable();
+            }
+        });
+    </script>
+
+    <!-- اسکریپت گیرنده اصلی -->
+    <script>
+        $(document).ready(function() {
+            window.receiverOrgData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                (orgs ?? new List<Organization>())
+                .Where(o => o.IsMain)
+                .Select(main => new {
+                    id = main.Id.ToString(),
+                    name = main.Name,
+                    level = 0,
+                    expanded = false,
+                    children = (orgs ?? new List<Organization>())
+                        .Where(sub => sub.ParentId == main.Id)
+                        .Select(sub => new {
+                            id = sub.Id.ToString(),
+                            name = sub.Name,
+                            level = 1,
+                            expanded = false,
+                            children = (orgs ?? new List<Organization>())
+                                .Where(child => child.ParentId == sub.Id)
+                                .Select(child => new {
+                                    id = child.Id.ToString(),
+                                    name = child.Name,
+                                    level = 2,
+                                    expanded = false,
+                                    children = (orgs ?? new List<Organization>())
+                                        .Where(leaf => leaf.ParentId == child.Id)
+                                        .Select(leaf => new {
+                                            id = leaf.Id.ToString(),
+                                            name = leaf.Name,
+                                            level = 3,
+                                            children = new List<object>()
+                                        })
+                                })
+                        })
+                })
+            ));
+
+            window.buildReceiverTree = function() {
+                const container = document.getElementById('receiverTreeContainer');
+                if (!container) {
+                    console.error('receiverTreeContainer not found!');
+                    return;
+                }
+                container.innerHTML = '';
+
+                if (!window.receiverOrgData || window.receiverOrgData.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">هیچ سازمانی یافت نشد</div>';
+                    return;
+                }
+
+                window.receiverOrgData.forEach(org => {
+                    renderReceiverNode(org, container, 0);
+                });
+
+                // after rendering, if there is an existing receiver, expand parents and mark selected
+                const existingReceiver = '@Model.Receiver';
+                if (existingReceiver) {
+                    // find the radio and check it
+                    setTimeout(function() {
+                        const radio = container.querySelector(`input[type=radio][value="${existingReceiver}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            const row = radio.closest('.receiver-node-row');
+                            if (row) row.classList.add('selected');
+                        }
+
+                        // expand parent containers to make the node visible
+                        let current = container.querySelector(`.receiver-tree-node[data-receiver-node-id="${existingReceiver}"]`);
+                        while (current) {
+                            const parentContainer = current.parentElement.closest('.receiver-tree-node');
+                            if (parentContainer) {
+                                const expandBtn = parentContainer.querySelector('.receiver-expand-btn');
+                                if (expandBtn && !expandBtn.classList.contains('expanded')) {
+                                    expandBtn.classList.add('expanded');
+                                }
+                                const children = parentContainer.querySelector('.receiver-children-container');
+                                if (children) children.classList.remove('hidden');
+                            }
+                            current = current.parentElement.closest('.receiver-tree-node');
+                        }
+                    }, 50);
+                }
+            };
+
+            window.renderReceiverNode = function(node, container, level) {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'receiver-tree-node';
+                nodeDiv.setAttribute('data-receiver-node-id', node.id);
+                nodeDiv.setAttribute('data-level', level);
+
+                const hasChildren = node.children && node.children.length > 0;
+                const isExpanded = node.expanded === true;
+
+                nodeDiv.innerHTML = `
+                    <div class="receiver-node-row" data-receiver-id="${node.id}">
+                        <div class="node-content">
+                            <div class="node-expand">
+                                ${hasChildren ?
+                                  `<button type="button" class="receiver-expand-btn ${isExpanded ? 'expanded' : ''}"
+                                             data-receiver-id="${node.id}">
+                                        <i class="fas fa-chevron-left"></i>
+                                     </button>` :
+                                  '<span class="expand-placeholder"></span>'
+                                }
+                            </div>
+                            <div class="node-toggle">
+                                <input type="radio" name="receiverSelection" class="receiver-node-radio" value="${node.id}">
+                            </div>
+                            <div class="node-name">${node.name}</div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(nodeDiv);
+
+                if (hasChildren && isExpanded) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'receiver-children-container';
+                    childrenContainer.setAttribute('data-receiver-parent-id', node.id);
+                    node.children.forEach(child => {
+                        renderReceiverNode(child, childrenContainer, level + 1);
+                    });
+                    nodeDiv.appendChild(childrenContainer);
+                }
+            };
+
+            window.toggleReceiverExpand = function(nodeId) {
+                const parentNode = document.querySelector(`.receiver-tree-node[data-receiver-node-id="${nodeId}"]`);
+                const expandBtn = parentNode.querySelector(`.receiver-expand-btn[data-receiver-id="${nodeId}"]`);
+                let childrenContainer = parentNode.querySelector(`.receiver-children-container[data-receiver-parent-id="${nodeId}"]`);
+                const node = findReceiverNodeById(nodeId);
+
+                if (childrenContainer) {
+                    if (childrenContainer.classList.contains('hidden')) {
+                        childrenContainer.classList.remove('hidden');
+                        expandBtn.classList.add('expanded');
+                        node.expanded = true;
+                    } else {
+                        childrenContainer.classList.add('hidden');
+                        expandBtn.classList.remove('expanded');
+                        node.expanded = false;
+                    }
+                } else if (node.children && node.children.length > 0) {
+                    childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'receiver-children-container';
+                    childrenContainer.setAttribute('data-receiver-parent-id', nodeId);
+                    node.children.forEach(child => {
+                        renderReceiverNode(child, childrenContainer, parseInt(parentNode.getAttribute('data-level')) + 1);
+                    });
+                    parentNode.appendChild(childrenContainer);
+                    expandBtn.classList.add('expanded');
+                    node.expanded = true;
+                }
+            };
+
+            window.findReceiverNodeById = function(nodeId, nodes = window.receiverOrgData) {
+                for (let node of nodes) {
+                    if (node.id == nodeId) return node;
+                    if (node.children) {
+                        const found = findReceiverNodeById(nodeId, node.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            window.selectReceiver = function(nodeId, nodeName) {
+                $('.receiver-node-radio').prop('checked', false);
+                $(`.receiver-node-radio[value="${nodeId}"]`).prop('checked', true);
+                $('#Receiver').val(nodeId);
+                // ensure other listeners and form pick up the change
+                $('#Receiver').trigger('change');
+                console.log('Receiver selected:', nodeId);
+                const fullName = getReceiverFullOrganizationName(nodeId);
+                $('#ReceiverText').val(fullName);
+                $('.receiver-node-row').removeClass('selected');
+                $(`.receiver-node-radio[value="${nodeId}"]`).closest('.receiver-node-row').addClass('selected');
+                const el = document.getElementById('ReceiverSelectModal');
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).hide();
+                }
+            };
+
+            window.getReceiverFullOrganizationName = function(nodeId) {
+                const node = findReceiverNodeById(nodeId);
+                if (!node) return '';
+                const path = [];
+                let currentNode = node;
+                while (currentNode) {
+                    path.unshift(currentNode.name);
+                    if (currentNode.level > 0) {
+                        currentNode = findReceiverParentNode(currentNode.id);
+                    } else {
+                        currentNode = null;
+                    }
+                }
+                return path.join('-');
+            };
+
+            window.findReceiverParentNode = function(nodeId) {
+                for (let org of window.receiverOrgData) {
+                    if (org.children) {
+                        const found = findReceiverParentInChildren(org, nodeId);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            window.findReceiverParentInChildren = function(parent, targetId) {
+                if (parent.children) {
+                    for (let child of parent.children) {
+                        if (child.id === targetId) return parent;
+                        const found = findReceiverParentInChildren(child, targetId);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            $("#receiverTreeSearch").on("keyup", function() {
+                const searchTerm = $(this).val().toLowerCase();
+                if (searchTerm === '') {
+                    $('.receiver-tree-node').show();
+                    $('.receiver-children-container').show();
+                    return;
+                }
+                $('.receiver-tree-node').hide();
+                $('.receiver-children-container').hide();
+                $('.receiver-node-row').each(function() {
+                    const nodeName = $(this).find('.node-name').text().toLowerCase();
+                    if (nodeName.includes(searchTerm)) {
+                        $(this).closest('.receiver-tree-node').show();
+                        $(this).closest('.receiver-tree-node').parents('.receiver-children-container').show();
+                        $(this).closest('.receiver-tree-node').parents('.receiver-tree-node').show();
+                        $(this).closest('.receiver-tree-node').find('.receiver-children-container').show();
+                        $(this).closest('.receiver-tree-node').find('.receiver-tree-node').show();
+                    }
+                });
+            });
+
+            $("#confirmReceiverSelection").click(function() {
+                const selectedRadio = $('.receiver-node-radio:checked');
+                if (selectedRadio.length > 0) {
+                    const nodeId = selectedRadio.val();
+                    const nodeName = selectedRadio.closest('.receiver-node-row').find('.node-name').text();
+                    selectReceiver(nodeId, nodeName);
+                } else {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: 'لطفاً یک سازمان انتخاب کنید.',
+                        icon: 'warning',
+                        confirmButtonText: 'باشه'
+                    });
+                }
+            });
+
+            $(document).on('click', '.receiver-expand-btn', function() {
+                const nodeId = $(this).data('receiver-id');
+                if (nodeId) toggleReceiverExpand(nodeId);
+            });
+
+            $(document).on('change', '.receiver-node-radio', function() {
+                const nodeId = $(this).val();
+                const nodeName = $(this).closest('.receiver-node-row').find('.node-name').text();
+                selectReceiver(nodeId, nodeName);
+            });
+
+            $('#ReceiverSelectModal').on('shown.bs.modal', function () {
+                window.buildReceiverTree();
+                setTimeout(() => {
+                    const receiverValue = '@Model.Receiver';
+                    if (receiverValue) {
+                        // یافتن گره در درخت و باز کردن والدین آن
+                        const node = findReceiverNodeById(receiverValue);
+                        if (node) {
+                            let currentNode = findReceiverParentNode(node.id);
+                            while (currentNode) {
+                                toggleReceiverExpand(currentNode.id);
+                                currentNode = findReceiverParentNode(currentNode.id);
+                            }
+                        }
+                        // انتخاب گره
+                        const receiverRadio = document.querySelector(`input[type="radio"][value="${receiverValue}"]`);
+                        if (receiverRadio) {
+                            receiverRadio.checked = true;
+                            const nodeRow = receiverRadio.closest('.receiver-node-row');
+                            if (nodeRow) nodeRow.classList.add('selected');
+                        }
+                    }
+                }, 200);
+            });
+
+            function loadExistingReceiver() {
+                const receiverValue = '@Model.Receiver';
+                if (receiverValue) {
+                    const fullName = window.getReceiverFullOrganizationName(receiverValue);
+                    if (fullName && fullName.trim() !== '') {
+                        $('#ReceiverText').val(fullName);
+                    } else {
+                        const serverPath = '@receiverFullPath';
+                        if (serverPath && serverPath.trim() !== '') $('#ReceiverText').val(serverPath);
+                    }
+                    $('#Receiver').val(receiverValue);
+                }
+            }
+
+            window.buildReceiverTree();
+        });
+    </script>
+
+    <!-- اسکریپت سایر گیرندگان -->
+    <script>
+        $(document).ready(function() {
+            window.copyOrgData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                (orgs ?? new List<Organization>())
+                .Where(o => o.IsMain)
+                .Select(main => new {
+                    id = main.Id.ToString(),
+                    name = main.Name,
+                    level = 0,
+                    expanded = false,
+                    children = (orgs ?? new List<Organization>())
+                        .Where(sub => sub.ParentId == main.Id)
+                        .Select(sub => new {
+                            id = sub.Id.ToString(),
+                            name = sub.Name,
+                            level = 1,
+                            expanded = false,
+                            children = (orgs ?? new List<Organization>())
+                                .Where(child => child.ParentId == sub.Id)
+                                .Select(child => new {
+                                    id = child.Id.ToString(),
+                                    name = child.Name,
+                                    level = 2,
+                                    expanded = false,
+                                    children = (orgs ?? new List<Organization>())
+                                        .Where(leaf => leaf.ParentId == child.Id)
+                                        .Select(leaf => new {
+                                            id = leaf.Id.ToString(),
+                                            name = leaf.Name,
+                                            level = 3,
+                                            children = new List<object>()
+                                        })
+                                })
+                        })
+                })
+            ));
+
+            window.buildCopyTree = function(excludedId) {
+                const container = document.getElementById('treeContainer');
+                if (!container) {
+                    console.error('treeContainer not found!');
+                    return;
+                }
+                container.innerHTML = '';
+
+                if (!window.copyOrgData || window.copyOrgData.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">هیچ سازمانی یافت نشد</div>';
+                    return;
+                }
+
+                window.copyOrgData.forEach(function(org) {
+                    window.renderCopyNode(org, container, 0, excludedId);
+                });
+            };
+
+            window.renderCopyNode = function(node, container, level, excludedId) {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'copy-tree-node';
+                nodeDiv.setAttribute('data-copy-node-id', node.id);
+                nodeDiv.setAttribute('data-level', level);
+
+                const isSelected = node.selected || false;
+                const hasChildren = node.children && node.children.length > 0;
+                const isExpanded = node.expanded === true;
+                const isExcluded = excludedId && String(node.id) === String(excludedId);
+
+                nodeDiv.innerHTML = `
+                    <div class="copy-node-row ${isSelected ? 'selected' : ''} ${isExcluded ? 'disabled' : ''}" data-copy-id="${node.id}">
+                        <div class="node-content">
+                            <div class="node-expand">
+                                ${hasChildren ?
+                                  `<button type="button" class="copy-expand-btn ${isExpanded ? 'expanded' : ''}"
+                                             data-copy-id="${node.id}">
+                                        <i class="fas fa-chevron-left"></i>
+                                     </button>` :
+                                  '<span class="expand-placeholder"></span>'
+                                }
+                            </div>
+                            <div class="node-toggle">
+                                <input type="checkbox" class="copy-node-checkbox" id="copy-node-${node.id}"
+                                       data-copy-id="${node.id}" ${isSelected ? 'checked' : ''} ${isExcluded ? 'disabled title="گیرنده اصلی (غیرقابل انتخاب)"' : ''}>
+                            </div>
+                            <div class="node-name">${node.name}</div>
+                            <div class="node-message">
+                                <input type="text" class="copy-message-input" id="message-${node.id}"
+                                       data-copy-id="${node.id}" placeholder="پیام اختصاصی برای ${node.name}"
+                                       maxlength="200" style="display: ${isSelected ? 'block' : 'none'}" ${isExcluded ? 'disabled' : ''}>
+                            </div>
+                            <div class="copy-node-counter" data-copy-id="${node.id}"
+                                 style="display: ${isSelected ? 'block' : 'none'}">0/200</div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(nodeDiv);
+                if (hasChildren && isExpanded) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'copy-children-container';
+                    childrenContainer.setAttribute('data-copy-parent-id', node.id);
+                    node.children.forEach(child => {
+                        window.renderCopyNode(child, childrenContainer, level + 1, excludedId);
+                    });
+                    nodeDiv.appendChild(childrenContainer);
+                }
+            };
+
+            window.findCopyNodeById = function(nodeId, nodes = window.copyOrgData) {
+                for (let node of nodes) {
+                    if (String(node.id) === String(nodeId)) return node;
+                    if (node.children) {
+                        const found = window.findCopyNodeById(nodeId, node.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            window.toggleCopyExpand = function(nodeId, sourceBtn) {
+                const parentNode = sourceBtn ? sourceBtn.closest(`.copy-tree-node[data-copy-node-id="${nodeId}"]`) : document.querySelector(`.copy-tree-node[data-copy-node-id="${nodeId}"]`);
+                if (!parentNode) {
+                    console.warn('Parent element not found for nodeId:', nodeId);
+                    return;
+                }
+                const expandBtn = sourceBtn || parentNode.querySelector(`.copy-expand-btn[data-copy-id="${nodeId}"]`);
+                let childrenContainer = parentNode.querySelector(`.copy-children-container[data-copy-parent-id="${nodeId}"]`);
+                const node = window.findCopyNodeById(nodeId);
+
+                if (!node) {
+                    console.warn('Node data not found for nodeId:', nodeId);
+                    return;
+                }
+
+                if (childrenContainer) {
+                    if (childrenContainer.classList.contains('hidden')) {
+                        childrenContainer.classList.remove('hidden');
+                        if (expandBtn) expandBtn.classList.add('expanded');
+                        node.expanded = true;
+                    } else {
+                        childrenContainer.classList.add('hidden');
+                        if (expandBtn) expandBtn.classList.remove('expanded');
+                        node.expanded = false;
+                    }
+                } else if (node.children && node.children.length > 0) {
+                    childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'copy-children-container';
+                    childrenContainer.setAttribute('data-copy-parent-id', nodeId);
+                    const currentLevel = parseInt(parentNode.getAttribute('data-level')) || 0;
+                    node.children.forEach(child => {
+                        window.renderCopyNode(child, childrenContainer, currentLevel + 1);
+                    });
+                    parentNode.appendChild(childrenContainer);
+                    if (expandBtn) expandBtn.classList.add('expanded');
+                    node.expanded = true;
+                }
+            };
+
+            document.getElementById("confirmSelection").addEventListener('click', function() {
+                const selectedOrgs = [];
+                const checkedBoxes = document.querySelectorAll('.copy-node-checkbox:checked');
+                checkedBoxes.forEach(checkbox => {
+                    const nodeId = String(checkbox.getAttribute('data-copy-id'));
+                    const nodeRow = checkbox.closest('.copy-node-row');
+                    const nodeName = nodeRow.querySelector('.node-name').textContent;
+                    const messageInput = nodeRow.querySelector('.copy-message-input');
+                    const note = (messageInput && messageInput.style.display !== 'none') ? (messageInput.value || "") : "";
+                    selectedOrgs.push({ id: nodeId, name: nodeName, note });
+                });
+                const idsOnly = selectedOrgs.map(o => o.id);
+                document.getElementById("selectedOrganizations").value = idsOnly.join(",");
+                document.getElementById("selectedOrganizationsNotes").value = JSON.stringify(selectedOrgs);
+                const el = document.getElementById("Copyreciversmodal");
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).hide();
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                const button = e.target.closest('.copy-expand-btn');
+                if (button) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const nodeId = button.getAttribute('data-copy-id');
+                    if (nodeId) window.toggleCopyExpand(nodeId, button);
+                }
+
+                if (e.target.classList.contains('copy-node-checkbox')) {
+                    if (e.target.disabled) {
+                        // اجازهٔ تغییر وضعیت برای گیرندهٔ اصلی داده نشود
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    const checkbox = e.target;
+                    const nodeId = checkbox.getAttribute('data-copy-id');
+                    const nodeRow = checkbox.closest('.copy-node-row');
+                    const messageInput = nodeRow.querySelector('.copy-message-input');
+                    const counter = nodeRow.querySelector('.copy-node-counter');
+
+                    if (checkbox.checked) {
+                        nodeRow.classList.add('selected');
+                        messageInput.style.display = 'block';
+                        counter.style.display = 'block';
+                        updateCopyCounter(nodeId);
+                    } else {
+                        nodeRow.classList.remove('selected');
+                        messageInput.style.display = 'none';
+                        counter.style.display = 'none';
+                        messageInput.value = '';
+                    }
+                }
+            });
+
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('copy-message-input')) {
+                    const nodeId = e.target.getAttribute('data-copy-id');
+                    updateCopyCounter(nodeId);
+                }
+            });
+
+            window.updateCopyCounter = function(nodeId) {
+                const input = document.querySelector(`.copy-message-input[data-copy-id="${nodeId}"]`);
+                const counter = document.querySelector(`.copy-node-counter[data-copy-id="${nodeId}"]`);
+                if (input && counter) {
+                    const length = input.value.length;
+                    counter.textContent = length + '/200';
+                    counter.className = 'copy-node-counter';
+                    if (length > 180) counter.classList.add('text-warning');
+                    if (length > 195) counter.classList.add('text-danger');
+                }
+            };
+
+            $("#treeSearch").on("keyup", function() {
+                const searchTerm = $(this).val().toLowerCase();
+                if (searchTerm === '') {
+                    $('.copy-tree-node').show();
+                    $('.copy-children-container').show();
+                    return;
+                }
+                $('.copy-tree-node').hide();
+                $('.copy-children-container').hide();
+                $('.copy-node-row').each(function() {
+                    const nodeName = $(this).find('.node-name').text().toLowerCase();
+                    if (nodeName.includes(searchTerm)) {
+                        $(this).closest('.copy-tree-node').show();
+                        $(this).closest('.copy-tree-node').parents('.copy-children-container').show();
+                        $(this).closest('.copy-tree-node').parents('.copy-tree-node').show();
+                        $(this).closest('.copy-tree-node').find('.copy-children-container').show();
+                        $(this).closest('.copy-tree-node').find('.copy-tree-node').show();
+                    }
+                });
+            });
+
+            $('#Copyreciversmodal').on('shown.bs.modal', function () {
+                const selectedReceiver = document.getElementById('Receiver').value;
+                window.buildCopyTree(selectedReceiver);
+                // کمی صبر می‌کنیم تا DOM ساخته شود، سپس پیش‌انتخاب را اعمال می‌کنیم
+                // اطمینان از اینکه تنها یکبار اجرا شود
+                if (!window.copyReceiversLoaded) {
+                    window.copyReceiversLoaded = true;
+                    setTimeout(() => {
+                        loadExistingCopyReceivers();
+                        window.copyReceiversLoaded = false; // reset برای بار بعد
+                    }, 300);
+                }
+            });
+
+            function loadExistingCopyReceivers() {
+                // اول از مقادیر موجود در hidden inputs استفاده کن (اگر کاربر قبلاً تغییری داده باشد)
+                const hiddenIdsEl = document.getElementById('selectedOrganizations');
+                const hiddenNotesEl = document.getElementById('selectedOrganizationsNotes');
+                let selectedOrgs = (hiddenIdsEl && hiddenIdsEl.value && hiddenIdsEl.value.trim())
+                    ? hiddenIdsEl.value.trim()
+                    : '@(Model.CopyReceivers != null && Model.CopyReceivers.Count > 0 ? Model.CopyReceivers[0] : "")';
+                let copyReceiversNotes = (hiddenNotesEl && hiddenNotesEl.value && hiddenNotesEl.value.trim())
+                    ? hiddenNotesEl.value.trim()
+                    : '@Html.Raw(Model.CopyReceivers != null && Model.CopyReceivers.Count > 1 ? (Model.CopyReceivers[1] ?? "[]") : "[]")';
+                
+                console.log('Loading existing copy receivers:', selectedOrgs);
+                console.log('Copy receivers notes:', copyReceiversNotes);
+                
+                if (selectedOrgs && selectedOrgs.trim()) {
+                    const orgIds = selectedOrgs.split(',');
+                    // حذف duplicates و ایجاد array یکتا
+                    const uniqueOrgIds = [...new Set(orgIds.map(id => id.trim()).filter(id => id))];
+                    
+                    console.log('Unique org IDs:', uniqueOrgIds);
+                    
+                    let notesData = {};
+                    if (copyReceiversNotes && copyReceiversNotes !== '[]') {
+                        try {
+                            const parsedNotes = JSON.parse(copyReceiversNotes);
+                            // پشتیبانی از هر دو کلید message و note
+                            notesData = parsedNotes.reduce((acc, item) => {
+                                const key = String(item.id);
+                                const val = (typeof item.message !== 'undefined') ? item.message : (item.note || '');
+                                acc[key] = val;
+                                return acc;
+                            }, {});
+                        } catch (e) {
+                            console.log('Error parsing notes JSON:', e);
+                        }
+                    }
+                    
+                    console.log('Notes data:', notesData);
+                    
+                    // ابتدا تمام node ها را expand کنیم تا قابل دسترسی باشند
+                    expandAllCopyNodes();
+                    
+                    // کمی صبر کنیم تا expansion کامل شود
+                    setTimeout(() => {
+                        uniqueOrgIds.forEach((orgId) => {
+                            console.log('Processing org ID:', orgId);
+                            
+                            // تمام checkboxهای با این ID را پیدا کنیم (ممکن است چندتا باشد)
+                            const checkboxes = document.querySelectorAll(`input[type="checkbox"][data-copy-id="${orgId}"]`);
+                            
+                            console.log(`Found ${checkboxes.length} checkboxes for org ID ${orgId}`);
+                            
+                            if (checkboxes.length === 0) {
+                                console.warn(`No checkbox found for org ID: ${orgId}`);
+                                // اگر checkbox پیدا نشد، شاید node collapsed باشد، سعی کنیم آن را پیدا کنیم
+                                const node = window.findCopyNodeById(orgId);
+                                if (node) {
+                                    console.log(`Found node data for ID ${orgId}, trying to expand parent`);
+                                    // پیدا کردن parent node و expand کردن آن
+                                    expandParentNodes(orgId);
+                                }
+                            }
+                            
+                            checkboxes.forEach((checkbox, index) => {
+                                console.log(`Setting checkbox ${index + 1} for org ID ${orgId}`);
+                                
+                                checkbox.checked = true;
+                                const nodeRow = checkbox.closest('.copy-node-row');
+                                
+                                if (nodeRow) {
+                                    nodeRow.classList.add('selected');
+                                    const messageInput = nodeRow.querySelector('.copy-message-input');
+                                    const counter = nodeRow.querySelector('.copy-node-counter');
+                                    
+                                    if (messageInput) {
+                                        messageInput.style.display = 'block';
+                                        const key = String(orgId);
+                                        if (Object.prototype.hasOwnProperty.call(notesData, key)) {
+                                            messageInput.value = notesData[key];
+                                        } else {
+                                            messageInput.value = '';
+                                        }
+                                    }
+                                    
+                                    if (counter) {
+                                        counter.style.display = 'block';
+                                        // use the actual checkbox data-copy-id (may be string)
+                                        const cbId = checkbox.getAttribute('data-copy-id') || orgId;
+                                        updateCopyCounter(cbId);
+                                    }
+                                }
+                            });
+                        });
+                        
+                        // تنظیم مقادیر hidden inputs (از آرایه یکتا استفاده می‌کنیم)
+                        document.getElementById('selectedOrganizations').value = uniqueOrgIds.join(',');
+                        // نرمال‌سازی ساختار notes برای سازگاری
+                        try {
+                            const parsedNotes = JSON.parse(copyReceiversNotes || '[]');
+                            const normalized = parsedNotes.map(n => ({ id: String(n.id), note: (typeof n.message !== 'undefined') ? n.message : (n.note || '') }));
+                            document.getElementById('selectedOrganizationsNotes').value = JSON.stringify(normalized);
+                        } catch (e) {
+                            document.getElementById('selectedOrganizationsNotes').value = copyReceiversNotes;
+                        }
+                        
+                        console.log('Finished loading existing copy receivers');
+                        
+                        // اگر هنوز برخی checkboxها پیدا نشدند، دوباره سعی کنیم
+                        setTimeout(() => {
+                            retryMissingCheckboxes(uniqueOrgIds, notesData);
+                        }, 500);
+                    }, 300);
+                }
+            }
+            
+            // تابع برای تلاش مجدد برای checkboxهای گم شده
+            function retryMissingCheckboxes(orgIds, notesData) {
+                console.log('Retrying missing checkboxes...');
+                orgIds.forEach((orgId) => {
+                    const checkboxes = document.querySelectorAll(`input[type="checkbox"][data-copy-id="${orgId}"]`);
+                    if (checkboxes && checkboxes.length > 0) {
+                        checkboxes.forEach((checkbox) => {
+                            if (!checkbox.checked) {
+                                console.log(`Retrying checkbox for org ID: ${orgId}`);
+                                checkbox.checked = true;
+                                const nodeRow = checkbox.closest('.copy-node-row');
+                                if (nodeRow) {
+                                    nodeRow.classList.add('selected');
+                                    const messageInput = nodeRow.querySelector('.copy-message-input');
+                                    const counter = nodeRow.querySelector('.copy-node-counter');
+                                    if (messageInput) {
+                                        messageInput.style.display = 'block';
+                                        const key = String(orgId);
+                                        if (Object.prototype.hasOwnProperty.call(notesData, key)) {
+                                            messageInput.value = notesData[key];
+                                        } else {
+                                            messageInput.value = '';
+                                        }
+                                    }
+                                    if (counter) {
+                                        counter.style.display = 'block';
+                                        updateCopyCounter(nodeRow.querySelector('.copy-message-input').getAttribute('data-copy-id'));
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        console.warn(`Still no checkbox found for org ID: ${orgId} during retry`);
+                    }
+                });
+            }
+            
+            // تابع برای expand کردن تمام nodeها
+            function expandAllCopyNodes() {
+                console.log('Expanding all copy nodes...');
+                
+                function expandNodeRecursively(node) {
+                    if (node.children && node.children.length > 0) {
+                        node.expanded = true;
+                        const nodeElement = document.querySelector(`.copy-tree-node[data-copy-node-id="${node.id}"]`);
+                        if (nodeElement) {
+                            const expandBtn = nodeElement.querySelector(`.copy-expand-btn[data-copy-id="${node.id}"]`);
+                            if (expandBtn && !expandBtn.classList.contains('expanded')) {
+                                window.toggleCopyExpand(node.id, expandBtn);
+                            }
+                        }
+                        
+                        // expand کردن فرزندان
+                        node.children.forEach(child => {
+                            expandNodeRecursively(child);
+                        });
+                    }
+                }
+                
+                if (window.copyOrgData) {
+                    window.copyOrgData.forEach(rootNode => {
+                        expandNodeRecursively(rootNode);
+                    });
+                }
+            }
+            
+            // تابع برای expand کردن parent nodeهای یک node خاص
+            function expandParentNodes(targetNodeId) {
+                function findAndExpandParent(nodes, targetId, parentNode = null) {
+                    for (let node of nodes) {
+                        if (String(node.id) === String(targetId)) {
+                            // پیدا شد، اگر parent داشت آن را expand کن
+                            if (parentNode && parentNode.children && parentNode.children.length > 0) {
+                                const parentElement = document.querySelector(`.copy-tree-node[data-copy-node-id="${parentNode.id}"]`);
+                                if (parentElement) {
+                                    const expandBtn = parentElement.querySelector(`.copy-expand-btn[data-copy-id="${parentNode.id}"]`);
+                                    if (expandBtn && !expandBtn.classList.contains('expanded')) {
+                                        window.toggleCopyExpand(parentNode.id, expandBtn);
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                        
+                        if (node.children && node.children.length > 0) {
+                            if (findAndExpandParent(node.children, targetId, node)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                
+                if (window.copyOrgData) {
+                    findAndExpandParent(window.copyOrgData, targetNodeId);
+                }
+            }
+
+            window.buildCopyTree($("#Receiver").val() || '');
+        });
+    </script>
+
+    <!-- اسکریپت جستجوی نامه -->
+    <script>
         $(document).ready(function() {
             $('#resetSearchBtn').click(function() {
-                $('#letterSearchModal').find('input[type="text"], input[type="search"], textarea').val('');
+                $('#letterSearchModal')
+                    .find('input[type="text"], input[type="search"], textarea')
+                    .val('');
                 $('#FromDate, #ToDate').val('').trigger('change');
+                if ($.fn.select2) {
+                    $('#letterSearchModal').find('select').val(null).trigger('change');
+                }
+                if ($.fn.persianDatepicker) {
+                    $('#letterSearchModal').find('.persian-datepicker').persianDatepicker('setDate', null);
+                }
+                if ($.fn.flatpickr) {
+                    $('#letterSearchModal').find('.flatpickr-date').flatpickr().clear();
+                }
                 $('#letterSearchResults tbody').empty();
                 $('#noResults').hide();
                 $('#selectLetterBtn').prop('disabled', true);
@@ -1145,7 +1758,6 @@
                     var letterId = selectedRow.data('id');
                     var letterNumber = selectedRow.find('td:eq(1)').text();
                     var letterSubject = selectedRow.find('td:eq(2)').text();
-
                     $('#relatedLetterId').val(letterId);
                     $('#relatedLetterText').val(letterNumber + ' - ' + letterSubject);
                     const el = document.getElementById('letterSearchModal');
@@ -1157,7 +1769,6 @@
 
             $('#searchLetterBtn').click(function() {
                 var searchData = {};
-
                 if ($('#Subjectsearch').val()) searchData.Subject = $('#Subjectsearch').val();
                 if ($('#LetterNumber').val()) searchData.LetterNumber = $('#LetterNumber').val();
                 if ($('#FromDate').val()) searchData.FromDate = $('#FromDate').val();
@@ -1184,18 +1795,15 @@
                     data: JSON.stringify(searchData),
                     success: function(response) {
                         $('#searchLoading').hide();
-
-                        if (response && (response.Success || response.success) && response.Data && response.Data.Data) {
+                        if (response && response.Success && response.Data && response.Data.Data) {
                             var tableBody = $('#letterSearchResults tbody');
                             tableBody.empty();
-
                             var actualData = response.Data.Data;
-
                             if (actualData.length > 0) {
                                 $.each(actualData, function(index, letter) {
                                     var row = `
                                         <tr data-id="${letter.Id}">
-                                            <td><input type="radio" name="selectedLetter" value="${letter.Id}"></td>
+                                            <td><input type="radio" name="selectedLetter" id="letter-${letter.Id}" value="${letter.Id}"></td>
                                             <td>${letter.LetterNumber || '-'}</td>
                                             <td>${letter.Subject || 'بدون موضوع'}</td>
                                             <td>${letter.RegistrationDate || 'نامشخص'}</td>
@@ -1223,7 +1831,6 @@
                     },
                     error: function(xhr) {
                         $('#searchLoading').hide();
-                        console.error("AJAX Error:", xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: 'خطا',
@@ -1234,4 +1841,920 @@
             });
         });
     </script>
+
+    <!-- اسکریپت تاریخ و نوع نامه -->
+    <script>
+        function toggleRelatedLetterField(value) {
+            const relatedLetterContainer = document.getElementById('relatedLetterContainer');
+            const relatedLetterId = document.getElementById('relatedLetterId');
+            const relatedLetterText = document.getElementById('relatedLetterText');
+            if (value === '0') {
+                relatedLetterContainer.style.display = 'none';
+                if (relatedLetterId) relatedLetterId.value = '';
+                if (relatedLetterText) relatedLetterText.value = '';
+            } else {
+                relatedLetterContainer.style.display = 'block';
+            }
+        }
+
+        flatpickr(".flatpickr-date", {
+            monthSelectorType: 'static',
+            locale: 'fa',
+            altInput: true,
+            altFormat: 'Y/m/d',
+            disableMobile: true,
+            minDate: 'today'
+        });
+
+        flatpickr(".flatpickr-datesearch", {
+            monthSelectorType: 'static',
+            locale: 'fa',
+            altInput: true,
+            altFormat: 'Y/m/d',
+            disableMobile: true,
+            maxDate: 'today'
+        });
+    </script>
+
+    <!-- اسکریپت ویرایشگر Quill و اعتبارسنجی -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editorElement = document.getElementById('editor');
+            const counterElement = document.getElementById('counter');
+            const form = document.querySelector('form.needs-validation');
+
+            if (!editorElement) {
+                console.error('Editor element not found!');
+                return;
+            }
+
+            var quill = new Quill('#editor', {
+                modules: {
+                    toolbar: [
+                        [{ 'font': [] }, { 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'script': 'super' }, { 'script': 'sub' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        [{ 'align': [] }],
+                        ['blockquote', 'code-block'],
+                        ['clean']
+                    ],
+                    history: { delay: 1000, maxStack: 200, userOnly: false },
+                    clipboard: { matchVisual: true }
+                },
+                placeholder: 'متن خود را اینجا وارد کنید...',
+                theme: 'snow'
+            });
+            window.quillEditor = quill;
+            window.quill = quill;
+
+            // Header AI button opens modal
+            try {
+                var btnOpenAi = document.getElementById('btnOpenAi');
+                if (btnOpenAi && window.bootstrap && bootstrap.Modal) {
+                    btnOpenAi.addEventListener('click', function(){
+                        var modalEl = document.getElementById('aiModal');
+                        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                    });
+                }
+            } catch (e) { console.warn('AI header button bind failed', e); }
+
+            // بارگذاری محتوای قبلی
+            const contentInput = document.getElementById('letterContent');
+            if (contentInput && contentInput.value && contentInput.value.trim() !== '') {
+                quill.root.innerHTML = contentInput.value;
+            }
+
+            function updateCounter() {
+                if (!counterElement) return;
+                const text = quill.getText().trim();
+                const lines = text.split('\n').filter(line => line.trim() !== '').length;
+                counterElement.textContent = `تعداد کاراکتر: ${text.length} | تعداد خطوط: ${lines}`;
+            }
+
+            quill.on('text-change', updateCounter);
+            updateCounter();
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (contentInput) {
+                        contentInput.value = quill.root.innerHTML;
+                    }
+
+                    const text = quill.getText().trim();
+                    if (text.length === 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        Swal.fire({
+                            title: 'خطا!',
+                            text: 'لطفاً محتوای نامه را وارد کنید.',
+                            icon: 'error',
+                            confirmButtonText: 'باشه'
+                        });
+                        return false;
+                    }
+
+                    if (form.checkValidity() === false) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const invalidFields = form.querySelectorAll(':invalid');
+                        let errorMessages = [];
+                        invalidFields.forEach(field => {
+                            const validationMessage = field.validationMessage;
+                            if (validationMessage && validationMessage !== '') {
+                                errorMessages.push(validationMessage);
+                            }
+                        });
+                        if (errorMessages.length > 0) {
+                            Swal.fire({
+                                title: 'خطا در فرم!',
+                                html: errorMessages.join('<br>'),
+                                icon: 'error',
+                                confirmButtonText: 'باشه'
+                            });
+                        }
+                    }
+
+                    if (uploadedFiles && uploadedFiles.length > 0) {
+                        const fileEntries = uploadedFiles.map(file => `${file.name}|${file.id}`).join(',');
+                        if (fileEntries.length > 255) {
+                            $('#attachmentFiles').val(`${uploadedFiles.length} فایل آپلود شده`);
+                        } else {
+                            $('#attachmentFiles').val(fileEntries);
+                        }
+                        $('#attachmentsData').val(JSON.stringify(uploadedFiles));
+                    }
+
+                    form.classList.add('was-validated');
+                });
+            }
+
+            // نمایش خطاهای سرور
+            const validationErrors = $('.text-danger');
+            if (validationErrors.length > 0) {
+                let errorMessages = [];
+                validationErrors.each(function() {
+                    const errorText = $(this).text().trim();
+                    if (errorText && errorText !== '') {
+                        errorMessages.push(errorText);
+                    }
+                });
+                if (errorMessages.length > 0) {
+                    Swal.fire({
+                        title: 'خطا در فرم!',
+                        html: errorMessages.join('<br>'),
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                }
+            }
+
+            // نمایش پیام‌های موفقیت
+            const successMessages = $('.alert-success');
+            if (successMessages.length > 0) {
+                const successText = successMessages.text().trim();
+                if (successText && successText !== '') {
+                    Swal.fire({
+                        title: 'موفقیت!',
+                        text: successText,
+                        icon: 'success',
+                        confirmButtonText: 'باشه'
+                    });
+                }
+            }
+            // مقداردهی اولیه ورودی‌های سایر گیرندگان از مدل
+            try {
+                const initialCcIds = '@(Model.CopyReceivers != null && Model.CopyReceivers.Count > 0 ? Model.CopyReceivers[0] : "")';
+                const initialCcNotes = '@Html.Raw(Model.CopyReceivers != null && Model.CopyReceivers.Count > 1 ? (Model.CopyReceivers[1] ?? "[]") : "[]")';
+                const ccIdsInput = document.getElementById('selectedOrganizations');
+                const ccNotesInput = document.getElementById('selectedOrganizationsNotes');
+                if (ccIdsInput && !ccIdsInput.value) ccIdsInput.value = initialCcIds;
+                if (ccNotesInput && !ccNotesInput.value) ccNotesInput.value = initialCcNotes;
+            } catch(e) { console.warn('Init CC inputs failed', e); }
+        });
+    </script>
+
+    <!-- AI Generate/Refine Script -->
+    <script>
+        (function(){
+            const aiPromptEl = document.getElementById('aiPrompt');
+            const aiSubjectEl = document.getElementById('aiSubject');
+            const aiToneEl = document.getElementById('aiTone');
+            const aiProviderEl = document.getElementById('aiProvider');
+            const aiModelEl = document.getElementById('aiModel');
+            // Map model IDs to Persian display names (per request)
+            function getModelDisplayName(id){
+                const map = {
+                    'x-ai/grok-4-fast:free': 'Grok 4 Fast (رایگان)',
+                    'deepseek/deepseek-chat-v3.1:free': 'DeepSeek v3.1 (رایگان)',
+                    'openai/gpt-oss-120b:free': 'GPT-OSS (رایگان)',
+                    'qwen/qwen3-coder:free': 'Qwen3 (رایگان)'
+                };
+                if (map[id]) return map[id];
+                try {
+                    let label = id;
+                    label = label.replace(/\//g, ' — ');
+                    label = label.replace(/:/g, ' ');
+                    return label;
+                } catch (e) { return id; }
+            }
+
+            // Load providers/models with configured API keys
+            function loadModels(){
+                $.get('/Letter/Models', function(res){
+                    if (!res || res.success !== true) return;
+                    const data = res.data || [];
+                    aiProviderEl.innerHTML = '';
+                    aiModelEl.innerHTML = '';
+                    if (data.length === 0){
+                        aiProviderEl.innerHTML = '<option value="">— بدون کلید فعال —</option>';
+                        aiModelEl.innerHTML = '<option value="">—</option>';
+                        return;
+                    }
+                    var ordered = data.slice();
+                    var openrouterIndex = ordered.findIndex(function(x){ return x.provider === 'openrouter'; });
+                    if (openrouterIndex > 0) {
+                        var orItem = ordered.splice(openrouterIndex, 1)[0];
+                        ordered.unshift(orItem);
+                    }
+                    ordered.forEach(function(p, idx){
+                        const opt = document.createElement('option');
+                        opt.value = p.provider; opt.textContent = p.display; aiProviderEl.appendChild(opt);
+                        if (idx === 0){
+                            aiModelEl.innerHTML = '';
+                            (p.models || []).forEach(function(m){ const om = document.createElement('option'); om.value = m; om.textContent = getModelDisplayName(m); aiModelEl.appendChild(om); });
+                            aiProviderEl.value = p.provider;
+                        }
+                    });
+                    aiProviderEl.addEventListener('change', function(){
+                        const sel = data.find(x => x.provider === aiProviderEl.value);
+                        aiModelEl.innerHTML = '';
+                        (sel && sel.models || []).forEach(function(m){ const om = document.createElement('option'); om.value = m; om.textContent = getModelDisplayName(m); aiModelEl.appendChild(om); });
+                    });
+                });
+            }
+
+            loadModels();
+            const aiRefineEl = document.getElementById('aiRefine');
+            const aiPreview = document.getElementById('aiPreview');
+            const btnGenerate = document.getElementById('btnAiGenerate');
+            const btnApply = document.getElementById('btnAiApply');
+
+            function setLoading(isLoading){
+                btnGenerate.disabled = isLoading;
+                btnGenerate.innerHTML = isLoading ? '<i class="fas fa-spinner fa-spin me-1"></i>در حال پردازش...' : '<i class="fas fa-wand-magic-sparkles me-1"></i>تولید/بهبود متن';
+            }
+
+            if (btnGenerate) { btnGenerate.addEventListener('click', function(){
+                const prompt = ((aiPromptEl && aiPromptEl.value) ? aiPromptEl.value : '').trim();
+                const subject = ((aiSubjectEl && aiSubjectEl.value) ? aiSubjectEl.value : '').trim();
+                const tone = ((aiToneEl && aiToneEl.value) ? aiToneEl.value : '').trim();
+                const refine = !!(aiRefineEl && aiRefineEl.checked);
+                const currentHtml = window.quillEditor ? window.quillEditor.root.innerHTML : '';
+                const currentText = window.quillEditor ? window.quillEditor.getText().trim() : '';
+
+                if (!prompt && !(refine && currentText.length > 0)){
+                    Swal.fire({ icon:'warning', title:'توجه', text:'شرح درخواست را وارد کنید یا گزینه بهبود متن فعلی را فعال کنید.'});
+                    return;
+                }
+
+                setLoading(true);
+                aiPreview.textContent = '';
+                btnApply.disabled = true;
+
+                $.ajax({
+                    url: '/Letter/GenerateContent',
+                    type: 'POST',
+                    headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        prompt: prompt,
+                        subject: subject,
+                        tone: tone,
+                        refine: refine,
+                        provider: (aiProviderEl && aiProviderEl.value) ? aiProviderEl.value : null,
+                        model: (aiModelEl && aiModelEl.value) ? aiModelEl.value : null,
+                        currentContent: refine ? currentHtml : null
+                    }),
+                    success: function(res){
+                        const ok = (res && (res.success === true || res.Success === true));
+                        const content = res && (res.content || res.Content);
+                        if (ok && content){
+                            aiPreview.textContent = content;
+                            btnApply.disabled = false;
+                        } else {
+                            const msg = res && (res.message || res.Message) || 'پاسخی دریافت نشد.';
+                            Swal.fire({ icon:'error', title:'خطا', text: msg});
+                        }
+                    },
+                    error: function(xhr){
+                        Swal.fire({ icon:'error', title:'خطا', text:'اشکال در ارتباط با سرور.'});
+                    },
+                    complete: function(){ setLoading(false); }
+                });
+            }); }
+
+            if (btnApply) { btnApply.addEventListener('click', function(){
+                const text = aiPreview.textContent || '';
+                if (!text) return;
+                const html = text.split(/\n\n+/).map(p => `<p>${$('<div>').text(p).html()}</p>`).join('');
+                if (window.quillEditor){
+                    window.quillEditor.clipboard.dangerouslyPasteHTML(html);
+                }
+                const modalEl = document.getElementById('aiModal');
+                if (modalEl && window.bootstrap){
+                    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                }
+            }); }
+        })();
+    </script>
+
+    
+  <!-- اسکریپت مدیریت آپلود فایل‌ها و پیوست‌ها -->
+    <script>
+        // متغیرهای سراسری برای مدیریت فایل‌ها
+        let selectedFiles = [];
+        let uploadedFiles = [];
+        const maxFiles = 20;
+        const maxTotalSize = 500 * 1024 * 1024; // 500 MB
+        const allowedTypes = {
+            'image': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'],
+            'document': ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'],
+            'archive': ['.zip', '.rar', '.7z'],
+            'media': ['.mp4', '.avi', '.mov', '.mp3', '.wav'],
+            'text': ['.txt']
+        };
+
+        // متغیرهای سراسری برای درخت سازمان
+        window.orgData = null;
+
+        // تابع‌های مدیریت فایل‌ها
+        function initializeFileUpload() {
+            // باز کردن مودال فایل‌ها
+            document.getElementById('openAttachmentModal').addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('attachmentModal'));
+                modal.show();
+            });
+
+            // مدیریت کشیدن و رها کردن فایل‌ها
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            // جلوگیری از رفتار پیش‌فرض مرورگر
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            // هایلایت کردن منطقه کشیدن
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            // مدیریت رها کردن فایل‌ها
+            dropZone.addEventListener('drop', handleDrop, false);
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            // مدیریت انتخاب فایل‌ها
+            fileInput.addEventListener('change', handleFiles);
+        }
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            document.getElementById('dropZone').classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            document.getElementById('dropZone').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files } });
+        }
+
+        function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            files.forEach(file => {
+                if (selectedFiles.length >= maxFiles) {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: `حداکثر ${maxFiles} فایل می‌توانید انتخاب کنید.`,
+                        icon: 'warning',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                if (!isValidFileType(file)) {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: `فرمت فایل ${file.name} مجاز نیست.`,
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                if (!isValidFileSize(file)) {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: `حجم فایل ${file.name} بیش از حد مجاز است.`,
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                // بررسی حجم کل
+                const currentTotalSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+                if (currentTotalSize + file.size > maxTotalSize) {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: 'حجم کل فایل‌ها بیش از 500 مگابایت است.',
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                selectedFiles.push(file);
+            });
+
+            updateFilesList();
+            updateUploadButton();
+        }
+
+        function isValidFileType(file) {
+            const extension = '.' + file.name.split('.').pop().toLowerCase();
+            return Object.values(allowedTypes).flat().includes(extension);
+        }
+
+        function isValidFileSize(file) {
+            return file.size <= 100 * 1024 * 1024; // 100 MB per file
+        }
+
+        function getFileIcon(file) {
+            const extension = '.' + file.name.split('.').pop().toLowerCase();
+
+            if (allowedTypes.image.includes(extension)) {
+                return { icon: 'fas fa-image', color: '#28a745' };
+            } else if (allowedTypes.document.includes(extension)) {
+                return { icon: 'fas fa-file-alt', color: '#007bff' };
+            } else if (allowedTypes.archive.includes(extension)) {
+                return { icon: 'fas fa-file-archive', color: '#6f42c1' };
+            } else if (allowedTypes.media.includes(extension)) {
+                return { icon: 'fas fa-file-video', color: '#fd7e14' };
+            } else if (allowedTypes.text.includes(extension)) {
+                return { icon: 'fas fa-file-text', color: '#20c997' };
+            } else {
+                return { icon: 'fas fa-file', color: '#6c757d' };
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0 || bytes === null || bytes === undefined) return 'نامشخص';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function updateFilesList() {
+            const container = document.getElementById('modalFilesContainer');
+            const filesList = document.getElementById('modalFilesList');
+            const filesCount = document.getElementById('modalFilesCount');
+            const totalSize = document.getElementById('modalTotalSize');
+
+            if (selectedFiles.length === 0) {
+                filesList.style.display = 'none';
+                return;
+            }
+
+            filesList.style.display = 'block';
+            container.innerHTML = '';
+
+            const totalSizeBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+            filesCount.textContent = selectedFiles.length;
+            totalSize.textContent = (totalSizeBytes / (1024 * 1024)).toFixed(2);
+
+            selectedFiles.forEach((file, index) => {
+                const fileIcon = getFileIcon(file);
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon" style="background-color: ${fileIcon.color}">
+                            <i class="${fileIcon.icon}"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <span class="file-status pending">در انتظار</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeFile(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+            updateUploadButton();
+        }
+
+        function updateUploadButton() {
+            const uploadBtn = document.getElementById('uploadFilesBtn');
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        // حذف همه فایل‌ها
+        document.getElementById('clearAllFiles').addEventListener('click', function() {
+            selectedFiles = [];
+            updateFilesList();
+            updateUploadButton();
+        });
+
+        // آپلود فایل‌ها
+        document.getElementById('uploadFilesBtn').addEventListener('click', function() {
+            if (selectedFiles.length === 0) return;
+
+            const progressSection = document.getElementById('uploadProgressSection');
+            const overallProgressBar = document.getElementById('overallProgressBar');
+            const overallProgressText = document.getElementById('overallProgressText');
+            const currentFileProgress = document.getElementById('currentFileProgress');
+
+            progressSection.style.display = 'block';
+            this.disabled = true;
+
+            let uploadedCount = 0;
+            let totalFiles = selectedFiles.length;
+
+            selectedFiles.forEach((file, index) => {
+                uploadSingleFile(file, index, (success) => {
+                    uploadedCount++;
+                    const progress = Math.round((uploadedCount / totalFiles) * 100);
+                    overallProgressBar.style.width = `${progress}%`;
+                    overallProgressText.textContent = `${progress}%`;
+
+                    if (uploadedCount === totalFiles) {
+                        if (uploadedFiles.length > 0) {
+                            updateMainForm();
+                            // بستن مودال قبل از نمایش پیام موفقیت
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
+                            modal.hide();
+
+                            // نمایش پیام موفقیت بعد از بسته شدن مودال
+                            setTimeout(() => {
+                                Swal.fire({
+                                    title: 'موفقیت‌آمیز!',
+                                    text: `${uploadedFiles.length} فایل با موفقیت آپلود شد.`,
+                                    icon: 'success',
+                                    confirmButtonText: 'باشه',
+                                    customClass: {
+                                        popup: 'swal2-popup-custom',
+                                        title: 'swal2-title-custom',
+                                        content: 'swal2-content-custom'
+                                    }
+                                });
+                            }, 300);
+                        } else {
+                            // بستن مودال قبل از نمایش پیام خطا
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
+                            modal.hide();
+
+                            // نمایش پیام خطا بعد از بسته شدن مودال
+                            setTimeout(() => {
+                                Swal.fire({
+                                    title: 'خطا!',
+                                    text: 'هیچ فایلی آپلود نشد.',
+                                    icon: 'error',
+                                    confirmButtonText: 'باشه',
+                                    customClass: {
+                                        popup: 'swal2-popup-custom',
+                                        title: 'swal2-title-custom',
+                                        content: 'swal2-content-custom'
+                                    }
+                                });
+                            }, 300);
+                        }
+                        this.disabled = false;
+                    }
+                });
+            });
+        });
+
+        function uploadFiles() {
+            if (selectedFiles.length === 0) return;
+
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال آپلود...';
+
+            let processedCount = 0;
+            const totalFiles = selectedFiles.length;
+
+            selectedFiles.forEach((file, index) => {
+                uploadSingleFile(file, index, () => {
+                    processedCount++;
+                    if (processedCount === totalFiles) {
+                        updateFilesList();
+                        updateUploadButton();
+                        updateMainForm();
+
+                        // مخفی کردن مودال قبل از نمایش پیام
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
+                        modal.hide();
+
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: 'موفقیت!',
+                                text: `${uploadedFiles.length} فایل با موفقیت آپلود شد.`,
+                                icon: 'success',
+                                confirmButtonText: 'باشه',
+                                customClass: {
+                                    popup: 'swal2-popup-custom',
+                                    title: 'swal2-title-custom',
+                                    content: 'swal2-content-custom'
+                                }
+                            });
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        function uploadSingleFile(file, index, callback) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Letter/UploadFile', true);
+
+            xhr.onload = function() {
+                const fileItem = document.querySelectorAll('.file-item')[index];
+                const statusSpan = fileItem.querySelector('.file-status');
+
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        fileItem.classList.add('success');
+                        statusSpan.textContent = 'آپلود شد';
+                        statusSpan.className = 'file-status success';
+                        uploadedFiles.push({
+                            id: response.filePath, // استفاده از filePath به عنوان id یکتا
+                            name: file.name,
+                            path: response.filePath,
+                            size: file.size
+                        });
+                        callback(true);
+                    } else {
+                        fileItem.classList.add('error');
+                        statusSpan.textContent = 'خطا';
+                        statusSpan.className = 'file-status error';
+                        callback(false);
+                    }
+                } else {
+                    fileItem.classList.add('error');
+                    statusSpan.textContent = 'خطا';
+                    statusSpan.className = 'file-status error';
+                    callback(false);
+                }
+            };
+
+            xhr.onerror = function() {
+                const fileItem = document.querySelectorAll('.file-item')[index];
+                const statusSpan = fileItem.querySelector('.file-status');
+                fileItem.classList.add('error');
+                statusSpan.textContent = 'خطا';
+                statusSpan.className = 'file-status error';
+                callback(false);
+            };
+
+            xhr.send(formData);
+        }
+
+        function updateMainForm() {
+            const attachmentInput = document.getElementById('attachmentFiles');
+            const selectedFilesList = document.getElementById('selectedFilesList');
+            const filesContainer = document.getElementById('filesContainer');
+            const filesCount = document.getElementById('filesCount');
+            const totalSize = document.getElementById('totalSize');
+            const fileAddressField = document.getElementById('fileaddress');
+
+            if (uploadedFiles.length > 0) {
+                attachmentInput.value = `${uploadedFiles.length} فایل انتخاب شده`;
+                selectedFilesList.style.display = 'block';
+
+                filesContainer.innerHTML = '';
+                // محاسبه حجم کل فقط برای فایل‌هایی که حجم مشخص دارند
+                const totalSizeBytes = uploadedFiles.reduce((sum, file) => sum + (file.size || 0), 0);
+                const knownSizeFiles = uploadedFiles.filter(file => file.size && file.size > 0);
+                const unknownSizeFiles = uploadedFiles.filter(file => !file.size || file.size === 0);
+
+                filesCount.textContent = uploadedFiles.length;
+                if (unknownSizeFiles.length > 0) {
+                    totalSize.textContent = `${(totalSizeBytes / (1024 * 1024)).toFixed(2)} (${unknownSizeFiles.length} فایل با حجم نامشخص)`;
+                } else {
+                    totalSize.textContent = (totalSizeBytes / (1024 * 1024)).toFixed(2);
+                }
+
+                uploadedFiles.forEach(file => {
+                    const fileIcon = getFileIcon({ name: file.name });
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item success';
+                    
+                    // آیا فایل قبلی است یا جدید آپلود شده
+                    const isExistingFile = file.isExisting;
+                    const downloadUrl = isExistingFile 
+                        ? `/Letter/DownloadAttachment?letterId=@Model.Id&fileName=${encodeURIComponent(file.id)}`
+                        : `/Letter/DownloadAttachment?letterId=@Model.Id&fileName=${encodeURIComponent(file.id)}`;
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-icon" style="background-color: ${fileIcon.color}">
+                                <i class="${fileIcon.icon}"></i>
+                            </div>
+                            <div class="file-details">
+                                <div class="file-name">
+                                    <a href="${downloadUrl}" download="${file.name}" style="text-decoration: none; color: inherit;">
+                                        <i class="fas fa-paperclip me-1"></i>${file.name}
+                                    </a>
+                                </div>
+                                <div class="file-size">${formatFileSize(file.size || 0)}</div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <span class="file-status success">${isExistingFile ? 'فایل موجود' : 'آپلود شد'}</span>
+                            <a href="${downloadUrl}" download="${file.name}" class="btn btn-sm btn-outline-primary me-2" title="دانلود فایل">
+                                <i class="fas fa-download"></i> دانلود
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteUploadedFile('${file.id}', '${file.name.replace(/'/g, '\\\'').replace(/"/g, '\\"')}')" title="حذف فایل">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    `;
+                    filesContainer.appendChild(fileItem);
+                });
+
+                // فقط اسامی فایل‌ها را با کاما جدا کن (حداکثر 255 کاراکتر)
+                const fileNames = uploadedFiles.map(file => file.id).join(',');
+                if (fileNames.length > 255) {
+                    // اگر بیش از 255 کاراکتر شد، فقط تعداد فایل‌ها را ذخیره کن
+                    fileAddressField.value = `${uploadedFiles.length} فایل آپلود شده`;
+                } else {
+                    fileAddressField.value = fileNames;
+                }
+
+                // اطلاعات کامل فایل‌ها را در فیلد مخفی ذخیره کن
+                document.getElementById('attachmentsData').value = JSON.stringify(uploadedFiles);
+            } else {
+                // اگر هیچ فایلی وجود نداشته باشد، نمایش را به حالت اولیه برگردان
+                attachmentInput.value = '';
+                selectedFilesList.style.display = 'none';
+                filesContainer.innerHTML = '';
+                filesCount.textContent = '0';
+                totalSize.textContent = '0';
+                fileAddressField.value = '';
+                document.getElementById('attachmentsData').value = '';
+            }
+        }
+
+        // تابع حذف فایل آپلود شده
+        window.deleteUploadedFile = function(fileId, fileName) {
+            Swal.fire({
+                title: 'حذف فایل',
+                text: `آیا مطمئن هستید که می‌خواهید فایل "${fileName}" را حذف کنید؟`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'انصراف',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // حذف فایل از سرور
+                    fetch('@Url.Action("DeleteFile", "Letter")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: JSON.stringify({
+                            fileId: fileId,
+                            fileName: fileId // استفاده از fileId که همان uniqueFileName است
+                        })
+                    })
+                    .then(response => {
+                        console.log('Delete response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Delete response data:', data);
+                        if (data.success) {
+                            // حذف فایل از لیست uploadedFiles
+                            uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
+
+                            // بروزرسانی نمایش
+                            updateMainForm();
+
+                            Swal.fire({
+                                title: 'حذف شد!',
+                                text: 'فایل با موفقیت حذف شد.',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'خطا!',
+                                text: data.message || 'خطا در حذف فایل.',
+                                icon: 'error',
+                                confirmButtonText: 'باشه'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'خطا!',
+                            text: 'خطا در ارتباط با سرور.',
+                            icon: 'error',
+                            confirmButtonText: 'باشه'
+                        });
+                    });
+                }
+            });
+        };
+
+        // راه‌اندازی صفحه ویرایش نامه
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileUpload();
+            
+            // بارگذاری فایل‌های موجود در حالت ویرایش
+            @if (!string.IsNullOrEmpty(Model.AttachmentName))
+            {
+                <text>
+                const existingAttachments = '@Html.Raw(Model.AttachmentName)';
+                if (existingAttachments && existingAttachments.trim() !== '') {
+                    const fileEntries = existingAttachments.split(',');
+                    fileEntries.forEach(entry => {
+                        if (entry.trim() !== '') {
+                            let fileName, uniqueId;
+                            if (entry.includes('|')) {
+                                const parts = entry.trim().split('|');
+                                fileName = parts[0];
+                                uniqueId = parts[1] || fileName;
+                            } else {
+                                fileName = entry.trim();
+                                uniqueId = fileName;
+                            }
+                            uploadedFiles.push({
+                                id: uniqueId,
+                                name: fileName,
+                                path: uniqueId,
+                                size: 0,
+                                isExisting: true
+                            });
+                        }
+                    });
+
+                    // نمایش فایل‌های موجود در UI
+                    setTimeout(() => {
+                        updateMainForm();
+                    }, 100);
+                }
+                </text>
+            }
+        });
+    </script>
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

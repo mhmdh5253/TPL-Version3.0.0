@@ -115,7 +115,6 @@ namespace BE.LetterAutomation
         public ClassificationType Classification { get; set; }
 
         [Display(Name = "پیوست")]
-        [StringLength(255, ErrorMessage = "{0} نمی‌تواند بیش از {1} کاراکتر باشد")]
         public string? AttachmentName { get; set; }
 
         [Display(Name = "نمایش در تابلو اعلانات")]

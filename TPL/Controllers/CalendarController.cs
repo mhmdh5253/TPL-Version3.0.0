@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using BLL.Calendar;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -7,9 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using TPLWeb.Models.Calendar;
 using BE;
 using BE.Calendar;
-using Newtonsoft.Json;
-using NPOI.Util;
-using NuGet.Protocol;
+using TPLWeb.Tools;
+using DAL;
 
 namespace TPLWeb.Controllers
 {
@@ -19,17 +17,23 @@ namespace TPLWeb.Controllers
         private readonly ICalendarService _calendarService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly object _dateConverter;
-        private readonly BLL.Ticketing.BlNotification _notificationService;
+    private readonly BLL.Ticketing.BlNotification _notificationService;
+    private readonly ISmsSender _smsSender;
+    private readonly Db _context;
 
         public CalendarController(
             ICalendarService calendarService,
             UserManager<ApplicationUser> userManager,
-            BLL.Ticketing.BlNotification notificationService)
+            BLL.Ticketing.BlNotification notificationService,
+            ISmsSender smsSender,
+            Db context)
         {
             _calendarService = calendarService;
             _userManager = userManager;
             _dateConverter = new object();
             _notificationService = notificationService;
+            _smsSender = smsSender;
+            _context = context;
         }
 
         public async Task<IActionResult> AppCalendar()
@@ -293,36 +297,90 @@ namespace TPLWeb.Controllers
                 if ((int)model.Visibility == 0) model.Visibility = EventVisibility.Private;
 
                 var createdEvent = await _calendarService.CreateEventAsync(model, userId!);
-                
-                // Send notifications to selected participants
-                if (model.ParticipantUserIds != null && model.ParticipantUserIds.Any())
+
+                // Determine recipients: all users if "select all" chosen, otherwise selected participants; fallback to all if IsManagerAnnouncement by admin
+                var allUsers = await _userManager.Users.ToListAsync();
+                var selectedIds = (model.ParticipantUserIds ?? new List<string>()).Distinct().ToList();
+                bool allSelected = selectedIds.Any() && selectedIds.Count >= Math.Max(1, allUsers.Count - 1);
+                var recipients = new List<ApplicationUser>();
+
+                if (selectedIds.Any())
                 {
-                    foreach (var participantId in model.ParticipantUserIds)
-                    {
-                        if (participantId != userId) // Don't notify the creator
-                        {
-                            await _notificationService.SendNotification(
-                                participantId, 
-                                $"شما به رویداد '{model.Title}' دعوت شده‌اید", 
-                                Url.Action("AppCalendar", "Calendar")!);
-                        }
-                    }
+                    if (allSelected)
+                        recipients = allUsers.Where(u => u.Id != userId).ToList();
+                    else
+                        recipients = allUsers.Where(u => selectedIds.Contains(u.Id) && u.Id != userId).ToList();
                 }
-                
-                // If this is a management notification and user is admin/super admin, send notifications to all users
-                if (model.IsManagerAnnouncement && isAdmin)
+                else if (model.IsManagerAnnouncement && isAdmin)
                 {
-                    var allUsers = await _userManager.Users.ToListAsync();
-                    foreach (var userToNotify in allUsers)
+                    recipients = allUsers.Where(u => u.Id != userId).ToList();
+                }
+
+                // Send in-app notifications to recipients
+                foreach (var r in recipients)
+                {
+                    var text = model.IsManagerAnnouncement && (allSelected || !selectedIds.Any())
+                        ? $"اعلان مدیریتی جدید: '{model.Title}'"
+                        : $"شما به رویداد '{model.Title}' دعوت شده‌اید";
+                    await _notificationService.SendNotification(
+                        r.Id,
+                        text,
+                        Url.Action("AppCalendar", "Calendar")!);
+                }
+
+                // Send SMS to recipients with full details
+                var phoneNumbers = recipients
+                    .Select(u => u.PhoneNumber)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => p!)
+                    .ToList();
+                if (phoneNumbers.Any())
+                {
+                    var startText = createdEvent.StartDate.ToString("yyyy/MM/dd HH:mm");
+                    var endText = createdEvent.EndDate.ToString("yyyy/MM/dd HH:mm");
+                    var desc = string.IsNullOrWhiteSpace(createdEvent.Description) ? "-" : createdEvent.Description;
+                    var loc = string.IsNullOrWhiteSpace(createdEvent.Location) ? "-" : createdEvent.Location;
+                    var smsText = model.IsManagerAnnouncement && (allSelected || !selectedIds.Any())
+                        ? $"اعلان مدیریتی جدید: {createdEvent.Title}\nتاریخ: {startText}\nمکان: {loc}\nتوضیحات: {desc}"
+                        : $"دعوت به رویداد: {createdEvent.Title}\nتاریخ: {startText} تا {endText}\nمکان: {loc}\nتوضیحات: {desc}";
+                    await _smsSender.SendBulkSmsAsync(smsText, phoneNumbers);
+                }
+
+                // Build reminder recipients: owner's personal items → only owner
+                var reminderTime = createdEvent.StartDate.AddMinutes(-30);
+                var reminderRecipients = new List<ApplicationUser>();
+                var owner = allUsers.FirstOrDefault(u => u.Id == userId);
+                bool isPersonalOrPrivate = (!model.IsManagerAnnouncement) && 
+                    (!selectedIds.Any() || createdEvent.EventType == EventType.Personal || createdEvent.Visibility == EventVisibility.Private);
+                if (isPersonalOrPrivate && owner != null)
+                    reminderRecipients.Add(owner);
+                else
+                    reminderRecipients = recipients;
+
+                if (reminderRecipients.Any() && reminderTime > DateTime.Now.AddMinutes(-1))
+                {
+                    var startText = createdEvent.StartDate.ToString("yyyy/MM/dd HH:mm");
+                    var desc = string.IsNullOrWhiteSpace(createdEvent.Description) ? "-" : createdEvent.Description;
+                    var loc = string.IsNullOrWhiteSpace(createdEvent.Location) ? "-" : createdEvent.Location;
+                    var reminders = new List<CalendarReminder>();
+                    foreach (var r in reminderRecipients)
                     {
-                        if (userToNotify.Id != userId) // Don't notify the creator
+                        var baseMsg = $"یادآوری: {createdEvent.Title}\nتاریخ: {startText}\nمکان: {loc}\nتوضیحات: {desc}";
+                        if (owner != null && r.Id == owner.Id)
+                            baseMsg += "\nحضور الزامی می باشد";
+                        reminders.Add(new CalendarReminder
                         {
-                            await _notificationService.SendNotification(
-                                userToNotify.Id, 
-                                $"اعلان مدیریتی جدید: '{model.Title}'", 
-                                Url.Action("AppCalendar", "Calendar")!);
-                        }
+                            CalendarEventId = createdEvent.Id,
+                            UserId = r.Id,
+                            ReminderTime = reminderTime,
+                            ReminderType = ReminderType.ThirtyMinutesBefore,
+                            IsSent = false,
+                            NotificationMethod = "SMS",
+                            Message = baseMsg
+                        });
                     }
+                    _context.CalendarReminders.AddRange(reminders);
+                    await _context.SaveChangesAsync();
                 }
                 
                 return Json(new { success = true, message = "رویداد با موفقیت ثبت شد", eventId = createdEvent.Id });
@@ -354,8 +412,89 @@ namespace TPLWeb.Controllers
                 if ((int)model.EventType == 0) model.EventType = EventType.Personal;
                 if ((int)model.Visibility == 0) model.Visibility = EventVisibility.Private;
 
-                await _calendarService.UpdateEventAsync(model.Id, model, userId!);
-                
+                var updated = await _calendarService.UpdateEventAsync(model.Id, model, userId!);
+
+                // Fetch event with participants to determine recipients
+                var ev = await _calendarService.GetEventByIdAsync(model.Id);
+                if (ev != null)
+                {
+                    var allUsers2 = await _userManager.Users.ToListAsync();
+                    var participantIds = ev.Participants?.Select(p => p.UserId).Distinct().ToList() ?? new List<string>();
+                    bool treatAsAll = ev.IsManagerAnnouncement || (participantIds.Any() && participantIds.Count >= Math.Max(1, allUsers2.Count - 1));
+                    var recipients2 = treatAsAll
+                        ? allUsers2.Where(u => u.Id != userId).ToList()
+                        : allUsers2.Where(u => participantIds.Contains(u.Id) && u.Id != userId).ToList();
+
+                    // In-app notification about update
+                    foreach (var r in recipients2)
+                    {
+                        await _notificationService.SendNotification(
+                            r.Id,
+                            $"رویداد '{ev.Title}' ویرایش شد",
+                            Url.Action("AppCalendar", "Calendar")!);
+                    }
+
+                    // SMS about update, include full details
+                    var phones2 = recipients2
+                        .Select(u => u.PhoneNumber)
+                        .Where(p => !string.IsNullOrWhiteSpace(p))
+                        .Select(p => p!)
+                        .ToList();
+                    if (phones2.Any())
+                    {
+                        var s = updated.StartDate.ToString("yyyy/MM/dd HH:mm");
+                        var e = updated.EndDate.ToString("yyyy/MM/dd HH:mm");
+                        var d = string.IsNullOrWhiteSpace(updated.Description) ? "-" : updated.Description;
+                        var l = string.IsNullOrWhiteSpace(updated.Location) ? "-" : updated.Location;
+                        await _smsSender.SendBulkSmsAsync($"رویداد به‌روزرسانی شد: {updated.Title}\nتاریخ: {s} تا {e}\nمکان: {l}\nتوضیحات: {d}", phones2);
+                    }
+
+                    // Update or create reminders to be 30 minutes before new start; personal/private → only owner
+                    var newReminderTime = updated.StartDate.AddMinutes(-30);
+                    var reminderRecipients2 = recipients2;
+                    if (!updated.IsManagerAnnouncement && (!(participantIds?.Any() ?? false) || updated.EventType == EventType.Personal || updated.Visibility == EventVisibility.Private))
+                    {
+                        var owner2 = allUsers2.FirstOrDefault(u => u.Id == updated.UserId);
+                        reminderRecipients2 = owner2 != null ? new List<ApplicationUser> { owner2 } : new List<ApplicationUser>();
+                    }
+
+                    if (newReminderTime > DateTime.Now.AddMinutes(-1) && reminderRecipients2.Any())
+                    {
+                        var st = updated.StartDate.ToString("yyyy/MM/dd HH:mm");
+                        var dd = string.IsNullOrWhiteSpace(updated.Description) ? "-" : updated.Description;
+                        var ll = string.IsNullOrWhiteSpace(updated.Location) ? "-" : updated.Location;
+                        foreach (var r in reminderRecipients2)
+                        {
+                            var msg = $"یادآوری: {updated.Title}\nتاریخ: {st}\nمکان: {ll}\nتوضیحات: {dd}";
+                            var isOwner = r.Id == updated.UserId;
+                            if (isOwner) msg += "\nحضور الزامی می باشد";
+
+                            var existingReminder = await _context.CalendarReminders
+                                .FirstOrDefaultAsync(cr => cr.CalendarEventId == updated.Id && cr.UserId == r.Id && cr.ReminderType == ReminderType.ThirtyMinutesBefore);
+                            if (existingReminder == null)
+                            {
+                                _context.CalendarReminders.Add(new CalendarReminder
+                                {
+                                    CalendarEventId = updated.Id,
+                                    UserId = r.Id,
+                                    ReminderTime = newReminderTime,
+                                    ReminderType = ReminderType.ThirtyMinutesBefore,
+                                    IsSent = false,
+                                    NotificationMethod = "SMS",
+                                    Message = msg
+                                });
+                            }
+                            else
+                            {
+                                existingReminder.ReminderTime = newReminderTime;
+                                existingReminder.IsSent = false;
+                                existingReminder.Message = msg;
+                            }
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 return Json(new { success = true, message = "رویداد با موفقیت به‌روزرسانی شد" });
             }
             catch (Exception ex)

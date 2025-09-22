@@ -454,8 +454,8 @@ namespace TPLWeb.Controllers
                 foreach (var receiverId in model.ReceiverUserIds)
                 {
                     var receiverOrg = await GetUserOrganizationId(receiverId);
-                    if (currentUserOrg != receiverOrg)
-                        continue;
+                    //if (currentUserOrg != receiverOrg)
+                    //    continue;
 
                     var referral = new LetterReferral
                     {
@@ -513,7 +513,9 @@ namespace TPLWeb.Controllers
                 return Forbid();
 
             var users = await _context.UserOrganizations
-                .Where(uo => uo.OrganizationId == currentUserOrg && uo.IsActive)
+                .Where(uo =>
+                    uo.IsActive &&
+                    (uo.OrganizationId == currentUserOrg || (uo.Organization != null && uo.Organization.ParentId == currentUserOrg)))
                 .Select(uo => new
                 {
                     Id = uo.User!.Id,

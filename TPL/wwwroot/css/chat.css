@@ -2356,3 +2356,355 @@ body {
 img, svg {
     max-width: -webkit-fill-available;
 }
+
+/* =============================
+   Responsive Fixes & Enhancements
+   (visual-only, no behavior changes)
+   ============================= */
+
+/* Make flex children shrink properly to enable scrolling in nested areas */
+.chat-sidebar,
+.chat-main,
+.chat-interface,
+.chat-messages,
+.chat-section,
+.contacts-section {
+    min-height: 0;
+}
+
+/* Improve scroll on touch devices */
+.chat-messages,
+.chat-list,
+.contacts-list {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Side-by-side half-height sections in sidebar, each scrollable */
+.chat-sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-section,
+.contacts-section {
+    flex: 1 1 0%;
+    max-height: none;
+    overflow-y: auto;
+}
+
+/* Visible separator between the two halves */
+.chat-section {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Keep each section's header fixed at the top of its scroll area */
+.section-header {
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 3;
+}
+
+/* Keep the chat header visible while scrolling messages */
+.chat-main-header {
+    position: sticky;
+    top: 0;
+    background: var(--white);
+}
+
+/* Safer viewport height on mobile browsers */
+@supports (height: 100dvh) {
+    .chat-container {
+        height: 100dvh;
+    }
+}
+
+@supports (height: 100svh) {
+    .chat-container {
+        height: 100svh;
+    }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+    .chat-main-header {
+        padding: 16px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .chat-info {
+        gap: 12px;
+    }
+
+    .actions .btn {
+        min-width: 32px;
+        height: 32px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* Keep search visible when scrolling in the sidebar */
+    .search-wrapper {
+        position: sticky;
+        top: 0;
+        z-index: 1002;
+    }
+}
+
+/* Mobile-first improvements */
+@media (max-width: 768px) {
+    /* Stack already applied; ensure areas size correctly */
+    .chat-sidebar {
+        height: 60%;
+    }
+
+    .chat-main {
+        height: 40%;
+    }
+
+    /* Remove restrictive max-heights so sections can flex */
+    .chat-section,
+    .contacts-section {
+        max-height: none;
+        height: 50%;
+        padding: 12px 0;
+    }
+
+    /* Compact header avatar and texts */
+    .chat-header {
+        padding: 10px 8px;
+    }
+
+    .chat-header .avatar {
+        width: 64px;
+        height: 64px;
+        border-width: 3px;
+        margin-bottom: 8px;
+    }
+
+    .user-info h4 {
+        font-size: 18px;
+    }
+
+    .user-info .user-role {
+        font-size: 12px;
+    }
+
+    /* Tighter list items for small screens */
+    .chat-item,
+    .contact-item {
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .chat-name,
+    .contact-name {
+        font-size: 14px;
+    }
+
+    .chat-last-message,
+    .contact-status {
+        font-size: 12px;
+    }
+
+    /* Messages: allow wider bubbles and slightly smaller paddings */
+    .message .content {
+        max-width: 85%;
+    }
+
+    .message .text {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .message-header {
+        gap: 6px;
+        margin-bottom: 2px;
+    }
+
+    .sender-name {
+        font-size: 13px;
+    }
+
+    .message-time {
+        font-size: 11px;
+    }
+
+    /* Input area: ensure comfortable tap targets and safe-area support */
+    .chat-input-container {
+        padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .chat-input {
+        padding: 6px 12px;
+        min-height: 44px;
+    }
+
+    .chat-input .btn {
+        min-width: 32px;
+        height: 32px;
+        padding: 6px;
+    }
+
+    .chat-input .btn.send {
+        min-width: 34px;
+        height: 34px;
+    }
+
+    .chat-input input {
+        font-size: 14px;
+    }
+
+    /* Emoji picker should fit viewport width on mobile */
+    .emoji-picker {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: none;
+    }
+
+    /* Better media sizing */
+    img, svg {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Keep search area accessible */
+    .search-wrapper {
+        padding: 14px;
+    }
+
+    .search-icon {
+        left: 24px;
+    }
+
+    .clear-search {
+        right: 24px;
+    }
+}
+
+/* Very small devices */
+@media (max-width: 480px) {
+    .chat-container {
+        margin: 5px;
+        border-radius: var(--border-radius);
+    }
+
+    /* Give more room to sidebar so each half shows a few items */
+    .chat-sidebar {
+        height: 62%;
+    }
+
+    .chat-main {
+        height: 38%;
+    }
+
+    .chat-main-header {
+        padding: 12px;
+        gap: 6px;
+    }
+
+    .chat-details h5 {
+        font-size: 16px;
+    }
+
+    .chat-status {
+        font-size: 12px;
+    }
+
+    .file-upload-info {
+        margin: 8px 8px;
+        padding: 10px 12px;
+    }
+
+    .typing-indicator {
+        margin: 6px 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .image-message { max-width: 85vw; }
+    .video-message { max-width: 90vw; }
+    .audio-message { max-width: 85vw; }
+
+    /* Prevent context menu from overflowing viewport */
+    .message-context-menu {
+        max-width: 90vw;
+    }
+
+    /* Mobile polished visual mode */
+    body {
+        background: radial-gradient(1200px 600px at 80% -10%, rgba(99,102,241,0.08), transparent),
+                    radial-gradient(800px 400px at 10% 100%, rgba(139,92,246,0.08), transparent),
+                    var(--light-bg);
+    }
+
+    .chat-container {
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(229,231,235,0.6);
+        box-shadow: 0 10px 30px rgba(99,102,241,0.08);
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, rgba(99,102,241,1), rgba(139,92,246,1));
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .section-header {
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .chat-item,
+    .contact-item {
+        background: rgba(255,255,255,0.8);
+        border-radius: 12px;
+        margin: 8px 12px;
+        border: 1px solid rgba(229,231,235,0.7);
+    }
+
+    .chat-item.active {
+        background: linear-gradient(135deg, rgba(99,102,241,1), rgba(139,92,246,1));
+        border-color: transparent;
+    }
+
+    .chat-messages {
+        background: linear-gradient(180deg, rgba(248,250,252,1), rgba(255,255,255,1));
+    }
+
+    .message .text {
+        border-radius: 16px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    }
+
+    .message.own .text {
+        background: linear-gradient(135deg, rgba(99,102,241,1), rgba(79,70,229,1));
+        box-shadow: 0 8px 22px rgba(99,102,241,0.25);
+    }
+
+    /* Floating input bar */
+    .chat-input-container {
+        position: sticky;
+        bottom: 0;
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.95));
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .chat-input {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(229,231,235,0.9);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .chat-input .btn.send {
+        box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+    }
+}

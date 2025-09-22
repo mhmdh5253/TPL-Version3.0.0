@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TPLWeb.Tools;
 
 namespace TPLWeb.Controllers
 {
@@ -19,19 +20,22 @@ namespace TPLWeb.Controllers
         private readonly ILetterService _letterService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly Db _context;
+    private readonly ISmsSender _smsSender;
 
         public NotificationsController(
             BlNotification notificationService,
             ICalendarService calendarService,
             ILetterService letterService,
             UserManager<ApplicationUser> userManager,
-            Db context)
+            Db context,
+            ISmsSender smsSender)
         {
             _notificationService = notificationService;
             _calendarService = calendarService;
             _letterService = letterService;
             _userManager = userManager;
             _context = context;
+            _smsSender = smsSender;
         }
 
         public class UnifiedNotificationItem
@@ -69,6 +73,51 @@ namespace TPLWeb.Controllers
 
             var result = await GetUnifiedItems(currentUser.Id);
             return Json(new { totalCount = result.totalCount, items = result.items });
+        }
+
+        [HttpGet("LastMonthTicker")] 
+        public async Task<IActionResult> LastMonthTicker()
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Json(Array.Empty<string>());
+            }
+
+            var result = await GetUnifiedItems(currentUser.Id);
+            var since = DateTime.Now.AddMonths(-1);
+            var messages = result.items
+                .Where(x => x.CreatedDate >= since)
+                .OrderByDescending(x => x.CreatedDate)
+                .Select(x => x.Message)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct()
+                .Take(100)
+                .ToList();
+
+            if (messages.Count == 0)
+                messages.Add("اعلانی در یک ماه گذشته وجود ندارد");
+
+            return Json(messages);
+        }
+
+        [HttpGet("LastMonth")] 
+        public async Task<IActionResult> LastMonth()
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Json(new { totalCount = 0, items = new List<UnifiedNotificationItem>() });
+            }
+
+            var result = await GetUnifiedItems(currentUser.Id);
+            var since = DateTime.Now.AddMonths(-1);
+            var items = result.items
+                .Where(x => x.CreatedDate >= since)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToList();
+
+            return Json(new { totalCount = items.Count, items });
         }
 
         private async Task<(int totalCount, List<UnifiedNotificationItem> items)> GetUnifiedItems(string userId)
@@ -296,6 +345,46 @@ namespace TPLWeb.Controllers
             }
             var ok = await _notificationService.SendNotification(userId, message, link ?? string.Empty);
             return Json(new { success = ok });
+        }
+
+        // ارسال اعلان مدیریتی برای همه کاربران + پیامک انبوه
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpPost("SendToAll")] 
+        public async Task<IActionResult> SendToAll([FromForm] string message, [FromForm] string? link)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return BadRequest(new { success = false, message = "متن اعلان الزامی است" });
+            }
+
+            try
+            {
+                var allUsers = await _userManager.Users.ToListAsync();
+                int created = 0;
+                foreach (var u in allUsers)
+                {
+                    var ok = await _notificationService.SendNotification(u.Id, message, link ?? string.Empty);
+                    if (ok) created++;
+                }
+
+                var phoneNumbers = allUsers
+                    .Select(u => u.PhoneNumber)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => p!)
+                    .ToList();
+
+                string smsResult = "Skipped: no phone numbers";
+                if (phoneNumbers.Any())
+                {
+                    smsResult = await _smsSender.SendBulkSmsAsync(message, phoneNumbers);
+                }
+
+                return Json(new { success = true, createdNotifications = created, totalUsers = allUsers.Count, smsResult });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

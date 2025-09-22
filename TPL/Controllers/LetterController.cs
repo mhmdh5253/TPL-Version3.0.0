@@ -13,12 +13,15 @@ using System.Text.Json;
 using TPLWeb.Tools;
 using SixImage = SixLabors.ImageSharp.Image;
 using System.Runtime.Versioning;
+using Newtonsoft.Json;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
 
 namespace TPLWeb.Controllers
 {
     [Authorize]
     [Route("Letter")]
-    [SupportedOSPlatform("windows")]
     public class LetterController : Controller
     {
         private readonly ILetterService _letterService;
@@ -28,9 +31,12 @@ namespace TPLWeb.Controllers
         private readonly ILogger<LetterController> _logger;
         private readonly BlNotification _notificationService;
         private readonly BlRecivers _recivers;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
         public LetterController(ILetterService letterService, Db context, UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment environment, ILogger<LetterController> logger, BlRecivers recivers, BlNotification notificationService)
+            IWebHostEnvironment environment, ILogger<LetterController> logger, BlRecivers recivers, BlNotification notificationService,
+            IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _letterService = letterService;
             _context = context;
@@ -39,6 +45,8 @@ namespace TPLWeb.Controllers
             _logger = logger;
             _recivers = recivers;
             _notificationService = notificationService;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -61,6 +69,7 @@ namespace TPLWeb.Controllers
         }
 
         [HttpGet("letterviewpdf")]
+        [SupportedOSPlatform("windows")]
         public async Task<IActionResult> ViewLetterPdf(int id)
         {
             await LetterGenerate(id);
@@ -79,6 +88,7 @@ namespace TPLWeb.Controllers
         }
 
         [HttpGet("lettergenerate")]
+        [SupportedOSPlatform("windows")]
         public async Task<IActionResult> LetterGenerate(int id)
         {
             var model = await _letterService.GetLetterByIdAsync(id);
@@ -202,7 +212,7 @@ namespace TPLWeb.Controllers
 
 
         [HttpGet("Letters")]
-        public  IActionResult Index()
+        public IActionResult Index()
         {
             ViewData["Title"] = "کارتابل نامه های وارده";
             return RedirectToAction(nameof(KartableVaredeh));
@@ -229,7 +239,7 @@ namespace TPLWeb.Controllers
                     .Select(a => a.LetterId)
                     .ToListAsync();
                 model = model.Where(l => !readIds.Contains(l.Id)).ToList();
-                
+
                 // Populate IsRead property for remaining letters
                 await PopulateLetterReadStatus(model, currentUserId);
             }
@@ -247,8 +257,8 @@ namespace TPLWeb.Controllers
             var result = await _letterService.GetAllLettersAsync();
             var res = (List<Letter>)result.Data!;
             var model = res.Where(x => x.IsDeleted != true && x.Username == User.Identity!.Name && x.Status == LetterStatus.Pending ||
-                                       x.Status==LetterStatus.Rejected || x.Status == LetterStatus.InReview ||
-                                       x.Status == LetterStatus.Returned ).ToList();
+                                       x.Status == LetterStatus.Rejected || x.Status == LetterStatus.InReview ||
+                                       x.Status == LetterStatus.Returned).ToList();
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -279,9 +289,9 @@ namespace TPLWeb.Controllers
 
             var userOrganization = await _context.UserOrganizations
                 .Include(c => c.Organization)
-                .FirstOrDefaultAsync(x => x.UserId == currentUser.Id && x.IsActive==true);
+                .FirstOrDefaultAsync(x => x.UserId == currentUser.Id && x.IsActive == true);
 
-            if (userOrganization?.Organization == null || userOrganization.IsActive==false)
+            if (userOrganization?.Organization == null || userOrganization.IsActive == false)
             {
                 TempData["ErrorMessage"] = "سازمان کاربر یافت نشد.";
                 return RedirectToAction(nameof(KartableSadereh));
@@ -297,7 +307,7 @@ namespace TPLWeb.Controllers
             var userorgid = userOrganization.Organization.Id;
             var letters = (List<Letter>)result.Data!;
             var model = letters.Where(x =>
-                !x.IsDeleted&&
+                !x.IsDeleted &&
                 x.Status != LetterStatus.Deleted &&
                 x.Status != LetterStatus.Pending &&
                 x.Status != LetterStatus.Archived &&
@@ -322,18 +332,18 @@ namespace TPLWeb.Controllers
             TempData["vaziat"] = null;
             return View(nameof(Index), model);
         }
-      
+
         [HttpGet("Answerletter")]
         public async Task<IActionResult> AnswerLetter(int letterid)
         {
-            var let =await _context.Letters.Where(x => x.Id == letterid).FirstOrDefaultAsync();
+            var let = await _context.Letters.Where(x => x.Id == letterid).FirstOrDefaultAsync();
             ViewBag.ParentOrganizations = _context.Organizations
                 .Where(o => o.IsActive)
                 .ToList();
-            ViewBag.relatedtext  = $"{let!.LetterNumber}-{let.Subject}";
-            return View(nameof(Create),new Letter()
+            ViewBag.relatedtext = $"{let!.LetterNumber}-{let.Subject}";
+            return View(nameof(Create), new Letter()
             {
-                LetterRelationType=LetterRelationType.پاسخ,
+                LetterRelationType = LetterRelationType.پاسخ,
                 RelatedLetterId = letterid,
                 Content = $"با احترام در پاسخ به نامه شماره {let.LetterNumber} مورخ {let.RegistrationDate.ToString("yyyy/MM/dd")} :"
             });
@@ -362,7 +372,7 @@ namespace TPLWeb.Controllers
             return View(new Letter());
         }
 
-       
+
 
         [HttpPost("createnewletter")]
         [ValidateAntiForgeryToken]
@@ -474,7 +484,7 @@ namespace TPLWeb.Controllers
                     letter.RegistrationDate = DateTime.Now;
                     letter.LastModifiedDate = DateTime.Now;
                     letter.LastModifiedBy = User.Identity!.Name;
-                    
+
                     // ذخیره نامه
                     var result = await _letterService.CreateLetterAsync(letter);
                     if (result.Success)
@@ -556,10 +566,10 @@ namespace TPLWeb.Controllers
                         }
 
                         TempData["SuccessMessage"] = result.Message;
-                        return RedirectToAction(nameof(KartableVaredeh));
+                        return RedirectToAction(nameof(KartableSadereh));
                     }
 
-                    TempData["ErrorMessage"] = result.Message;
+                    TempData["ErrorMessage"] = result?.Message;
                 }
                 catch (Exception ex)
                 {
@@ -589,16 +599,43 @@ namespace TPLWeb.Controllers
             }
 
             var letter = (Letter)result.Data!;
-            if (!letter.CopyReceivers!.FirstOrDefault().IsNullOrEmpty())
+            
+            if (!string.IsNullOrEmpty(letter.AttachmentName))
+            {
+                // تبدیل رشته پیوست‌ها به لیست صحیح (جداکننده اصلی "," و برای هر مورد ممکن است "|" بین id و نام باشد)
+                var attachments = letter.AttachmentName
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(token => token.Trim())
+                    .Where(token => !string.IsNullOrWhiteSpace(token))
+                    .Select(token =>
+                    {
+                        var parts = token.Split('|');
+                        var id = parts[0];
+                        var name = parts.Length > 1 ? parts[1] : parts[0];
+                        return new { FileName = name, FilePath = id };
+                    })
+                    .ToList();
+
+                ViewBag.ExistingAttachments = attachments;
+            }
+
+            var firstCopyReceivers = letter.CopyReceivers?.FirstOrDefault();
+            if (!string.IsNullOrEmpty(firstCopyReceivers))
             {
                 letter.CopyReceiversList.Clear();
-                List<string> recivers = letter?.CopyReceivers?.FirstOrDefault()!.Split(',', StringSplitOptions.None).ToList()!;
+                var recivers = firstCopyReceivers.Split(',', StringSplitOptions.None).ToList();
                 foreach (var item in recivers)
                 {
-                    letter!.CopyReceiversList.Add((await _context.Organizations.FirstOrDefaultAsync(x => x.Id == int.Parse(item)))!);
+                    var org = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == int.Parse(item));
+                    if (org != null)
+                    {
+                        letter.CopyReceiversList.Add(org);
+                    }
                 }
             }
-           
+
+            // دیگر نیاز به ViewBag.CCNotes نیست؛ از Model.CopyReceivers[1] استفاده می‌کنیم
+
             ViewBag.ParentOrganizations = await _context.Organizations
                 .Where(o => o.IsActive)
                 .ToListAsync();
@@ -648,11 +685,66 @@ namespace TPLWeb.Controllers
                     existingLetter.Receiver = letter.Receiver;
                     existingLetter.Keywords = letter.Keywords;
                     existingLetter.CopyReceivers = letter.CopyReceivers;
-                    // مدیریت پیوست
-                    if (!string.IsNullOrEmpty(letter.AttachmentName))
+                    
+                    // مدیریت پیوست‌ها: فقط تغییرات اعمال شود؛ از JSON AttachmentsData در فرم استفاده می‌کنیم
+                    var attachmentsJson = Request.Form["AttachmentsData"].FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(attachmentsJson))
                     {
-                        existingLetter.AttachmentName = letter.AttachmentName;
+                        try
+                        {
+                            var jArray = Newtonsoft.Json.Linq.JArray.Parse(attachmentsJson);
+                            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            var ordered = new List<string>();
+                            foreach (var att in jArray)
+                            {
+                                var attId = att["id"]?.ToString()?.Trim();
+                                if (string.IsNullOrWhiteSpace(attId)) continue;
+                                if (!seen.Add(attId)) continue; // جلوگیری از تکرار
+                                var name = att["name"]?.ToString()?.Trim();
+                                ordered.Add(!string.IsNullOrWhiteSpace(name) ? $"{attId}|{name}" : attId);
+                            }
+                            existingLetter.AttachmentName = string.Join(',', ordered);
+                        }
+                        catch
+                        {
+                            // اگر JSON معتبر نبود، به مقدار رشته‌ای ارسالی بسنده می‌کنیم ولی آن را نرمال‌سازی می‌کنیم
+                            if (!string.IsNullOrWhiteSpace(letter.AttachmentName))
+                            {
+                                var normalized = letter.AttachmentName
+                                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(t => t.Trim())
+                                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                                    .Select(t =>
+                                    {
+                                        var parts = t.Split('|');
+                                        var fileId = parts[0];
+                                        var name = parts.Length > 1 ? parts[1] : null;
+                                        return !string.IsNullOrWhiteSpace(name) ? $"{fileId}|{name}" : fileId;
+                                    })
+                                    .Distinct(StringComparer.OrdinalIgnoreCase);
+                                existingLetter.AttachmentName = string.Join(',', normalized);
+                            }
+                            // در غیر این صورت پیوست‌های قبلی را حفظ کن
+                        }
                     }
+                    else if (!string.IsNullOrWhiteSpace(letter.AttachmentName))
+                    {
+                        // بدون JSON، از رشته ارسالی استفاده و نرمال‌سازی می‌کنیم
+                        var normalized = letter.AttachmentName
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(t => t.Trim())
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Select(t =>
+                            {
+                                var parts = t.Split('|');
+                                var fileId = parts[0];
+                                var name = parts.Length > 1 ? parts[1] : null;
+                                return !string.IsNullOrWhiteSpace(name) ? $"{fileId}|{name}" : fileId;
+                            })
+                            .Distinct(StringComparer.OrdinalIgnoreCase);
+                        existingLetter.AttachmentName = string.Join(',', normalized);
+                    }
+                    // اگر هیچ کدام نبود، پیوست‌های قبلی بدون تغییر باقی می‌مانند
 
                     // مدیریت گیرندگان رونوشت
                     if (!letter.CopyReceivers!.FirstOrDefault().IsNullOrEmpty())
@@ -681,7 +773,7 @@ namespace TPLWeb.Controllers
                     if (result.Success)
                     {
                         TempData["SuccessMessage"] = result.Message;
-                        return RedirectToAction("KartableVaredeh");
+                        return RedirectToAction("KartableSadereh");
                     }
 
                     TempData["ErrorMessage"] = result.Message;
@@ -702,41 +794,6 @@ namespace TPLWeb.Controllers
                 .ToListAsync();
             return View(letter);
         }
-
-        [HttpPost("RemoveAttachment")]
-        public async Task<IActionResult> RemoveAttachment(int id)
-        {
-            try
-            {
-                var letter = await _context.Letters.FindAsync(id);
-                if (letter == null)
-                {
-                    return Json(new { success = false, message = "نامه مورد نظر یافت نشد" });
-                }
-
-                // حذف فایل فیزیکی
-                if (!string.IsNullOrEmpty(letter.AttachmentName))
-                {
-                    var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", letter.AttachmentName);
-                    if (global::System.IO.File.Exists(filePath))
-                    {
-                        global::System.IO.File.Delete(filePath);
-                    }
-                }
-
-                letter.AttachmentName = null;
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, message = "پیوست با موفقیت حذف شد" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing attachment");
-                return Json(new { success = false, message = "خطا در حذف پیوست" });
-            }
-        }
-
-
 
 
         [HttpGet("DeleteLetter")]
@@ -828,7 +885,7 @@ namespace TPLWeb.Controllers
             }
         }
 
-      
+
         [HttpPost("UploadFile")]
         [RequestSizeLimit(500 * 1024 * 1024)] // 500 MB
         public async Task<IActionResult> UploadFile(IFormFile file)
@@ -928,8 +985,8 @@ namespace TPLWeb.Controllers
                 var res = (List<AdvancedLetterSearchResult>)result.Data!;
                 foreach (AdvancedLetterSearchResult item in res)
                 {
-                    item.Receiver =await _recivers.GetReceiverFullPath(item.Receiver!);
-                    item.Sender =await _recivers.GetReceiverFullPath(item.Sender!);
+                    item.Receiver = await _recivers.GetReceiverFullPath(item.Receiver!);
+                    item.Sender = await _recivers.GetReceiverFullPath(item.Sender!);
                 }
                 return Ok(new
                 {
@@ -944,7 +1001,429 @@ namespace TPLWeb.Controllers
                 return StatusCode(500, "خطا در انجام جستجو");
             }
         }
+        [HttpPost]
+        public JsonResult DeleteFile([FromBody] DeleteFileRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.FileId) || string.IsNullOrEmpty(request.FileName))
+            {
+                return Json(new { success = false, message = "اطلاعات فایل معتبر نیست." });
+            }
 
+            // مسیر فایل را تشکیل دهید
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "PeyvastNameha");
+            var filePath = Path.Combine(uploadsPath, request.FileId);
 
+            // بررسی وجود فایل
+            if (System.IO.File.Exists(filePath))
+            {
+                // حذف فایل از دیسک
+                System.IO.File.Delete(filePath);
+            }
+
+            // حذف فایل از AttachmentName نامه
+            var letters = _context.Letters.Where(l => l.AttachmentName != null && l.AttachmentName.Contains(request.FileName)).ToList();
+            foreach (var letter in letters)
+            {
+                if (string.IsNullOrEmpty(letter.AttachmentName))
+                {
+                    continue;
+                }
+                var attachments = letter.AttachmentName.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                attachments.RemoveAll(a => a.Contains(request.FileName));
+                letter.AttachmentName = string.Join(",", attachments);
+            }
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = "فایل با موفقیت حذف شد." });
+        }
+
+    [HttpGet("Attachment/Download")]
+        public async Task<IActionResult> DownloadAttachment(int letterId, string fileId, string? downloadName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fileId))
+                {
+                    return BadRequest("نام فایل معتبر نیست.");
+                }
+
+                // دریافت نامه از دیتابیس
+                var letter = await _context.Letters.FindAsync(letterId);
+                if (letter == null)
+                {
+                    return NotFound("نامه یافت نشد.");
+                }
+
+                // بررسی اینکه فایل در لیست پیوست‌های نامه موجود است (بر اساس fileId)
+                if (string.IsNullOrEmpty(letter.AttachmentName) ||
+                    !letter.AttachmentName.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Any(t => t.Trim().StartsWith(fileId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return NotFound("فایل در پیوست‌های این نامه یافت نشد.");
+                }
+
+                // مسیر فایل
+                var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", fileId);
+
+                // بررسی وجود فایل
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("فایل یافت نشد.");
+                }
+
+                // دریافت نوع فایل
+                var contentType = GetContentType(fileId);
+
+                // خواندن فایل و بازگرداندن آن
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                var downloadFileName = string.IsNullOrWhiteSpace(downloadName) ? fileId : downloadName;
+                return File(memory, contentType, downloadFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error downloading attachment: {fileId} for letter: {letterId}");
+                return StatusCode(500, "خطا در دانلود فایل.");
+            }
+        }
+
+        private string GetContentType(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".pdf" => "application/pdf",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".ppt" => "application/vnd.ms-powerpoint",
+                ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".txt" => "text/plain",
+                ".zip" => "application/zip",
+                ".rar" => "application/x-rar-compressed",
+                _ => "application/octet-stream"
+            };
+        }
+
+    [HttpGet("Attachment/List")]
+    public async Task<IActionResult> GetLetterAttachments(int letterId)
+        {
+            try
+            {
+                var letter = await _context.Letters.FindAsync(letterId);
+                if (letter == null)
+                {
+                    return Ok(new { success = false, message = "نامه یافت نشد." });
+                }
+
+                if (string.IsNullOrWhiteSpace(letter.AttachmentName))
+                {
+                    return Ok(new { success = true, data = Array.Empty<object>() });
+                }
+
+                var uploadsPath = Path.Combine(_environment.WebRootPath, "PeyvastNameha");
+                var items = new List<object>();
+
+                var tokens = letter.AttachmentName
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => t.Trim())
+                    .Where(t => !string.IsNullOrWhiteSpace(t));
+
+                foreach (var token in tokens)
+                {
+                    var parts = token.Split('|');
+                    var fileId = parts[0];
+                    var displayName = parts.Length > 1 ? parts[1] : parts[0];
+
+                    var physicalPath = Path.Combine(uploadsPath, fileId);
+                    long fileSize = 0;
+                    if (System.IO.File.Exists(physicalPath))
+                    {
+                        var fi = new FileInfo(physicalPath);
+                        fileSize = fi.Length;
+                    }
+
+                    var webPath = Url.Content($"~/PeyvastNameha/{fileId}");
+                    items.Add(new { fileId = fileId, fileName = displayName, filePath = webPath, fileSize });
+                }
+
+                return Ok(new { success = true, data = items });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting letter attachments for {LetterId}", letterId);
+                return StatusCode(500, new { success = false, message = "خطا در دریافت پیوست‌ها." });
+            }
+        }
+
+        // ==================== DeepSeek AI Integration ====================
+        public class GenerateContentRequest
+        {
+            public string? Prompt { get; set; }
+            public string? CurrentContent { get; set; }
+            public string? Subject { get; set; }
+            public string? Tone { get; set; }
+            public bool Refine { get; set; } = false;
+            public string? Provider { get; set; } // deepseek | openrouter | openai | xai
+            public string? Model { get; set; } // specific model name
+        }
+
+        public class GenerateContentResponse
+        {
+            public bool Success { get; set; }
+            public string? Content { get; set; }
+            public string? Message { get; set; }
+        }
+
+        [HttpPost("GenerateContent")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateContent([FromBody] GenerateContentRequest request)
+        {
+            if (request == null || (string.IsNullOrWhiteSpace(request.Prompt) && string.IsNullOrWhiteSpace(request.CurrentContent)))
+            {
+                return BadRequest(new GenerateContentResponse { Success = false, Message = "Prompt یا متن فعلی الزامی است." });
+            }
+
+            // Select provider (default to OpenRouter per request)
+            var provider = (request.Provider ?? "openrouter").ToLowerInvariant();
+            string? apiKey;
+            string baseUrl;
+            string model;
+            string path;
+
+            switch (provider)
+            {
+                case "openrouter":
+                    apiKey = _configuration["OpenRouter:ApiKey"]; // Uses HTTP header: Authorization: Bearer
+                    baseUrl = _configuration["OpenRouter:BaseUrl"] ?? "https://openrouter.ai/api";
+                    if (!baseUrl.Contains("/api"))
+                    {
+                        baseUrl = baseUrl.TrimEnd('/') + "/api";
+                    }
+                    model = string.IsNullOrWhiteSpace(request.Model) ? (_configuration.GetSection("OpenRouter:AllowedModels").Get<string[]>()?.FirstOrDefault() ?? "openrouter/anthropic/claude-3.5-sonnet") : request.Model;
+                    var endsWithV1 = baseUrl.TrimEnd('/').EndsWith("/v1", StringComparison.OrdinalIgnoreCase);
+                    path = endsWithV1 ? "chat/completions" : "v1/chat/completions";
+                    break;
+                case "openai":
+                    apiKey = _configuration["OpenAI:ApiKey"];
+                    baseUrl = _configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com";
+                    model = string.IsNullOrWhiteSpace(request.Model) ? (_configuration.GetSection("OpenAI:AllowedModels").Get<string[]>()?.FirstOrDefault() ?? "gpt-4o-mini") : request.Model;
+                    path = "v1/chat/completions";
+                    break;
+                case "xai":
+                    apiKey = _configuration["XAI:ApiKey"];
+                    baseUrl = _configuration["XAI:BaseUrl"] ?? "https://api.x.ai";
+                    model = string.IsNullOrWhiteSpace(request.Model) ? (_configuration.GetSection("XAI:AllowedModels").Get<string[]>()?.FirstOrDefault() ?? "grok-2") : request.Model;
+                    path = "v1/chat/completions";
+                    break;
+                default:
+                    apiKey = _configuration["DeepSeek:ApiKey"];
+                    baseUrl = _configuration["DeepSeek:BaseUrl"] ?? "https://api.deepseek.com";
+                    model = string.IsNullOrWhiteSpace(request.Model) ? (_configuration["DeepSeek:Model"] ?? "deepseek-chat") : request.Model;
+                    path = "v1/chat/completions";
+                    break;
+            }
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                return StatusCode(500, new GenerateContentResponse { Success = false, Message = "کلید API برای ارائه‌دهنده انتخاب‌شده تنظیم نشده است." });
+            }
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var baseAddr = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                if (provider == "openrouter")
+                {
+                    // OpenRouter requires additional headers
+                    var confReferer = _configuration["OpenRouter:Referer"];
+                    var refererVal = string.IsNullOrWhiteSpace(confReferer)
+                        ? (Request?.Headers["Origin"].FirstOrDefault() ?? Request?.Host.Value ?? "https://your-app")
+                        : confReferer;
+                    var confTitle = _configuration["OpenRouter:Title"];
+                    var titleVal = string.IsNullOrWhiteSpace(confTitle) ? "TPL Letter AI" : confTitle;
+                    if (!client.DefaultRequestHeaders.Contains("HTTP-Referer"))
+                        client.DefaultRequestHeaders.Add("HTTP-Referer", refererVal);
+                    if (!client.DefaultRequestHeaders.Contains("Referer"))
+                        client.DefaultRequestHeaders.Add("Referer", refererVal);
+                    if (!client.DefaultRequestHeaders.Contains("X-Title"))
+                        client.DefaultRequestHeaders.Add("X-Title", titleVal);
+                }
+
+                var systemContent =
+                    "شما یک دستیار نگارنده نامه اداری فارسی هستید. متن‌هایی فاخر، رسمی، روان و ادبی تولید کنید. از هرگونه مقدمه یا برچسب اضافه (مثل نام مدل یا توضیح سیستم) خودداری کنید و فقط بدنه نهایی نامه را برگردانید. از تیترهای غیرضروری پرهیز کنید. خروجی با پاراگراف‌های منظم و علائم نگارشی مناسب باشد.";
+
+                var userPrompt = new System.Text.StringBuilder();
+                if (request.Refine && !string.IsNullOrWhiteSpace(request.CurrentContent))
+                {
+                    userPrompt.AppendLine("لطفاً متن زیر را بازنویسی و بهبود بده به سبکی رسمی، فاخر و مؤدبانه. فقط متن نهایی را برگردان:");
+                    userPrompt.AppendLine("--- متن فعلی ---");
+                    userPrompt.AppendLine(request.CurrentContent);
+                    userPrompt.AppendLine("-----------------");
+                }
+                else if (!string.IsNullOrWhiteSpace(request.Prompt))
+                {
+                    userPrompt.AppendLine("لطفاً بر اساس شرح زیر یک متن نامه رسمی و فاخر بنویس و فقط متن نهایی را برگردان:");
+                    if (!string.IsNullOrWhiteSpace(request.Subject))
+                    {
+                        userPrompt.AppendLine($"موضوع: {request.Subject}");
+                    }
+                    userPrompt.AppendLine($"شرح درخواست: {request.Prompt}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Tone))
+                {
+                    userPrompt.AppendLine($"لحن پیشنهادی: {request.Tone}");
+                }
+
+                object systemMsgContent;
+                object userMsgContent;
+                if (provider == "openrouter")
+                {
+                    systemMsgContent = new object[] { new { type = "text", text = systemContent } };
+                    userMsgContent = new object[] { new { type = "text", text = userPrompt.ToString() } };
+                }
+                else
+                {
+                    systemMsgContent = systemContent;
+                    userMsgContent = userPrompt.ToString();
+                }
+
+                object payload;
+                if (provider == "openrouter" || provider == "openai")
+                {
+                    payload = new
+                    {
+                        model = model,
+                        messages = new object[]
+                        {
+                            new { role = "system", content = systemMsgContent },
+                            new { role = "user", content = userMsgContent }
+                        },
+                        temperature = 0.7,
+                        max_tokens = 1024,
+                        response_format = new { type = "text" }
+                    };
+                }
+                else
+                {
+                    payload = new
+                    {
+                        model = model,
+                        messages = new object[]
+                        {
+                            new { role = "system", content = systemMsgContent },
+                            new { role = "user", content = userMsgContent }
+                        },
+                        temperature = 0.7,
+                        max_tokens = 1024
+                    };
+                }
+
+                var httpContent = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
+                var endpoint = baseAddr.TrimEnd('/') + "/" + path.TrimStart('/');
+                var response = await client.PostAsync(endpoint, httpContent);
+
+                var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                var rawText = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var snippet = rawText?.Length > 400 ? rawText.Substring(0, 400) + "…" : rawText;
+                    _logger.LogError("AI provider '{Provider}' error {StatusCode}. Body: {Body}", provider, response.StatusCode, snippet);
+                    return StatusCode((int)response.StatusCode, new GenerateContentResponse
+                    {
+                        Success = false,
+                        Message = $"خطا از سرویس {provider}. کد {(int)response.StatusCode}. {snippet}"
+                    });
+                }
+
+                var trimmed = rawText?.TrimStart();
+                if (string.IsNullOrWhiteSpace(trimmed) || contentType.Contains("json", StringComparison.OrdinalIgnoreCase) == false || trimmed.StartsWith("<"))
+                {
+                    var snippet = rawText?.Length > 400 ? rawText.Substring(0, 400) + "…" : rawText;
+                    _logger.LogError("AI provider '{Provider}' returned non-JSON content-type '{ContentType}'. Body: {Body}", provider, contentType, snippet);
+                    return Ok(new GenerateContentResponse { Success = false, Message = "پاسخ نامعتبر از سرویس هوش مصنوعی دریافت شد." });
+                }
+
+                string? content = null;
+                try
+                {
+                    dynamic? parsed = JsonConvert.DeserializeObject(rawText!);
+                    content = parsed?.choices?[0]?.message?.content?.ToString();
+                }
+                catch (JsonReaderException jex)
+                {
+                    _logger.LogError(jex, "JSON parse failed for provider '{Provider}'. Body starts with: {Start}", provider, trimmed?.Substring(0, Math.Min(120, trimmed.Length)));
+                    return Ok(new GenerateContentResponse { Success = false, Message = "پاسخ سرویس قابل پردازش نبود." });
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    return Ok(new GenerateContentResponse { Success = false, Message = "پاسخی دریافت نشد." });
+                }
+
+                return Ok(new GenerateContentResponse { Success = true, Content = content.Trim() });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DeepSeek GenerateContent failed");
+                return StatusCode(500, new GenerateContentResponse { Success = false, Message = "بروز خطا در تولید متن." });
+            }
+        }
+
+        // List providers and models with available API keys
+        [HttpGet("Models")] 
+        public IActionResult GetModels()
+        {
+            var items = new List<object>();
+
+            // DeepSeek
+            if (!string.IsNullOrWhiteSpace(_configuration["DeepSeek:ApiKey"]))
+            {
+                items.Add(new { provider = "deepseek", display = "DeepSeek", models = new[] { _configuration["DeepSeek:Model"] ?? "deepseek-chat" } });
+            }
+
+            // OpenRouter
+            if (!string.IsNullOrWhiteSpace(_configuration["OpenRouter:ApiKey"]))
+            {
+                var models = _configuration.GetSection("OpenRouter:AllowedModels").Get<string[]>() ?? Array.Empty<string>();
+                items.Add(new { provider = "openrouter", display = "OpenRouter", models });
+            }
+
+            // OpenAI
+            if (!string.IsNullOrWhiteSpace(_configuration["OpenAI:ApiKey"]))
+            {
+                var models = _configuration.GetSection("OpenAI:AllowedModels").Get<string[]>() ?? Array.Empty<string>();
+                items.Add(new { provider = "openai", display = "OpenAI", models });
+            }
+
+            // XAI (Grok)
+            if (!string.IsNullOrWhiteSpace(_configuration["XAI:ApiKey"]))
+            {
+                var models = _configuration.GetSection("XAI:AllowedModels").Get<string[]>() ?? Array.Empty<string>();
+                items.Add(new { provider = "xai", display = "xAI (Grok)", models });
+            }
+
+            return Ok(new { success = true, data = items });
+        }
+    }
+
+    public class DeleteFileRequest
+    {
+        public string? FileId { get; set; }
+        public string? FileName { get; set; }
     }
 }

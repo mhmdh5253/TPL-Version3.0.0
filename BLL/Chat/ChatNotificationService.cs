@@ -15,7 +15,7 @@ namespace BLL.Chat
             _logger = logger;
         }
 
-        public async Task<bool> SendMessageNotificationAsync(ChatMessageDto message, string recipientPhoneNumber)
+        public Task<bool> SendMessageNotificationAsync(ChatMessageDto message, string recipientPhoneNumber)
         {
             try
             {
@@ -23,17 +23,17 @@ namespace BLL.Chat
                     message.Id, recipientPhoneNumber);
                 
                 // SMS functionality removed - just log the action
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in message notification for message {MessageId} to {PhoneNumber}", 
                     message.Id, recipientPhoneNumber);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        public async Task<bool> SendChatInvitationAsync(string phoneNumber, string chatRoomName, string inviterName)
+        public Task<bool> SendChatInvitationAsync(string phoneNumber, string chatRoomName, string inviterName)
         {
             try
             {
@@ -41,29 +41,29 @@ namespace BLL.Chat
                     phoneNumber, chatRoomName);
                 
                 // SMS functionality removed - just log the action
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in chat invitation to {PhoneNumber} for chat {ChatRoom}", 
                     phoneNumber, chatRoomName);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        public async Task<bool> SendOtpForChatAccessAsync(string phoneNumber, string otpCode)
+        public Task<bool> SendOtpForChatAccessAsync(string phoneNumber, string otpCode)
         {
             try
             {
                 _logger.LogInformation("OTP would be sent to {PhoneNumber} for chat access", phoneNumber);
                 
                 // SMS functionality removed - just log the action
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in OTP to {PhoneNumber} for chat access", phoneNumber);
-                return false;
+                return Task.FromResult(false);
             }
         }
     }

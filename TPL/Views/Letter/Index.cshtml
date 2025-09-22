@@ -342,6 +342,22 @@
             text-align: center;
         }
 
+        /* Consistent header layout across breakpoints */
+        .page-header > .d-flex { gap: 1rem; }
+        @@media (max-width: 992px) {
+            .page-header > .d-flex { flex-wrap: wrap; }
+            .page-header > .d-flex > .d-flex:first-child { /* icon + title block */
+                order: 1;
+                flex: 1 1 100%;
+            }
+            #header-actions { /* create button */
+                order: 2;
+                width: 100%;
+                display: flex;
+                justify-content: flex-start;
+            }
+        }
+
         /* Enhanced Table Styling */
         .table thead th {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -384,26 +400,140 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* DataTables top controls: better mobile layout (RTL) */
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label {
+            font-size: .8rem !important;
+        }
+
+        @@media (max-width: 768px) {
+            /* Put filter (search) and length (rows) on the two sides */
+            .dataTables_wrapper > .row:first-child {
+                display: flex !important;
+                flex-direction: row-reverse !important; /* RTL: search on the right */
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: .5rem !important;
+            }
+            .dataTables_wrapper > .row:first-child > div {
+                width: auto !important;
+                flex: 1 1 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .dataTables_wrapper .dataTables_filter {
+                display: flex !important;
+                justify-content: flex-end !important;
+            }
+            .dataTables_wrapper .dataTables_filter label {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: .5rem !important;
+                justify-content: flex-end !important;
+                margin-bottom: 0 !important;
+            }
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .dataTables_wrapper .dataTables_length {
+                display: flex !important;
+                justify-content: flex-start !important;
+            }
+            .dataTables_wrapper .dataTables_length label {
+                margin-bottom: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: .5rem !important;
+                white-space: nowrap !important;
+            }
+            /* Smaller controls on mobile */
+            .dataTables_wrapper .dataTables_filter input.form-control,
+            .dataTables_wrapper .dataTables_length select.form-select {
+                height: calc(1.5rem + 0.5rem + 2px) !important;
+                padding: .25rem .5rem !important;
+                font-size: .875rem !important;
+            }
+        }
+
+        /* Apply the same DataTables topbar layout up to 992px for consistency */
+        @@media (max-width: 992px) {
+            .dataTables_wrapper > .row:first-child {
+                display: flex !important;
+                flex-direction: row-reverse !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: .5rem !important;
+            }
+            .dataTables_wrapper > .row:first-child > div {
+                width: auto !important;
+                flex: 1 1 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .dataTables_wrapper .dataTables_filter { display: flex !important; justify-content: flex-end !important; }
+            .dataTables_wrapper .dataTables_filter label {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: .5rem !important;
+                justify-content: flex-end !important;
+                margin-bottom: 0 !important;
+            }
+            .dataTables_wrapper .dataTables_filter input { width: 100% !important; max-width: 100% !important; }
+            .dataTables_wrapper .dataTables_length { display: flex !important; justify-content: flex-start !important; }
+            .dataTables_wrapper .dataTables_length label {
+                margin-bottom: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: .5rem !important;
+                white-space: nowrap !important;
+            }
+        }
+
+        /* Global font scaling for smaller screens (page scope) */
+        @@media (max-width: 992px) {
+            html { font-size: 14px !important; }
+
+            .dataTables_length {
+                float: left !important;
+            }
+        }
+        @@media (max-width: 768px) {
+            html {
+                font-size: 13px !important;
+            }
+            .dataTables_length {
+                float: left !important;
+            }
+        }
+        @@media (max-width: 576px) {
+            html {
+                font-size: 12px !important;
+            }
+            .dataTables_length {
+                float: left !important;
+            }
+        }
     </style>
 }
 
 <div class="card border-0 shadow-lg">
     <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <div class="header-icon">
                     <i class="fas fa-envelope-open text-white" style="font-size: 2rem;"></i>
                 </div>
                 <div>
                     <h4 class="mb-1 text-white">@ViewData["Title"]</h4>
-                    <p class="mb-0 text-white opacity-90">
-                        <i class="fas fa-info-circle me-1"></i>مدیریت و مشاهده نامه‌های سیستم
-                    </p>
                 </div>
             </div>
-            <div class="d-flex gap-3">
+            <div id="header-actions" class="d-flex gap-3">
                 <a asp-action="Create" class="btn btn-light btn-lg px-4 animate__animated animate__pulse">
-                    <i class="fas fa-plus me-2"></i>ایجاد نامه جدید
+                    <i class="fas fa-plus me-2"></i>نامه جدید
                 </a>
             </div>
         </div>
@@ -750,6 +880,22 @@
                 ]
             });
 
+            // Apply small controls on mobile and manage on resize
+            function applyTopbarSizing() {
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                const $filterInput = $('.dataTables_wrapper .dataTables_filter input');
+                const $lengthSelect = $('.dataTables_wrapper .dataTables_length select');
+                if (isMobile) {
+                    $filterInput.addClass('form-control-sm');
+                    $lengthSelect.addClass('form-select-sm');
+                } else {
+                    $filterInput.removeClass('form-control-sm');
+                    $lengthSelect.removeClass('form-select-sm');
+                }
+            }
+            applyTopbarSizing();
+            $(window).on('resize', applyTopbarSizing);
+
             // Initialize tooltips
             initializeTooltips();
 
@@ -866,10 +1012,13 @@
                 `);
             }
             
-            // Add to header if there are indicators
+            // Add to header actions area if there are indicators
             if (indicatorsContainer.children().length > 0) {
-                $('.page-header .d-flex.gap-3').prepend(indicatorsContainer);
-                initializeTooltips();
+                const $target = $('#header-actions');
+                if ($target.length) {
+                    $target.prepend(indicatorsContainer);
+                    initializeTooltips();
+                }
             }
         }
 

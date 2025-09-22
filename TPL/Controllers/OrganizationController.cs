@@ -101,7 +101,7 @@ namespace TPLWeb.Controllers
                     Address = formModel?.Address! ?? " ",
                     Email = formModel?.Email! ?? " ",
                     Phone = formModel?.Phone! ?? " ",
-                    FullName = _recivers.GetReceiverFullPath(formModel!.ParentId.ToString()!) + "-" + formModel!.Name,
+                    FullName =await _recivers.GetReceiverFullPath(formModel!.ParentId.ToString()!) + "-" + formModel!.Name,
                 };
 
 

@@ -3,7 +3,6 @@ using BE.LetterAutomation;
 using BE.Ticketing.SupportTicketSystem.Models;
 using BE.Tokening;
 using BE.Calendar;
-
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -66,7 +65,7 @@ namespace DAL
         public DbSet<BE.Chat.ChatParticipant> ChatParticipants { get; set; } = null!;
         public DbSet<BE.Chat.ChatMessage> ChatMessages { get; set; } = null!;
         public DbSet<BE.Chat.UserContact> UserContacts { get; set; } = null!;
-
+        public DbSet<Archive> Archives { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

@@ -153,7 +153,7 @@ namespace BE.LetterAutomation
         [Key]
         public int Id { get; set; }
 
-        [Required]
+        //[Required]
         public int LetterId { get; set; }
         public virtual Letter? Letter { get; set; }
 

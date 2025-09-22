@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		}
+	]
+}

@@ -143,7 +143,7 @@ namespace BLL.Chat
         /// <summary>
         /// Check if an active chat room already exists between the specified users
         /// </summary>
-        private async Task<ChatRoomDto> CheckExistingChatRoomAsync(List<string> participantUserIds, string creatorId)
+        private async Task<ChatRoomDto?> CheckExistingChatRoomAsync(List<string> participantUserIds, string creatorId)
         {
             try
             {

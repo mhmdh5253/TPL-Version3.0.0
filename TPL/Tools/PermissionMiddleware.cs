@@ -145,7 +145,7 @@ namespace TPLWeb.Tools
 
                 await _next(context);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // در صورت بروز خطا، کاربر را به صفحه لاگین هدایت می‌کنیم
                 context.Response.Redirect("/Account/Login");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(Db))]
-    [Migration("20250822150737_AddChat2")]
-    partial class AddChat2
+    [Migration("20250913001038_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -863,6 +863,44 @@ namespace DAL.Migrations
                     b.ToTable("UserContacts");
                 });
 
+            modelBuilder.Entity("BE.LetterAutomation.Archive", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ArchiveCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ArchiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("LetterId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LetterId");
+
+                    b.ToTable("Archives");
+                });
+
             modelBuilder.Entity("BE.LetterAutomation.Kelasehnameh", b =>
                 {
                     b.Property<int>("Id")
@@ -900,8 +938,7 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AttachmentName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Classification")
                         .HasColumnType("int");
@@ -1795,6 +1832,17 @@ namespace DAL.Migrations
                     b.Navigation("ContactUser");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BE.LetterAutomation.Archive", b =>
+                {
+                    b.HasOne("BE.LetterAutomation.Letter", "Letter")
+                        .WithMany()
+                        .HasForeignKey("LetterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Letter");
                 });
 
             modelBuilder.Entity("BE.LetterAutomation.Kelasehnameh", b =>

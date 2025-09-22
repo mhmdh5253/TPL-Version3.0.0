@@ -130,7 +130,7 @@
 
                 @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
                 {
-                    <li class="menu-item @GetActiveClass(Url.Action("", "Organization")!)">
+                    <li class="menu-item @GetActiveClass(Url.Action("Index", "Organization")!)">
                         <a href="@Url.Action("Index", "Organization")" class="menu-link">
                             <div><i class="fas fa-sitemap me-2"></i>تعریف گیرندگان</div>
                         </a>

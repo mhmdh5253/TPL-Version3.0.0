@@ -2,7 +2,6 @@
     ViewData["Title"] = "تنظیمات پیشرفته";
     Layout = "_LayoutAdmin";
 }
-
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -13,7 +12,7 @@
             </div>
         </div>
     </div>
-<br>
+    <br>
     <!-- Success/Error Messages -->
     @if (TempData["SuccessMessage"] != null)
     {
@@ -61,20 +60,21 @@
                                         <div class="card-body">
                                             <div class="mb-3">
                                                 <label for="sms-provider" class="form-label fw-bold">سامانه پیامکی</label>
-                                                <select class="form-select form-select-lg" id="sms-provider" name="Provider" onchange="changeProvider()" disabled>
-                                                    <option value="ApiIr" selected>🌐 Api.ir</option>
+                                                <select class="form-select form-select-lg" id="sms-provider" name="Provider" onchange="changeProvider()">
+                                                    <option value="ParsGreen" selected>🌐 ParsGreen</option>
                                                 </select>
-                                                <div class="form-text">سامانه Api.ir (تنها سامانه فعال)</div>
+                                                <div class="form-text">ParsGreen (فعال)</div>
+                                                <input type="hidden" id="sms-provider-hidden" name="Provider" value="ParsGreen" />
                                             </div>
-                                            
+
                                             <!-- Provider Info -->
                                             <div id="provider-info" class="mt-3">
                                                 <div class="alert alert-info">
                                                     <h6><i class="fas fa-info-circle me-2"></i>اطلاعات سامانه</h6>
                                                     <div id="provider-details">
-                                                        <p class="mb-1"><strong>نوع احراز هویت:</strong> Bearer Token</p>
+                                                        <p class="mb-1"><strong>نوع احراز هویت:</strong> API Key</p>
                                                         <p class="mb-1"><strong>فرمت پیام:</strong> JSON</p>
-                                                        <p class="mb-0"><strong>پشتیبانی از:</strong> ارسال کد تایید</p>
+                                                        <p class="mb-0"><strong>پشتیبانی از:</strong> OTP, پیامک تکی و گروهی</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -90,23 +90,15 @@
                                         </div>
                                         <div class="card-body">
                                             <form asp-action="UpdateSmsSettings" method="post" asp-antiforgery="true" id="sms-settings-form">
-                                                <!-- Api.ir Settings -->
-                                                <div id="apiir-settings" class="provider-settings">
+                                                <!-- ParsGreen Settings -->
+                                                <div id="parsgreen-settings" class="provider-settings">
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-12">
                                                             <div class="mb-3">
-                                                                <label for="sms-api-url" class="form-label fw-bold">آدرس API</label>
-                                                                <input type="url" class="form-control" id="sms-api-url" name="ApiUrl" 
-                                                                       value="@ViewBag.SmsApiUrl" placeholder="https://s.api.ir">
-                                                                <div class="form-text">آدرس API سامانه Api.ir</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="mb-3">
-                                                                <label for="sms-bearer-token" class="form-label fw-bold">توکن Bearer</label>
-                                                                <input type="text" class="form-control" id="sms-bearer-token" name="BearerToken" 
-                                                                       value="@ViewBag.SmsBearerToken" placeholder="توکن احراز هویت">
-                                                                <div class="form-text">توکن Bearer برای احراز هویت</div>
+                                                                <label for="sms-bearer-token" class="form-label fw-bold">API Key</label>
+                                                                <input type="text" class="form-control" id="sms-bearer-token" name="BearerToken"
+                                                                       value="@ViewBag.SmsBearerToken" placeholder="کلید API ParsGreen">
+                                                                <div class="form-text">کلید API که از پنل ParsGreen دریافت می‌کنید</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -119,7 +111,7 @@
                                                     <div class="col-md-6">
                                                         <div class="mb-3">
                                                             <label for="sms-sender" class="form-label fw-bold">شماره فرستنده</label>
-                                                            <input type="text" class="form-control" id="sms-sender" name="Sender" 
+                                                            <input type="text" class="form-control" id="sms-sender" name="Sender"
                                                                    value="@ViewBag.SmsSender" placeholder="شماره فرستنده">
                                                             <div class="form-text">شماره تلفن فرستنده پیامک</div>
                                                         </div>
@@ -127,7 +119,7 @@
                                                     <div class="col-md-6">
                                                         <div class="mb-3">
                                                             <label for="sms-otp-pattern" class="form-label fw-bold">کد قالب OTP</label>
-                                                            <input type="text" class="form-control" id="sms-otp-pattern" name="OtpPattern" 
+                                                            <input type="text" class="form-control" id="sms-otp-pattern" name="OtpPattern"
                                                                    value="@ViewBag.SmsOtpPattern" placeholder="کد قالب OTP">
                                                             <div class="form-text">کد قالب یا پترن برای ارسال OTP</div>
                                                         </div>
@@ -135,9 +127,9 @@
                                                 </div>
 
                                                 <div class="form-check form-switch mb-3">
-                                                    <input class="form-check-input" type="checkbox" id="sms-is-active" name="IsActive" 
-                                                           @(ViewBag.SmsIsActive == true ? "checked" : "")>
+                                                    <input class="form-check-input" type="checkbox" id="sms-is-active" @(ViewBag.SmsIsActive == true ? "checked" : "")>
                                                     <label class="form-check-label fw-bold" for="sms-is-active">فعال‌سازی سامانه پیامکی</label>
+                                                    <input type="hidden" id="sms-is-active-hidden" name="IsActive" value="@(ViewBag.SmsIsActive == true ? "true" : "false")" />
                                                 </div>
 
                                                 <div class="text-center">
@@ -150,7 +142,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Status and Test Cards -->
                             <div class="row mt-4">
                                 <!-- Service Status Card -->
@@ -168,7 +160,7 @@
                                                     <p class="mt-2 text-muted">در حال بررسی وضعیت...</p>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Provider Status Table -->
                                             <div id="providers-table" style="display: none;">
                                                 <div class="table-responsive">
@@ -189,7 +181,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Test SMS Card -->
                                 <div class="col-md-6">
                                     <div class="card border-warning">
@@ -199,7 +191,7 @@
                                         <div class="card-body">
                                             <div class="alert alert-info mb-3">
                                                 <i class="fas fa-info-circle me-2"></i>
-                                                <strong>سامانه فعال:</strong> <span id="active-provider-display">@ViewBag.SmsProvider</span>
+                                                <strong>سامانه فعال:</strong> <span id="active-provider-display">ParsGreen</span>
                                                 <br>
                                                 <small>کد تایید تست از طریق سامانه فعال ارسال خواهد شد</small>
                                             </div>
@@ -231,20 +223,21 @@
     <script>
         $(document).ready(function () {
             // Set default SMS provider
-            const defaultProvider = '@ViewBag.SmsProvider' || 'ApiIr';
+            const defaultProvider = '@(ViewBag.SmsProvider ?? "ParsGreen")' || 'ParsGreen';
             $('#sms-provider').val(defaultProvider);
+            $('#sms-provider-hidden').val(defaultProvider);
             changeProvider();
-            
+
             // Load provider status on page load
             loadProviderStatus();
-            
+
             // Set initial active provider display
             updateActiveProviderDisplay(defaultProvider);
-            
+
             // Test SMS functionality
             $('#test-sms-btn').on('click', function() {
                 const phoneNumber = $('#test-phone').val().trim();
-                
+
                 if (!phoneNumber) {
                     Swal.fire({
                         icon: 'warning',
@@ -253,61 +246,28 @@
                     });
                     return;
                 }
-                
+
                 testSmsProvider(phoneNumber);
             });
 
             // Form validation for SMS settings
             $('#sms-settings-form').on('submit', function(e) {
                 const provider = $('#sms-provider').val();
-                const apiUrl = $('#sms-api-url').val().trim();
                 const bearerToken = $('#sms-bearer-token').val().trim();
-                const username = $('#sms-username').val().trim();
-                const password = $('#sms-password').val().trim();
                 const sender = $('#sms-sender').val().trim();
-                
-                if (provider === 'ApiIr') {
-                    if (!apiUrl) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'هشدار',
-                            text: 'لطفاً آدرس API را وارد کنید'
-                        });
-                        return false;
-                    }
-                    
+
+                if (provider === 'ParsGreen') {
                     if (!bearerToken) {
                         e.preventDefault();
                         Swal.fire({
                             icon: 'warning',
                             title: 'هشدار',
-                            text: 'لطفاً توکن Bearer را وارد کنید'
-                        });
-                        return false;
-                    }
-                } else if (provider === 'Melipayamak') {
-                    if (!username) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'هشدار',
-                            text: 'لطفاً نام کاربری را وارد کنید'
-                        });
-                        return false;
-                    }
-                    
-                    if (!password) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'هشدار',
-                            text: 'لطفاً رمز عبور را وارد کنید'
+                            text: 'لطفاً API Key را وارد کنید'
                         });
                         return false;
                     }
                 }
-                
+
                 if (!sender) {
                     e.preventDefault();
                     Swal.fire({
@@ -317,32 +277,35 @@
                     });
                     return false;
                 }
+
+                // sync hidden fields for post
+                $('#sms-provider-hidden').val(provider);
+                $('#sms-is-active-hidden').val($('#sms-is-active').is(':checked'));
             });
         });
-        
+
         function changeProvider() {
             const provider = $('#sms-provider').val();
-            
-            // Hide all provider settings
+
             $('.provider-settings').hide();
-            
-            // Show Api.ir settings (only provider)
-            $('#apiir-settings').show();
-            updateProviderInfo('Api.ir', 'Bearer Token', 'JSON', 'ارسال کد تایید');
-            
+
+            $('#parsgreen-settings').show();
+            updateProviderInfo('ParsGreen', 'API Key', 'JSON', 'OTP، پیامک تکی و گروهی');
+
             // Update active provider display
             updateActiveProviderDisplay(provider);
-            
+            $('#sms-provider-hidden').val(provider);
+
             // Update provider status after change
             loadProviderStatus();
         }
-        
-        function updateActiveProviderDisplay(provider) {
-            $('#active-provider-display').text('🌐 Api.ir');
-        }
-        
 
-        
+        function updateActiveProviderDisplay(provider) {
+            $('#active-provider-display').text('🌐 ParsGreen');
+        }
+
+
+
         function updateProviderInfo(name, auth, format, support) {
             $('#provider-details').html(`
                 <p class="mb-1"><strong>نوع احراز هویت:</strong> ${auth}</p>
@@ -350,7 +313,7 @@
                 <p class="mb-0"><strong>پشتیبانی از:</strong> ${support}</p>
             `);
         }
-        
+
         function loadProviderStatus() {
             $.get('@Url.Action("GetSmsProviderStatus", "EnhancedSettings")')
                 .done(function(response) {
@@ -364,20 +327,20 @@
                     $('#provider-status').html('<div class="text-danger">خطا در اتصال به سرور</div>');
                 });
         }
-        
+
         function displayProviderStatus(providers) {
             // Hide loading spinner
             $('#provider-status .text-center').hide();
-            
+
             // Show providers table
             $('#providers-table').show();
-            
+
             let tableHtml = '';
             providers.forEach(function(provider) {
                 const statusClass = provider.IsActive ? 'success' : 'secondary';
                 const statusIcon = provider.IsActive ? 'check-circle' : 'times-circle';
                 const priorityClass = provider.Priority === 'اول' ? 'primary' : 'secondary';
-                
+
                 tableHtml += `
                     <tr>
                         <td>
@@ -402,13 +365,13 @@
                     </tr>
                 `;
             });
-            
+
             $('#providers-tbody').html(tableHtml);
         }
-        
+
         function testSmsProvider(phoneNumber) {
             const provider = $('#sms-provider').val();
-            
+
             Swal.fire({
                 title: 'در حال ارسال کد تایید تست...',
                 text: `ارسال کد تایید تست به شماره ${phoneNumber} از طریق ${provider}`,
@@ -417,8 +380,8 @@
                     Swal.showLoading();
                 }
             });
-            
-            $.post('@Url.Action("TestSmsProvider", "EnhancedSettings")', { 
+
+            $.post('@Url.Action("TestSmsProvider", "EnhancedSettings")', {
                 phoneNumber: phoneNumber,
                 __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
             })
@@ -445,7 +408,7 @@
                     });
                 });
         }
-        
+
         function checkAllServices() {
             Swal.fire({
                 title: 'بررسی وضعیت سرویس‌ها',
@@ -455,9 +418,9 @@
                     Swal.showLoading();
                 }
             });
-            
+
             loadProviderStatus();
-            
+
             setTimeout(() => {
                 Swal.fire({
                     icon: 'success',
@@ -477,78 +440,78 @@
         display: inline-block;
         box-shadow: 0 0 4px rgba(0,0,0,0.2);
     }
-    
+
     .status-success {
         background-color: #28a745;
     }
-    
+
     .status-danger {
         background-color: #dc3545;
     }
-    
+
     .status-warning {
         background-color: #ffc107;
     }
-    
+
     .status-info {
         background-color: #17a2b8;
     }
-    
+
     .status-secondary {
         background-color: #6c757d;
     }
-    
+
     .card {
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         border: none;
         margin-bottom: 1rem;
     }
-    
+
     .card-header {
         border-bottom: none;
         font-weight: 600;
     }
-    
+
     .form-control, .form-select {
         border-radius: 0.5rem;
         border: 1px solid #dee2e6;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    
+
+        .form-control:focus, .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
     .btn {
         border-radius: 0.5rem;
         font-weight: 500;
         transition: all 0.15s ease-in-out;
     }
-    
-    .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
-    
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
     .nav-tabs .nav-link {
         border: none;
         border-radius: 0.5rem 0.5rem 0 0;
         color: #6c757d;
         font-weight: 500;
     }
-    
-    .nav-tabs .nav-link.active {
-        background-color: #fff;
-        color: #495057;
-        border-bottom: 3px solid #0d6efd;
-    }
-    
+
+        .nav-tabs .nav-link.active {
+            background-color: #fff;
+            color: #495057;
+            border-bottom: 3px solid #0d6efd;
+        }
+
     .alert {
         border-radius: 0.5rem;
         border: none;
     }
-    
+
     .spinner-border {
         width: 2rem;
         height: 2rem;

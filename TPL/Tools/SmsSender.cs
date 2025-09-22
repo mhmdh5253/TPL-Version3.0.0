@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using PARSGREEN.CORE.RESTful.SMS;
+using System.Linq;
 
 namespace TPLWeb.Tools
 {
@@ -28,25 +30,16 @@ namespace TPLWeb.Tools
         {
             try
             {
-                var apiUrl = _configuration["SmsSettings:ApiUrl"] ?? "https://s.api.ir/api/sw1/SmsOTP";
-                var bearerToken = _configuration["SmsSettings:BearerToken"] ?? "woKUqb4hQBBnQZHsv35mORIpHN4JbqKLIRaNrFpNeXz2WBTwx5gk/EZJN1bnEGe8H+b1WLBubjeta5EqwwJgUWBNM5aaBlI8+um6j+4jrMs=";
+                var apiKey = _configuration["SmsSettings:ApiKey"] ?? _configuration["SmsSettings:BearerToken"] ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    return "Error: API key not configured (SmsSettings:ApiKey/BearerToken)";
 
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(apiUrl),
-                    Content = new StringContent($"{{\"code\": \"{message}\", \"mobile\": \"{phoneNumber}\"}}", Encoding.UTF8, "application/json")
-                };
-                
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
-                var response = await new HttpClient().SendAsync(request);
-                response.EnsureSuccessStatusCode();
+                var messageClient = new Message(apiKey);
+                var result = await Task.Run(() => messageClient.SendOtp(phoneNumber, message));
+                var responseText = SafeSerialize(result);
 
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("SMS sent successfully to {PhoneNumber}. Response: {Response}", phoneNumber, responseBody);
-                return $"Success: {responseBody}";
+                _logger.LogInformation("OTP SMS sent to {PhoneNumber}. Response: {Response}", phoneNumber, responseText);
+                return $"Success: {responseText}";
             }
             catch (Exception ex)
             {
@@ -59,33 +52,18 @@ namespace TPLWeb.Tools
         {
             try
             {
-                var apiUrl = _configuration["SmsSettings:NormalSmsApiUrl"] ?? "https://s.api.ir/api/sw1/SendSms";
-                var bearerToken = _configuration["SmsSettings:BearerToken"] ?? "woKUqb4hQBBnQZHsv35mORIpHN4JbqKLIRaNrFpNeXz2WBTwx5gk/EZJN1bnEGe8H+b1WLBubjeta5EqwwJgUWBNM5aaBlI8+um6j+4jrMs=";
+                var apiKey = _configuration["SmsSettings:ApiKey"] ?? _configuration["SmsSettings:BearerToken"] ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    return "Error: API key not configured (SmsSettings:ApiKey/BearerToken)";
 
-                // ساخت JSON payload بر اساس مستندات API جدید
-                var payload = new
-                {
-                    message = message,
-                    mobiles = new[] { phoneNumber }
-                };
+                var messageClient = new Message(apiKey);
+                var recipients = new[] { phoneNumber };
 
-                var jsonContent = JsonSerializer.Serialize(payload);
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(apiUrl),
-                    Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
-                };
-                
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
-                var response = await new HttpClient().SendAsync(request);
-                response.EnsureSuccessStatusCode();
+                var result = await Task.Run(() => messageClient.SendSms(message, recipients));
+                var responseText = SafeSerialize(result);
 
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("Normal SMS sent successfully to {PhoneNumber}. Response: {Response}", phoneNumber, responseBody);
-                return $"Success: {responseBody}";
+                _logger.LogInformation("Normal SMS sent to {PhoneNumber}. Response: {Response}", phoneNumber, responseText);
+                return $"Success: {responseText}";
             }
             catch (Exception ex)
             {
@@ -98,10 +76,10 @@ namespace TPLWeb.Tools
         {
             try
             {
-                var apiUrl = _configuration["SmsSettings:NormalSmsApiUrl"] ?? "https://s.api.ir/api/sw1/SendSms";
-                var bearerToken = _configuration["SmsSettings:BearerToken"] ?? "woKUqb4hQBBnQZHsv35mORIpHN4JbqKLIRaNrFpNeXz2WBTwx5gk/EZJN1bnEGe8H+b1WLBubjeta5EqwwJgUWBNM5aaBlI8+um6j+4jrMs=";
+                var apiKey = _configuration["SmsSettings:ApiKey"] ?? _configuration["SmsSettings:BearerToken"] ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    return "Error: API key not configured (SmsSettings:ApiKey/BearerToken)";
 
-                // پاکسازی شماره‌های موبایل
                 var cleanPhoneNumbers = phoneNumbers
                     .Select(p => p.Replace(" ", "").Replace("-", "").Replace("_", ""))
                     .Where(p => p.StartsWith("09") && p.Length == 11)
@@ -112,35 +90,29 @@ namespace TPLWeb.Tools
                     return "Error: هیچ شماره موبایل معتبری یافت نشد";
                 }
 
-                // ساخت JSON payload بر اساس مستندات API جدید
-                var payload = new
-                {
-                    message = message,
-                    mobiles = cleanPhoneNumbers
-                };
+                var messageClient = new Message(apiKey);
+                var result = await Task.Run(() => messageClient.SendSms(message, cleanPhoneNumbers));
+                var responseText = SafeSerialize(result);
 
-                var jsonContent = JsonSerializer.Serialize(payload);
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(apiUrl),
-                    Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
-                };
-                
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
-                var response = await new HttpClient().SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("Bulk SMS sent successfully to {Count} numbers. Response: {Response}", cleanPhoneNumbers.Length, responseBody);
-                return $"Success: {responseBody}";
+                _logger.LogInformation("Bulk SMS sent to {Count} numbers. Response: {Response}", cleanPhoneNumbers.Length, responseText);
+                return $"Success: {responseText}";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending bulk SMS to {Count} numbers", phoneNumbers.Count);
                 return $"Error: {ex.Message}";
+            }
+        }
+
+        private static string SafeSerialize(object? obj)
+        {
+            try
+            {
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                return obj?.ToString() ?? string.Empty;
             }
         }
     }

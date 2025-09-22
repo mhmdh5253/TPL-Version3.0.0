@@ -59,12 +59,37 @@ namespace DAL.LetterAutomation
 
         public async Task<bool> DeleteLetterAsync(int id)
         {
-            var letter = await _context.Letters.FindAsync(id);
-            if (letter == null) return false;
+            try
+            {
+                var letter = await _context.Letters
+                    .Include(l => l.Referrals)
+                    .FirstOrDefaultAsync(l => l.Id == id);
+                if (letter == null) return false;
+                
 
-            _context.Letters.Remove(letter);
-            await _context.SaveChangesAsync();
-            return true;
+                // حذف سایر وابستگی‌ها
+                var actions = _context.LetterActions.Where(a => a.LetterId == id);
+                _context.LetterActions.RemoveRange(actions);
+
+                var approvals = _context.LetterApprovals.Where(a => a.LetterId == id);
+                _context.LetterApprovals.RemoveRange(approvals);
+
+                var referrals = _context.LetterReferrals.Where(r => r.LetterId == id);
+                _context.LetterReferrals.RemoveRange(referrals);
+
+                // اگر Archive دارید و در DbSet تعریف شده:
+                // var archives = _context.Archives.Where(a => a.LetterId == id);
+                // _context.Archives.RemoveRange(archives);
+
+                _context.Letters.Remove(letter);
+                        await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                            Console.WriteLine(e);
+                            throw;
+            }
         }
 
         public async Task<IEnumerable<Letter>> GetAllLettersAsync()

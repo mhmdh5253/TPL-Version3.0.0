@@ -10,7 +10,7 @@
 @inject BLL.LetterAutomation.BlRecivers BlRecivers
 @{
     List<Organization>? orgs = ViewBag.ParentOrganizations;
-    ViewData["Title"] = "ثبت نامه جدید";
+    ViewData["Title"] = "ایجاد نامه جدید";
 }
 
 @section pagecss {
@@ -27,12 +27,6 @@
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
     <link href="~/modified/createletter.css" rel="stylesheet" />
-    <style>
-        /* Ensure SweetAlert overlays above Bootstrap modals */
-        .swal2-container { z-index: 200000 !important; }
-        /* Header row for content label and AI button */
-        .content-ai-header .input-group-text { background: transparent; border: none; padding-right: 0; }
-    </style>
 }
 
 <div class="card shadow mb-4">
@@ -213,8 +207,8 @@
                                 <i class="fas fa-barcode"></i>&nbsp;
                                 <label class="control-label font-weight-bold">کلاسه نامه</label>
                             </span>
-                            <input type="hidden" asp-for="FileCode" id="FileCode" />
-                            <input type="text" id="FileCodeText" class="form-control" placeholder="انتخاب کلاسه نامه" readonly required />
+                            <input type="hidden" asp-for="FileCode" id="FileCode" required />
+                            <input type="text" id="FileCodeText" class="form-control" placeholder="انتخاب کلاسه نامه" readonly />
                             <button class="btn btn-outline-secondary" type="button" id="btnOpenFileCodeModal" data-bs-toggle="modal" data-bs-target="#FileCodeSelectModal">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -266,7 +260,7 @@
                                 <label class="control-label font-weight-bold">گیرنده</label>
                             </span>
                             <input type="hidden" asp-for="Receiver" id="Receiver" />
-                            <input type="text" id="ReceiverText" class="form-control" placeholder="انتخاب گیرنده نامه" readonly required />
+                            <input type="text" id="ReceiverText" class="form-control" placeholder="انتخاب گیرنده نامه" readonly />
                             <button class="btn btn-outline-secondary" type="button" id="btnOpenReceiverModal" data-bs-toggle="modal" data-bs-target="#ReceiverSelectModal">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -300,7 +294,7 @@
                                                 <i class="fas fa-building me-2"></i>درخت سازمان‌ها
                                             </h6>
                                             <small class="text-info">توجه: سازمان های والد با علامت * مشخص شده اند</small>
-                                        </div>
+                        </div>
                                         <div class="card-body">
                                             <label for="receiverTreeSearch" class="form-label">جستجو در سازمان‌ها:</label>
                                             <input type="text" id="receiverTreeSearch" name="receiverTreeSearch" class="form-control mb-3" placeholder="جستجو در سازمان‌ها...">
@@ -337,25 +331,27 @@
             </div>
             <!-- بخش متن نامه با ویرایشگر پیشرفته -->
             <div class="form-group mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-2 content-ai-header">
+                <div class="input-group input-group-lg">
                     <span style="border: none;" class="input-group-text">
                         <i class="fas fa-align-left"></i>&nbsp;
                         <label asp-for="Content" class="control-label font-weight-bold"></label>
                     </span>
-                    <button type="button" id="btnOpenAi" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-magic me-1"></i> تولید با هوش مصنوعی
-                    </button>
+                    <div style="width: 100%;">
+                        <input type="hidden" asp-for="Content" id="letterContent" />
+
+
+
+                        <div id="editor" style="height: 400px; border: 1px solid #ced4da; border-radius: 0.375rem;">
+                            @if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
+                            {
+                                @Html.Raw(Model.Content)
+                            }
+                        </div>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                        <div class="invalid-feedback">لطفا متن نامه را وارد کنید</div>
+                    </div>
+                    <div id="counter" class="text-muted mt-2">تعداد کاراکتر: 0 | تعداد خطوط: 0</div>
                 </div>
-                <input type="hidden" asp-for="Content" id="letterContent" />
-                <div id="editor" style="height: 400px; border: 1px solid #ced4da; border-radius: 0.375rem;">
-                    @if (!String.IsNullOrEmpty(Model.RelatedLetterId?.ToString()))
-                    {
-                        @Html.Raw(Model.Content)
-                    }
-                </div>
-                <span asp-validation-for="Content" class="text-danger"></span>
-                <div class="invalid-feedback">لطفا متن نامه را وارد کنید</div>
-                <div id="counter" class="text-muted mt-2">تعداد کاراکتر: 0 | تعداد خطوط: 0</div>
             </div>
             <!-- بخش امضاکننده -->
             <div class="row mb-4">
@@ -447,53 +443,53 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="Subjectsearch" class="form-label fw-bold">
                                         <i class="fas fa-file-alt me-1"></i>موضوع نامه
                                     </label>
-                                    <input type="text" class="form-control" id="Subjectsearch" name="Subjectsearch"
+                                    <input type="text" class="form-control" id="Subjectsearch" name="Subjectsearch" 
                                            placeholder="موضوع نامه را وارد کنید...">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="LetterNumber" class="form-label fw-bold">
                                         <i class="fas fa-hashtag me-1"></i>شماره نامه
                                     </label>
-                                    <input type="text" class="form-control" id="LetterNumber" name="LetterNumber"
+                                    <input type="text" class="form-control" id="LetterNumber" name="LetterNumber" 
                                            placeholder="شماره نامه را وارد کنید...">
-                                </div>
-                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-12">
                                 <div class="form-group mb-3">
                                     <label class="form-label fw-bold">
                                         <i class="fas fa-calendar-alt me-1"></i>تاریخ ثبت نامه
                                     </label>
-                                    <div class="input-daterange input-group">
-                                        <input type="text" class="form-control flatpickr-datesearch" id="FromDate"
+                            <div class="input-daterange input-group">
+                                        <input type="text" class="form-control flatpickr-datesearch" id="FromDate" 
                                                name="FromDate" placeholder="از تاریخ">
-                                        <div class="input-group-prepend input-group-append">
-                                            <span class="input-group-text">تا</span>
-                                        </div>
-                                        <input type="text" class="form-control flatpickr-datesearch" id="ToDate"
-                                               name="ToDate" placeholder="تا تاریخ">
-                                    </div>
+                                <div class="input-group-prepend input-group-append">
+                                    <span class="input-group-text">تا</span>
                                 </div>
+                                        <input type="text" class="form-control flatpickr-datesearch" id="ToDate" 
+                                               name="ToDate" placeholder="تا تاریخ">
                             </div>
                         </div>
+                    </div>
+                </div>
 
                         <div class="form-group text-center">
                             <button class="btn btn-primary me-2" type="button" id="searchLetterBtn">
                                 <i class="fas fa-search me-1"></i> جستجوی نامه‌ها
-                            </button>
-                            <button class="btn btn-outline-secondary" type="button" id="resetSearchBtn">
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" id="resetSearchBtn">
                                 <i class="fas fa-sync me-1"></i> بازنشانی فیلترها
-                            </button>
+                    </button>
                         </div>
                     </div>
                 </div>
@@ -506,7 +502,7 @@
                         </h6>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive">
+                <div class="table-responsive">
                             <table class="table table-hover mb-0" id="letterSearchResults">
                                 <thead class="table-light">
                                     <tr>
@@ -522,33 +518,33 @@
                                         <th>
                                             <i class="fas fa-calendar me-1"></i>تاریخ ثبت
                                         </th>
-                                        <th style="display: none;">
-                                            <i class="fas fa-user me-1"></i>فرستنده
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
-                                </tbody>
-                            </table>
-                        </div>
+                                                                <th style="display: none;">
+                            <i class="fas fa-user me-1"></i>فرستنده
+                        </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
+                        </tbody>
+                    </table>
+                </div>
 
                         <!-- Loading -->
                         <div id="searchLoading" class="text-center py-5" style="display:none;">
                             <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                                <span class="sr-only">در حال جستجو...</span>
-                            </div>
+                        <span class="sr-only">در حال جستجو...</span>
+                    </div>
                             <h6 class="text-muted">در حال جستجو...</h6>
                             <p class="text-muted small">لطفاً صبر کنید</p>
-                        </div>
+                </div>
 
                         <!-- No Results -->
                         <div id="noResults" class="text-center py-5" style="display:none;">
                             <i class="fas fa-search text-muted mb-3" style="font-size: 3rem;"></i>
                             <h6 class="text-muted">نتیجه‌ای یافت نشد</h6>
                             <p class="text-muted small">لطفاً فیلترهای جستجو را تغییر دهید</p>
-                        </div>
-                    </div>
+                </div>
+            </div>
                 </div>
             </div>
             <div class="modal-footer bg-light border-0">
@@ -562,67 +558,6 @@
         </div>
     </div>
 </div>
-
-<!-- Modal: AI Content Generator -->
-<div class="modal fade" id="aiModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-magic me-2"></i>تولید/بهبود متن با هوش مصنوعی</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">موضوع (اختیاری)</label>
-                        <input type="text" id="aiSubject" class="form-control" placeholder="موضوع نامه (در صورت نیاز)">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">شرح درخواست</label>
-                        <textarea id="aiPrompt" class="form-control" rows="5" placeholder="شرح دهید چه متنی نیاز دارید..." required></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">لحن (اختیاری)</label>
-                        <select id="aiTone" class="form-select">
-                            <option value="" selected>پیش‌فرض (رسمی و فاخر)</option>
-                            <option value="رسمی">رسمی</option>
-                            <option value="بسیار رسمی">بسیار رسمی</option>
-                            <option value="مودبانه">مودبانه</option>
-                            <option value="قاطع">قاطع</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 col-12">
-                        <label class="form-label">سرویس</label>
-                        <select id="aiProvider" class="form-select"></select>
-                    </div>
-                    <div class="col-md-3 col-12">
-                        <label class="form-label">مدل</label>
-                        <select id="aiModel" class="form-select"></select>
-                    </div>
-                    <div class="col-md-6 d-flex align-items-center">
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="aiRefine">
-                            <label class="form-check-label" for="aiRefine">بهبود متن فعلی به جای تولید جدید</label>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">پیش‌نمایش خروجی</label>
-                        <div id="aiPreview" class="border rounded p-3" style="min-height:160px; background:#fafafa; white-space:pre-wrap; overflow:auto"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
-                <button type="button" class="btn btn-info" id="btnAiGenerate">
-                    <i class="fas fa-wand-magic-sparkles me-1"></i>تولید متن
-                </button>
-                <button type="button" class="btn btn-primary" id="btnAiApply" disabled>
-                    <i class="fas fa-check me-1"></i>تایید و جایگزینی در متن نامه
-                </button>
-            </div>
-        </div>
-    </div>
- </div>
 <!-- مودال انتخاب کلاسه نامه -->
 <div class="modal fade" id="FileCodeSelectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -638,21 +573,21 @@
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0">
                         <thead class="thead-light">
-                            <tr>
-                                <th width="50">انتخاب</th>
-                                <th>کد کلاسه</th>
-                                <th>نام کلاسه</th>
-                            </tr>
+                        <tr>
+                            <th width="50">انتخاب</th>
+                            <th>کد کلاسه</th>
+                            <th>نام کلاسه</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @foreach (var k in klss)
-                            {
-                                <tr data-id="@k.CodeKelaseh" data-name="@k.NameKelaseh">
+                        @foreach (var k in klss)
+                        {
+                            <tr data-id="@k.CodeKelaseh" data-name="@k.NameKelaseh">
                                     <td><input type="checkbox" name="selectedFileCode" id="fileCode-@k.CodeKelaseh" value="@k.CodeKelaseh"></td>
-                                    <td>@k.CodeKelaseh</td>
-                                    <td>@k.NameKelaseh</td>
-                                </tr>
-                            }
+                                <td>@k.CodeKelaseh</td>
+                                <td>@k.NameKelaseh</td>
+                            </tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -682,6 +617,9 @@
                         <h5 class="text-primary">فایل‌های خود را انتخاب و یا اینجا بکشید و رها کنید</h5>
                         <p class="text-muted mb-3">یا روی دکمه زیر کلیک کنید</p>
                         <input type="file" id="fileInput" name="fileInput" multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.mp4,.avi,.mov,.mp3,.wav,.txt" style="display: none;">
+                      @*   <button style="display: none !important;" type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-folder-open me-2"></i>انتخاب فایل‌ها
+                        </button> *@
                     </div>
                 </div>
 
@@ -772,14 +710,14 @@
                             <div class="card-header bg-white border-bottom">
                                 <h6 class="mb-0 text-dark fw-bold">
                                     <i class="fas fa-sitemap me-2"></i>درخت سازمان‌ها
-                                </h6>
+                            </h6>
                                 <small class="text-info">توجه: سازمان های والد با علامت * مشخص شده اند</small>
-                            </div>
+                        </div>
                             <div class="card-body">
                                 <label for="treeSearch" class="form-label">جستجو در سازمان‌ها:</label>
                                 <input type="text" id="treeSearch" name="treeSearch" class="form-control mb-3" placeholder="جستجو در سازمان‌ها...">
                                 <div id="treeContainer" style="height: 400px; overflow: auto;"></div>
-                            </div>
+                    </div>
                         </div>
                     </div>
                 </div>
@@ -792,8 +730,10 @@
     </div>
 </div>
 
+
 @section pagejs {
 
+    <!-- فقط کتابخانه‌های موردنیاز این صفحه (Bootstrap/JQuery در لایه اصلی لود شده‌اند) -->
     <!-- کتابخانه‌های تاریخ و زمان -->
     <script src="~/assets/vendor/libs/moment/moment.js"></script>
     <script src="~/assets/vendor/libs/jdate/jdate.js"></script>
@@ -808,13 +748,12 @@
     <script src="~/assets/vendor/libs/bloodhound/bloodhound.js"></script>
     <script src="~/assets/vendor/libs/quill/katex.js"></script>
     <script src="~/assets/vendor/libs/quill/quill.js"></script>
+
+
     <!-- فایل‌های اسکریپت اختصاصی (حداقل‌سازی جهت جلوگیری از خطاهای نبود المان) -->
     <script src="~/assets/js/forms-selects.js"></script>
     <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
     <script src="~/assets/js/ui-modals.js" type="module"></script>
-    <script src="~/assets/js/tables-datatables-advanced.js"></script>
-
-    <!-- اسکریپت ابتدایی: Initialize Tagify و مدیریت چک‌باکس‌ها در مودال انتخاب کلاسه نامه -->
     <script>
         // Initialize Tagify only if the element exists
         document.addEventListener('DOMContentLoaded', function () {
@@ -824,10 +763,13 @@
             }
         });
     </script>
-
-    <!-- اسکریپت مدیریت انتخاب کلاسه نامه از مودال -->
     <script>
         $(document).ready(function(){
+            // حذف شد - حالا از Bootstrap data attributes استفاده می‌کنیم
+
+            // مقداردهی درخت گیرنده اصلی - بعد از تعریف orgData
+            // buildReceiverTree() در انتهای اسکریپت فراخوانی می‌شود
+
             // انتخاب کلاسه نامه از مودال اختصاصی
             $(document).on('change', '#FileCodeSelectModal tbody tr input[type="checkbox"]', function(){
                 var checkedBoxes = $('#FileCodeSelectModal tbody tr input[type="checkbox"]:checked');
@@ -854,19 +796,19 @@
             });
         });
     </script>
-
-    <!-- اسکریپت ابتدایی‌سازی DataTable برای نتایج جستجو -->
     <script>
         $(document).ready(function() {
             $('#letterSearchResults').DataTable();
+
         });
     </script>
-
-    <!-- اسکریپت مدیریت درخت سازمانی برای سایر گیرندگان (copyOrgData) -->
+    <script src="~/assets/js/tables-datatables-advanced.js"></script>
     <script>
-        $(document).ready(function() {
-            // داده‌های درخت سازمانی برای سایر گیرندگان
-            window.copyOrgData = [
+                $(document).ready(function() {
+            // حذف شد - حالا از Bootstrap data attributes استفاده می‌کنیم
+
+                                    // درخت سازمانی ساده
+            window.orgData = [
                 @foreach (var main in orgs.Where(o => o.IsMain))
                 {
                         @: {
@@ -907,7 +849,7 @@
             ];
 
             // ساخت درخت HTML برای سایر گیرندگان
-            function buildCopyTree(excludedId) {
+            function buildTree(excludedId) {
                 const container = document.getElementById('treeContainer');
                 if (!container) {
                     console.error('treeContainer not found!');
@@ -915,78 +857,39 @@
                 }
                 container.innerHTML = '';
 
-                if (!window.copyOrgData || window.copyOrgData.length === 0) {
+                if (!window.orgData || window.orgData.length === 0) {
                     container.innerHTML = '<div class="text-center text-muted">هیچ سازمانی یافت نشد</div>';
                     return;
                 }
 
-                window.copyOrgData.forEach(org => {
+                window.orgData.forEach(org => {
                     if (org.id !== excludedId) {
                         renderCopyNode(org, container, 0);
                     }
                 });
             }
 
-            // رندر نود برای سایر گیرندگان
-            function renderCopyNode(node, container, level) {
-                const nodeDiv = document.createElement('div');
-                nodeDiv.className = 'copy-tree-node';
-                nodeDiv.setAttribute('data-copy-node-id', node.id);
-                nodeDiv.setAttribute('data-level', level);
-
-                const isSelected = node.selected || false;
-                const hasChildren = node.children && node.children.length > 0;
-                const isExpanded = node.expanded === true;
-
-                nodeDiv.innerHTML = `
-                    <div class="copy-node-row ${isSelected ? 'selected' : ''}" data-copy-id="${node.id}">
-                        <div class="node-content">
-                            <div class="node-expand">
-                                ${hasChildren ?
-                                  `<button type="button" class="copy-expand-btn ${isExpanded ? 'expanded' : ''}"
-                                             data-copy-id="${node.id}">
-                                            <i class="fas fa-chevron-left"></i>
-                                         </button>` :
-                                  '<span class="expand-placeholder"></span>'
-                                        }
-                            </div>
-                            <div class="node-toggle">
-                                <input type="checkbox" class="copy-node-checkbox" id="copy-node-${node.id}"
-                                       data-copy-id="${node.id}" ${isSelected ? 'checked' : ''}>
-                            </div>
-                            <div class="node-name">${node.name}</div>
-                            <div class="node-message">
-                                <input type="text" class="copy-message-input" id="message-${node.id}"
-                                       data-copy-id="${node.id}" placeholder="پیام اختصاصی برای ${node.name}"
-                                       maxlength="200" style="display: ${isSelected ? 'block' : 'none'}">
-                            </div>
-                            <div class="copy-node-counter" data-copy-id="${node.id}"
-                                 style="display: ${isSelected ? 'block' : 'none'}">0/200</div>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(nodeDiv);
-                if (hasChildren) {
-                    const childrenContainer = document.createElement('div');
-                    childrenContainer.className = isExpanded ? 'copy-children-container' : 'copy-children-container hidden';
-                    childrenContainer.setAttribute('data-copy-parent-id', node.id);
-
-                    node.children.forEach(child => {
-                        renderCopyNode(child, childrenContainer, level + 1);
-                    });
-
-                    container.appendChild(childrenContainer);
-                }
+            // تابع جدید برای بازسازی درخت سایر گیرندگان
+            function rebuildCopyTree(excludedId) {
+                buildTree(excludedId);
             }
 
-            // تأیید انتخاب سایر گیرندگان
+            // رندر نود برای سایر گیرندگان (استفاده از کلاس CopyReceiverTree)
+            function renderCopyNode(node, container, level) {
+                CopyReceiverTree.renderNode(node, container, level);
+            }
+
+            // سازگاری با کد قدیمی
+            function renderNode(node, container, level) {
+                renderCopyNode(node, container, level);
+            }
+
             $("#confirmSelection").click(function() {
                 const selectedOrgs = [];
-                $('.copy-node-checkbox:checked').each(function() {
-                    const nodeId = $(this).data('copy-id');
-                    const nodeName = $(this).closest('.copy-node-row').find('.node-name').text();
-                    const messageInput = $(this).closest('.copy-node-row').find('.copy-message-input');
+                $('.node-checkbox:checked').each(function() {
+                    const nodeId = $(this).data('node-id');
+                    const nodeName = $(this).closest('.node-row').find('.node-name').text();
+                    const messageInput = $(this).closest('.node-row').find('.message-input');
                     const note = messageInput.is(':visible') ? messageInput.val() || "" : "";
                     selectedOrgs.push({ id: nodeId, name: nodeName, note });
                 });
@@ -999,408 +902,558 @@
                 }
             });
 
-            // تابع باز/بست کردن زیرمجموعه برای سایر گیرندگان
-            function toggleCopyExpand(nodeId) {
-                const expandBtn = document.querySelector(`.copy-expand-btn[data-copy-id="${nodeId}"]`);
-                const childrenContainer = document.querySelector(`.copy-children-container[data-copy-parent-id="${nodeId}"]`);
+            /* === CSS مشترک === */
+            const treeCSS = document.createElement('style');
+            treeCSS.textContent = `
+                .expand-btn {
+                    background: none;
+                    border: none;
+                    padding: 2px;
+                    cursor: pointer;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 3px;
+                    transition: all 0.3s ease;
+                }
+                .expand-btn:hover {
+                    background-color: #e9ecef;
+                }
+                .expand-btn i {
+                    font-size: 12px;
+                    transition: transform 0.3s ease;
+                    color: #6c757d;
+                }
+                .expand-btn.expanded i {
+                    transform: rotate(90deg);
+                    color: #495057;
+                }
+                .children-container {
+                    margin-right: 25px;
+                    position: relative;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
+                .children-container.hidden {
+                    max-height: 0;
+                    opacity: 0;
+                    margin-bottom: 0;
+                }
+                .children-container:not(.hidden) {
+                    max-height: 2000px;
+                    opacity: 1;
+                }
+                .expand-placeholder {
+                    width: 20px;
+                    height: 20px;
+                    display: inline-block;
+                }
+                .tree-node {
+                    margin: 2px 0;
+                }
+                .node-row {
+                    display: flex;
+                    align-items: center;
+                    padding: 4px;
+                    border-radius: 4px;
+                    transition: background-color 0.2s;
+                }
+                .node-row:hover {
+                    background-color: #f8f9fa;
+                }
+                .node-content {
+                    display: flex;
+                    align-items: center;
+                    width: 100%;
+                }
+                .node-expand {
+                    width: 24px;
+                    text-align: center;
+                }
+                .node-toggle {
+                    width: 24px;
+                    text-align: center;
+                }
+                .node-name {
+                    flex-grow: 1;
+                    padding-right: 8px;
+                    font-size: 14px;
+                }
+            `;
+            document.head.appendChild(treeCSS);
 
-                // پیدا کردن نود در ساختار داده‌های سایر گیرندگان
-                const node = findCopyNodeById(nodeId, window.copyOrgData);
+            /* === اسکریپت مستقل برای سایر گیرندگان === */
+            const CopyReceiverTree = {
+                // تابع باز/بسته کردن
+                toggleExpand: function(nodeId) {
+                    const expandBtn = document.querySelector(`button[onclick="CopyReceiverTree.toggleExpand('${nodeId}')"]`);
+                const childrenContainer = document.querySelector(`.children-container[data-parent-id="${nodeId}"]`);
+                    const node = this.findNodeById(nodeId);
 
                 if (childrenContainer) {
-                    // چک کردن وضعیت فعلی
-                    const isHidden = childrenContainer.classList.contains('hidden');
-
-                    if (isHidden) {
-                        childrenContainer.classList.remove('hidden');
+                        const isHidden = childrenContainer.classList.contains('hidden');
+                        
+                        if (isHidden) {
+                            // باز کردن
+                            childrenContainer.classList.remove('hidden');
                         if (expandBtn) {
                             expandBtn.classList.add('expanded');
-                        }
-                        if (node) {
-                            node.expanded = true;
-                        }
+                            }
+                            if (node) node.expanded = true;
                     } else {
-                        childrenContainer.classList.add('hidden');
+                            // بسته کردن
+                            childrenContainer.classList.add('hidden');
                         if (expandBtn) {
                             expandBtn.classList.remove('expanded');
+                            }
+                            if (node) node.expanded = false;
                         }
-                        if (node) {
-                            node.expanded = false;
-                        }
-                    }
-                } else if (node && node.children && node.children.length > 0) {
-                    // اگر فرزندان هنوز رندر نشده‌اند، آن‌ها را رندر کن
-                    const parentNode = document.querySelector(`.copy-tree-node[data-copy-node-id="${nodeId}"]`);
-                    if (parentNode) {
-                        const newChildrenContainer = document.createElement('div');
-                        newChildrenContainer.className = 'copy-children-container';
-                        newChildrenContainer.setAttribute('data-copy-parent-id', nodeId);
+                    } else if (node && node.children && node.children.length > 0) {
+                        // ساخت جدید
+                        const parentNode = document.querySelector(`[data-node-id="${nodeId}"]`);
+                        if (parentNode) {
+                            const newContainer = document.createElement('div');
+                            newContainer.className = 'children-container';
+                            newContainer.setAttribute('data-parent-id', nodeId);
 
-                        node.children.forEach(child => {
-                            renderCopyNode(child, newChildrenContainer, parseInt(parentNode.getAttribute('data-level')) + 1);
-                        });
+                            node.children.forEach(child => {
+                                this.renderNode(child, newContainer, parseInt(parentNode.getAttribute('data-level')) + 1);
+                            });
 
-                        parentNode.parentNode.insertBefore(newChildrenContainer, parentNode.nextSibling);
-                        if (expandBtn) {
-                            expandBtn.classList.add('expanded');
-                        }
-                        if (node) {
-                            node.expanded = true;
+                            parentNode.appendChild(newContainer);
+                            if (expandBtn) expandBtn.classList.add('expanded');
+                            if (node) node.expanded = true;
                         }
                     }
-                }
-            }
+                },
 
-            // تابع پیدا کردن نود بر اساس ID برای سایر گیرندگان
-            function findCopyNodeById(nodeId, nodes = window.copyOrgData) {
-                for (let node of nodes) {
-                    if (node.id === nodeId) {
-                        return node;
-                    }
-                    if (node.children) {
-                        const found = findCopyNodeById(nodeId, node.children);
-                        if (found) return found;
-                    }
-                }
-                return null;
-            }
-
-            // تابع تغییر وضعیت نود برای سایر گیرندگان
-            function toggleCopyNode(nodeId) {
-                const checkbox = document.querySelector(`.copy-node-checkbox[data-copy-id="${nodeId}"]`);
-                if (!checkbox) return;
-
-                const row = checkbox.closest('.copy-node-row');
-                const messageInput = document.querySelector(`.copy-message-input[data-copy-id="${nodeId}"]`);
-                const counter = document.querySelector(`.copy-node-counter[data-copy-id="${nodeId}"]`);
-
-                if (checkbox.checked) {
-                    row.classList.add('selected');
-                    if (messageInput) messageInput.style.display = 'block';
-                    if (counter) counter.style.display = 'block';
-                } else {
-                    row.classList.remove('selected');
-                    if (messageInput) {
-                        messageInput.style.display = 'none';
-                        messageInput.value = '';
-                    }
-                    if (counter) {
-                        counter.style.display = 'none';
-                        counter.textContent = '0/200';
-                        counter.className = 'copy-node-counter';
-                    }
-                }
-            }
-
-            // تابع به‌روزرسانی شمارنده برای سایر گیرندگان
-            function updateCopyCounter(nodeId, length) {
-                const counter = document.querySelector(`.copy-node-counter[data-copy-id="${nodeId}"]`);
-                if (!counter) return;
-
-                counter.textContent = length + '/200';
-                counter.className = 'copy-node-counter';
-
-                if (length > 180) {
-                    counter.classList.add('text-warning');
-                }
-                if (length > 195) {
-                    counter.classList.add('text-danger');
-                }
-            }
-
-            // جستجو در درخت سایر گیرندگان
-            $("#treeSearch").on("keyup", function() {
-                const searchTerm = $(this).val().toLowerCase();
-
-                if (searchTerm === '') {
-                    $('.copy-tree-node').show();
-                    $('.copy-children-container').show();
-                    return;
-                }
-
-                $('.copy-tree-node').hide();
-                $('.copy-children-container').hide();
-
-                $('.copy-node-row').each(function() {
-                    const nodeName = $(this).find('.node-name').text().toLowerCase();
-                    if (nodeName.includes(searchTerm)) {
-                        $(this).closest('.copy-tree-node').show();
-                        $(this).closest('.copy-tree-node').parents('.copy-children-container').show();
-                        $(this).closest('.copy-tree-node').parents('.copy-tree-node').show();
-                        $(this).closest('.copy-tree-node').find('.copy-children-container').show();
-                        $(this).closest('.copy-tree-node').find('.copy-tree-node').show();
-                    }
-                });
-            });
-
-            // رویدادهای کلیک برای دکمه‌های expand سایر گیرندگان
-            $(document).on('click', '.copy-expand-btn', function() {
-                const nodeId = $(this).data('copy-id');
-                if (nodeId) {
-                    toggleCopyExpand(nodeId);
-                }
-            });
-
-            // رویدادهای تغییر برای چک‌باکس‌های سایر گیرندگان
-            $(document).on('change', '.copy-node-checkbox', function() {
-                const nodeId = $(this).data('copy-id');
-                if (nodeId) {
-                    toggleCopyNode(nodeId);
-                }
-            });
-
-            // رویدادهای ورودی برای فیلدهای پیام سایر گیرندگان
-            $(document).on('input', '.copy-message-input', function() {
-                const nodeId = $(this).data('copy-id');
-                if (nodeId) {
-                    updateCopyCounter(nodeId, $(this).val().length);
-                }
-            });
-
-            // مقداردهی اولیه درخت سایر گیرندگان
-            buildCopyTree($("#Receiver").val() || '');
-        });
-    </script>
-
-    <!-- اسکریپت مدیریت درخت سازمانی برای گیرنده اصلی (receiverOrgData) -->
-    <script>
-        $(document).ready(function() {
-            // داده‌های درخت سازمانی برای گیرنده اصلی
-            window.receiverOrgData = [
-                @foreach (var main in orgs.Where(o => o.IsMain))
-                {
-                        @: {
-                        @:     id: "@main.Id",
-                        @:     name: "@main.Name",
-                        @:     level: 0,
-                        @:     expanded: false,
-                        @:     children: [
-                        @foreach (var sub in orgs.Where(o => o.ParentId == main.Id))
-                        {
-                                @:         {
-                                @:             id: "@sub.Id",
-                                @:             name: "@sub.Name",
-                                @:             level: 1,
-                                @:             expanded: false,
-                                @:             children: [
-                                @foreach (var child in orgs.Where(o => o.ParentId == sub.Id))
-                                {
-                                        @:                 {
-                                        @:                     id: "@child.Id",
-                                        @:                     name: "@child.Name",
-                                        @:                     level: 2,
-                                        @:                     expanded: false,
-                                        @:                     children: [
-                                        @foreach (var leaf in orgs.Where(o => o.ParentId == child.Id))
-                                        {
-                                                @:                         { id: "@leaf.Id", name: "@leaf.Name", level: 3, children: [] },
-                                        }
-                                                            @:                     ]
-                                        @:                 },
-                                }
-                                                @:             ]
-                                @:         },
+                // پیدا کردن نود
+                findNodeById: function(nodeId, nodes = window.orgData) {
+                    for (let node of nodes) {
+                        if (node.id === nodeId) return node;
+                        if (node.children) {
+                            const found = this.findNodeById(nodeId, node.children);
+                            if (found) return found;
                         }
-                                    @:     ]
-                        @: },
-                }
-            ];
+                    }
+                    return null;
+                },
 
-            // ساخت درخت گیرنده اصلی
-            function buildReceiverTree() {
-                const container = document.getElementById('receiverTreeContainer');
-                if (!container) {
-                    console.error('receiverTreeContainer not found!');
-                    return;
-                }
-                container.innerHTML = '';
-
-                if (!window.receiverOrgData || window.receiverOrgData.length === 0) {
-                    container.innerHTML = '<div class="text-center text-muted">هیچ سازمانی یافت نشد</div>';
-                    return;
-                }
-
-                window.receiverOrgData.forEach(org => {
-                    renderReceiverNode(org, container, 0);
-                });
-            }
-
-            // تابع رندر نود گیرنده اصلی
-            function renderReceiverNode(node, container, level) {
+                // رندر نود
+                renderNode: function(node, container, level) {
                 const nodeDiv = document.createElement('div');
-                nodeDiv.className = 'receiver-tree-node';
-                nodeDiv.setAttribute('data-receiver-node-id', node.id);
+                nodeDiv.className = 'tree-node';
+                nodeDiv.setAttribute('data-node-id', node.id);
                 nodeDiv.setAttribute('data-level', level);
 
                 const hasChildren = node.children && node.children.length > 0;
-                const isExpanded = node.expanded === true;
+                    const isExpanded = node.expanded === true;
+                    const isSelected = node.selected || false;
 
                 nodeDiv.innerHTML = `
-                    <div class="receiver-node-row" data-receiver-id="${node.id}">
+                    <div class="node-row ${isSelected ? 'selected' : ''}" data-id="${node.id}">
                         <div class="node-content">
                             <div class="node-expand">
                                 ${hasChildren ?
-                                  `<button type="button" class="receiver-expand-btn ${isExpanded ? 'expanded' : ''}"
-                                             data-receiver-id="${node.id}">
-                                    <i class="fas fa-chevron-left"></i>
-                                 </button>` :
-                                  '<span class="expand-placeholder"></span>'
-                                        }
+                                    `<button type="button" class="expand-btn ${isExpanded ? 'expanded' : ''}"
+                                             onclick="toggleCopyExpand('${node.id}')">
+                                        <i class="fas fa-chevron-right"></i>
+                                     </button>` :
+                                    '<span class="expand-placeholder"></span>'
+                                }
                             </div>
                             <div class="node-toggle">
-                                <input type="radio" name="receiverSelection" class="receiver-node-radio" value="${node.id}">
+                                    <input type="checkbox" class="node-checkbox" 
+                                           id="copy-node-${node.id}" name="copy-node-${node.id}" 
+                                           ${isSelected ? 'checked' : ''}
+                                       onchange="toggleNode('${node.id}')">
                             </div>
                             <div class="node-name">${node.name}</div>
+                            <div class="node-message">
+                                    <input type="text" class="message-input" 
+                                           id="message-${node.id}" name="message-${node.id}" 
+                                           placeholder="پیام اختصاصی برای ${node.name}"
+                                           maxlength="200" 
+                                           oninput="updateCounter('${node.id}', this.value.length)"
+                                       style="display: ${isSelected ? 'block' : 'none'}">
+                            </div>
+                            <div class="node-counter" style="display: ${isSelected ? 'block' : 'none'}">0/200</div>
                         </div>
                     </div>
                 `;
 
                 container.appendChild(nodeDiv);
 
-                // ایجاد childrenContainer برای گیرنده اصلی
                 if (hasChildren) {
                     const childrenContainer = document.createElement('div');
-                    childrenContainer.className = isExpanded ? 'receiver-children-container' : 'receiver-children-container hidden';
-                    childrenContainer.setAttribute('data-receiver-parent-id', node.id);
+                        childrenContainer.className = isExpanded ? 'children-container' : 'children-container hidden';
+                    childrenContainer.setAttribute('data-parent-id', node.id);
 
                     node.children.forEach(child => {
-                        renderReceiverNode(child, childrenContainer, level + 1);
+                            this.renderNode(child, childrenContainer, level + 1);
                     });
 
                     container.appendChild(childrenContainer);
                 }
-            }
+                },
 
-            // تابع باز/بسته کردن زیرمجموعه‌های گیرنده اصلی
-            function toggleReceiverExpand(nodeId) {
-                const expandBtn = document.querySelector(`.receiver-expand-btn[data-receiver-id="${nodeId}"]`);
-                const childrenContainer = document.querySelector(`.receiver-children-container[data-receiver-parent-id="${nodeId}"]`);
+                // تغییر وضعیت انتخاب
+                toggleSelection: function(nodeId) {
+                    const checkbox = document.getElementById(`copy-node-${nodeId}`);
+                    const row = checkbox.closest('.node-row');
+                    const messageInput = document.getElementById(`message-${nodeId}`);
+                    const counter = row.querySelector('.node-counter');
 
-                // پیدا کردن نود در ساختار داده‌های گیرنده
-                const node = findReceiverNodeById(nodeId, window.receiverOrgData);
+                    if (checkbox.checked) {
+                        row.classList.add('selected');
+                        messageInput.style.display = 'block';
+                        counter.style.display = 'block';
+                    } else {
+                        row.classList.remove('selected');
+                        messageInput.style.display = 'none';
+                        counter.style.display = 'none';
+                        messageInput.value = '';
+                        counter.textContent = '0/200';
+                        counter.className = 'node-counter';
+                    }
+                },
+
+                // به‌روزرسانی شمارنده
+                updateCounter: function(nodeId, length) {
+                    const counter = document.getElementById(`copy-node-${nodeId}`).closest('.node-row').querySelector('.node-counter');
+                    counter.textContent = length + '/200';
+                    counter.className = 'node-counter';
+                    if (length > 150) counter.classList.add('text-warning');
+                    if (length > 195) counter.classList.add('text-danger');
+                }
+            };
+
+            // در دسترس قراردادن توابع سایر گیرندگان
+            window.toggleCopyExpand = function(nodeId) {
+                console.log('toggleCopyExpand called for:', nodeId);
+                CopyReceiverTree.toggleExpand(nodeId);
+            };
+            window.toggleNode = function(nodeId) {
+                console.log('toggleNode called for:', nodeId);
+                CopyReceiverTree.toggleSelection(nodeId);
+            };
+            window.updateCounter = function(nodeId, length) {
+                CopyReceiverTree.updateCounter(nodeId, length);
+            };
+
+            /* === اسکریپت مستقل برای گیرنده اصلی === */
+            const MainReceiverTree = {
+                // تابع باز/بسته کردن
+                toggleExpand: function(nodeId) {
+                    const expandBtn = document.querySelector(`button[onclick="MainReceiverTree.toggleExpand('${nodeId}')"]`);
+                const childrenContainer = document.querySelector(`.children-container[data-parent-id="${nodeId}"]`);
+                    const node = this.findNodeById(nodeId);
 
                 if (childrenContainer) {
-                    // چک کردن وضعیت فعلی
-                    const isHidden = childrenContainer.classList.contains('hidden');
-
-                    if (isHidden) {
-                        childrenContainer.classList.remove('hidden');
+                        const isHidden = childrenContainer.classList.contains('hidden');
+                        
+                        if (isHidden) {
+                            // باز کردن
+                            childrenContainer.classList.remove('hidden');
                         if (expandBtn) {
                             expandBtn.classList.add('expanded');
-                        }
-                        if (node) {
-                            node.expanded = true;
-                        }
+                            }
+                            if (node) node.expanded = true;
                     } else {
-                        childrenContainer.classList.add('hidden');
+                            // بسته کردن
+                            childrenContainer.classList.add('hidden');
                         if (expandBtn) {
                             expandBtn.classList.remove('expanded');
+                            }
+                            if (node) node.expanded = false;
                         }
-                        if (node) {
-                            node.expanded = false;
+                    } else if (node && node.children && node.children.length > 0) {
+                        // ساخت جدید
+                        const parentNode = document.querySelector(`[data-node-id="${nodeId}"]`);
+                        if (parentNode) {
+                            const newContainer = document.createElement('div');
+                            newContainer.className = 'children-container';
+                            newContainer.setAttribute('data-parent-id', nodeId);
+
+                            node.children.forEach(child => {
+                                this.renderNode(child, newContainer, parseInt(parentNode.getAttribute('data-level')) + 1);
+                            });
+
+                            parentNode.parentNode.insertBefore(newContainer, parentNode.nextSibling);
+                            if (expandBtn) expandBtn.classList.add('expanded');
+                            if (node) node.expanded = true;
                         }
                     }
-                } else if (node && node.children && node.children.length > 0) {
-                    // اگر فرزندان هنوز رندر نشده‌اند، آن‌ها را رندر کن
-                    const parentNode = document.querySelector(`.receiver-tree-node[data-receiver-node-id="${nodeId}"]`);
-                    if (parentNode) {
-                        const newChildrenContainer = document.createElement('div');
-                        newChildrenContainer.className = 'receiver-children-container';
-                        newChildrenContainer.setAttribute('data-receiver-parent-id', nodeId);
+                },
 
-                        node.children.forEach(child => {
-                            renderReceiverNode(child, newChildrenContainer, parseInt(parentNode.getAttribute('data-level')) + 1);
-                        });
-
-                        parentNode.parentNode.insertBefore(newChildrenContainer, parentNode.nextSibling);
-                        if (expandBtn) {
-                            expandBtn.classList.add('expanded');
-                        }
-                        if (node) {
-                            node.expanded = true;
-                        }
-                    }
-                }
-            }
-
-            // تابع پیدا کردن نود گیرنده بر اساس ID
-            function findReceiverNodeById(nodeId, nodes = window.receiverOrgData) {
+                // پیدا کردن نود
+                findNodeById: function(nodeId, nodes = window.orgData) {
                 for (let node of nodes) {
-                    if (node.id === nodeId) {
-                        return node;
-                    }
+                        if (node.id === nodeId) return node;
                     if (node.children) {
-                        const found = findReceiverNodeById(nodeId, node.children);
+                            const found = this.findNodeById(nodeId, node.children);
                         if (found) return found;
                     }
                 }
                 return null;
+                },
+
+                // رندر نود
+                renderNode: function(node, container, level) {
+                    const nodeDiv = document.createElement('div');
+                    nodeDiv.className = 'tree-node';
+                    nodeDiv.setAttribute('data-node-id', node.id);
+                    nodeDiv.setAttribute('data-level', level);
+
+                    const hasChildren = node.children && node.children.length > 0;
+                    const isExpanded = node.expanded === true;
+
+                    nodeDiv.innerHTML = `
+                        <div class="node-row" data-id="${node.id}">
+                            <div class="node-content">
+                                <div class="node-expand">
+                                    ${hasChildren ?
+                                        `<button type="button" class="expand-btn ${isExpanded ? 'expanded' : ''}"
+                                                 onclick="toggleReceiverExpand('${node.id}')">
+                                            <i class="fas fa-chevron-right"></i>
+                                         </button>` :
+                                        '<span class="expand-placeholder"></span>'
+                                    }
+                                </div>
+                                <div class="node-toggle">
+                                    <input type="radio" name="receiverSelection" class="node-radio" 
+                                           value="${node.id}"
+                                           onchange="selectReceiver('${node.id}', '${node.name}')">
+                                </div>
+                                <div class="node-name">${node.name}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(nodeDiv);
+
+                    if (hasChildren) {
+                        const childrenContainer = document.createElement('div');
+                        childrenContainer.className = isExpanded ? 'children-container' : 'children-container hidden';
+                        childrenContainer.setAttribute('data-parent-id', node.id);
+
+                        node.children.forEach(child => {
+                            this.renderNode(child, childrenContainer, level + 1);
+                        });
+
+                        container.appendChild(childrenContainer);
+                    }
+                },
+
+                // انتخاب گیرنده
+                selectReceiver: function(nodeId, nodeName) {
+                    // فقط یک سازمان انتخاب شود
+                    $('input[name="receiverSelection"]').prop('checked', false);
+                    $(`input[value="${nodeId}"]`).prop('checked', true);
+
+                    $('#Receiver').val(nodeId);
+
+                    // ساخت نام کامل با سلسله مراتب
+                    const fullName = this.getFullOrganizationName(nodeId);
+                    $('#ReceiverText').val(fullName);
+
+                    // بازسازی درخت رونوشت بدون نمایش گیرنده اصلی
+                    buildTree(nodeId);
+
+                    const el = document.getElementById('ReceiverSelectModal');
+                    if (window.bootstrap && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(el).hide();
+                    }
+                },
+
+                // ساخت نام کامل سازمان
+                getFullOrganizationName: function(nodeId) {
+                    const node = this.findNodeById(nodeId);
+                    if (!node) return '';
+
+                    const path = [];
+                    let currentNode = node;
+
+                    while (currentNode) {
+                        path.unshift(currentNode.name);
+
+                        if (currentNode.level > 0) {
+                            const parentId = this.findParentId(currentNode.id);
+                            currentNode = parentId ? this.findNodeById(parentId) : null;
+                    } else {
+                            break;
+                        }
+                    }
+
+                    return path.join('-');
+                },
+
+                // پیدا کردن والد
+                findParentId: function(nodeId, nodes = window.orgData, parentId = null) {
+                    for (let node of nodes) {
+                        if (node.id === nodeId) return parentId;
+                        if (node.children) {
+                            const found = this.findParentId(nodeId, node.children, node.id);
+                            if (found) return found;
+                        }
+                    }
+                    return null;
+                }
+            };
+
+            // در دسترس قراردادن توابع گیرنده اصلی
+            window.toggleReceiverExpand = function(nodeId) {
+                console.log('toggleReceiverExpand called for:', nodeId);
+                MainReceiverTree.toggleExpand(nodeId);
+            };
+            window.selectReceiver = function(nodeId, nodeName) {
+                console.log('selectReceiver called for:', nodeId, nodeName);
+                MainReceiverTree.selectReceiver(nodeId, nodeName);
+            };
+
+            // استفاده از CopyReceiverTree.findNodeById
+
+            // حذف شد - از CopyReceiverTree.toggleSelection استفاده می‌شود
+
+            // حذف شد - از CopyReceiverTree.updateCounter استفاده می‌شود
+
+            // جستجو
+            $("#treeSearch").on("keyup", function() {
+                const searchTerm = $(this).val().toLowerCase();
+
+                if (searchTerm === '') {
+                    // اگر جستجو خالی است، همه را نمایش بده
+                    $('.tree-node').show();
+                    $('.children-container').show();
+                    return;
+                }
+
+                // ابتدا همه را مخفی کن
+                $('.tree-node').hide();
+                $('.children-container').hide();
+
+                // سپس موارد مطابق را نمایش بده
+                $('.node-row').each(function() {
+                    const nodeName = $(this).find('.node-name').text().toLowerCase();
+                    if (nodeName.includes(searchTerm)) {
+                        // نمایش خود نود
+                        $(this).closest('.tree-node').show();
+
+                        // نمایش والدین
+                        $(this).closest('.tree-node').parents('.children-container').show();
+                        $(this).closest('.tree-node').parents('.tree-node').show();
+
+                        // نمایش فرزندان
+                        $(this).closest('.tree-node').find('.children-container').show();
+                        $(this).closest('.tree-node').find('.tree-node').show();
+                    }
+            });
+        });
+
+            // حذف شد - اکنون از کلاس‌های مستقل استفاده می‌شود
+
+            // مقداردهی اولیه درخت
+            buildTree($("#Receiver").val() || '');
+            
+            // مقداردهی درخت گیرنده اصلی بعد از تعریف orgData
+            console.log('orgData loaded:', window.orgData);
+            buildReceiverTree();
+
+            // تابع ساخت درخت گیرنده اصلی
+            function buildReceiverTree() {
+                const container = document.getElementById('receiverTreeContainer');
+                container.innerHTML = '';
+
+                console.log('buildReceiverTree called, orgData:', window.orgData);
+
+                if (!window.orgData || window.orgData.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">هیچ سازمانی یافت نشد</div>';
+                    return;
+                }
+
+                window.orgData.forEach(org => {
+                    MainReceiverTree.renderNode(org, container, 0);
+                });
             }
 
             // تابع انتخاب گیرنده اصلی
-            function selectReceiver(nodeId, nodeName) {
+            window.selectReceiver = function(nodeId, nodeName) {
                 // فقط یک سازمان انتخاب شود
-                $('.receiver-node-radio').prop('checked', false);
-                $(`.receiver-node-radio[value="${nodeId}"]`).prop('checked', true);
-
+                $('input[name="receiverSelection"]').prop('checked', false);
+                $(`input[value="${nodeId}"]`).prop('checked', true);
+                
                 $('#Receiver').val(nodeId);
-
+                
                 // ساخت نام کامل با سلسله مراتب
-                const fullName = getReceiverFullOrganizationName(nodeId);
+                const fullName = getFullOrganizationName(nodeId);
                 $('#ReceiverText').val(fullName);
+
+                // بازسازی درخت رونوشت بدون نمایش گیرنده اصلی
+                buildTree(nodeId);
 
                 const el = document.getElementById('ReceiverSelectModal');
                 if (window.bootstrap && bootstrap.Modal) {
                     bootstrap.Modal.getOrCreateInstance(el).hide();
                 }
-            }
+            };
 
             // تابع ساخت نام کامل سازمان با سلسله مراتب
-            function getReceiverFullOrganizationName(nodeId) {
-                const node = findReceiverNodeById(nodeId, window.receiverOrgData);
+            function getFullOrganizationName(nodeId) {
+                const node = findReceiverNodeById(nodeId);
                 if (!node) return '';
 
                 const path = [];
                 let currentNode = node;
-
+                
                 // جمع‌آوری مسیر از نود فعلی تا ریشه
                 while (currentNode) {
                     path.unshift(currentNode.name);
-
+                    
                     // پیدا کردن والد
                     if (currentNode.level > 0) {
-                        currentNode = findReceiverParentNode(currentNode.id);
+                        currentNode = findParentNode(currentNode.id);
                     } else {
                         currentNode = null;
                     }
                 }
-
+                
                 return path.join('-');
             }
 
             // تابع پیدا کردن والد یک نود
-            function findReceiverParentNode(nodeId) {
-                for (let org of window.receiverOrgData) {
+            function findParentNode(nodeId) {
+                for (let org of window.orgData) {
                     if (org.children) {
-                        const found = findReceiverParentInChildren(org, nodeId);
+                        const found = findParentInChildren(org, nodeId);
                         if (found) return found;
                     }
                 }
                 return null;
             }
 
+            // استفاده از MainReceiverTree.findNodeById
+
             // تابع جستجوی والد در فرزندان
-            function findReceiverParentInChildren(parent, targetId) {
+            function findParentInChildren(parent, targetId) {
                 if (parent.children) {
                     for (let child of parent.children) {
                         if (child.id === targetId) {
                             return parent;
                         }
-                        const found = findReceiverParentInChildren(child, targetId);
+                        const found = findParentInChildren(child, targetId);
                         if (found) return found;
                     }
                 }
                 return null;
+            }
+
+            // حذف شد - اکنون از MainReceiverTree استفاده می‌شود
+
+            // تابع رندر نود گیرنده اصلی (استفاده از کلاس MainReceiverTree)
+            function renderReceiverNode(node, container, level) {
+                MainReceiverTree.renderNode(node, container, level);
             }
 
             // جستجو در درخت گیرنده اصلی
@@ -1408,32 +1461,32 @@
                 const searchTerm = $(this).val().toLowerCase();
 
                 if (searchTerm === '') {
-                    $('.receiver-tree-node').show();
-                    $('.receiver-children-container').show();
+                    $('.tree-node').show();
+                    $('.children-container').show();
                     return;
                 }
 
-                $('.receiver-tree-node').hide();
-                $('.receiver-children-container').hide();
+                $('.tree-node').hide();
+                $('.children-container').hide();
 
-                $('.receiver-node-row').each(function() {
+                $('.node-row').each(function() {
                     const nodeName = $(this).find('.node-name').text().toLowerCase();
                     if (nodeName.includes(searchTerm)) {
-                        $(this).closest('.receiver-tree-node').show();
-                        $(this).closest('.receiver-tree-node').parents('.receiver-children-container').show();
-                        $(this).closest('.receiver-tree-node').parents('.receiver-tree-node').show();
-                        $(this).closest('.receiver-tree-node').find('.receiver-children-container').show();
-                        $(this).closest('.receiver-tree-node').find('.receiver-tree-node').show();
+                        $(this).closest('.tree-node').show();
+                        $(this).closest('.tree-node').parents('.children-container').show();
+                        $(this).closest('.tree-node').parents('.tree-node').show();
+                        $(this).closest('.tree-node').find('.children-container').show();
+                        $(this).closest('.tree-node').find('.tree-node').show();
                     }
                 });
             });
 
             // تأیید انتخاب گیرنده اصلی
             $("#confirmReceiverSelection").click(function() {
-                const selectedRadio = $('.receiver-node-radio:checked');
+                const selectedRadio = $('input[name="receiverSelection"]:checked');
                 if (selectedRadio.length > 0) {
                     const nodeId = selectedRadio.val();
-                    const nodeName = selectedRadio.closest('.receiver-node-row').find('.node-name').text();
+                    const nodeName = selectedRadio.closest('.node-row').find('.node-name').text();
                     selectReceiver(nodeId, nodeName);
                 } else {
                     Swal.fire({
@@ -1444,58 +1497,43 @@
                     });
                 }
             });
-
-            // رویدادهای کلیک برای دکمه‌های expand گیرنده اصلی
-            $(document).on('click', '.receiver-expand-btn', function() {
-                const nodeId = $(this).data('receiver-id');
-                if (nodeId) {
-                    toggleReceiverExpand(nodeId);
-                }
-            });
-
-            // رویداد تغییر برای radio buttons گیرنده اصلی
-            $(document).on('change', '.receiver-node-radio', function() {
-                const nodeId = $(this).val();
-                const nodeName = $(this).closest('.receiver-node-row').find('.node-name').text();
-                selectReceiver(nodeId, nodeName);
-            });
-
-            // مقداردهی اولیه درخت گیرنده اصلی
-            buildReceiverTree();
         });
     </script>
-
-    <!-- اسکریپت مدیریت جستجوی نامه‌ها و انتخاب در مودال -->
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
-        $(document).ready(function() {
-            $('#resetSearchBtn').click(function() {
-                // ریست تمام فیلدهای داخل مودال
-                $('#letterSearchModal')
-                    .find('input[type="text"], input[type="search"], textarea')
-                    .val('');
 
-                // ریست فیلدهای خاص
-                $('#FromDate, #ToDate').val('').trigger('change');
+                $(document).ready(function() {
 
-                // ریست Select2 اگر وجود دارد
-                if ($.fn.select2) {
-                    $('#letterSearchModal').find('select').val(null).trigger('change');
-                }
+                    $('#resetSearchBtn').click(function() {
+                        // ریست تمام فیلدهای داخل مودال
+                        $('#letterSearchModal')
+                            .find('input[type="text"], input[type="search"], textarea')
+                            .val('');
 
-                // ریست Datepickerها
-                if ($.fn.persianDatepicker) {
-                    $('#letterSearchModal').find('.persian-datepicker').persianDatepicker('setDate', null);
-                }
-                if ($.fn.flatpickr) {
-                    $('#letterSearchModal').find('.flatpickr-date').flatpickr().clear();
-                }
+                        // ریست فیلدهای خاص
+                        $('#FromDate, #ToDate').val('').trigger('change');
 
-                // پاک کردن نتایج
-                $('#letterSearchResults tbody').empty();
-                $('#noResults').hide();
-                $('#selectLetterBtn').prop('disabled', true);
-                $('#letterSearchResults tr').removeClass('selected-row');
-            });
+                        // ریست Select2 اگر وجود دارد
+                        if ($.fn.select2) {
+                            $('#letterSearchModal').find('select').val(null).trigger('change');
+                        }
+
+                        // ریست Datepickerها
+                        if ($.fn.persianDatepicker) {
+                            $('#letterSearchModal').find('.persian-datepicker').persianDatepicker('setDate', null);
+                        }
+                        if ($.fn.flatpickr) {
+                            $('#letterSearchModal').find('.flatpickr-date').flatpickr().clear();
+                        }
+
+                        // پاک کردن نتایج
+                        $('#letterSearchResults tbody').empty();
+                        $('#noResults').hide();
+                        $('#selectLetterBtn').prop('disabled', true);
+                        $('#letterSearchResults tr').removeClass('selected-row');
+                    });
 
             // Handle row selection
             $('#letterSearchResults').on('click', 'tr', function() {
@@ -1558,55 +1596,55 @@
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(searchData),
-                    success: function(response) {
-                        try {
-                            $('#searchLoading').hide();
-                            // بررسی وجود پاسخ و ساختار آن
-                            if (response && response.Success && response.Data && response.Data.Data) {
-                                var tableBody = $('#letterSearchResults tbody');
-                                tableBody.empty();
+                           success: function(response) {
+            try {
+                $('#searchLoading').hide();
+                // بررسی وجود پاسخ و ساختار آن
+                if (response && response.Success && response.Data && response.Data.Data) {
+                    var tableBody = $('#letterSearchResults tbody');
+                    tableBody.empty();
 
-                                var actualData = response.Data.Data; // دسترسی به داده‌های واقعی
+                    var actualData = response.Data.Data; // دسترسی به داده‌های واقعی
 
-                                if (actualData.length > 0) {
-                                    $.each(actualData, function(index, letter) {
-                                        var row = `
-                                            <tr data-id="${letter.Id}">
-                                                <td><input type="radio" name="selectedLetter" id="letter-${letter.Id}" value="${letter.Id}"></td>
-                                                <td>${letter.LetterNumber || '-'}</td>
-                                                <td>${letter.Subject || 'بدون موضوع'}</td>
-                                                <td>${letter.RegistrationDate || 'نامشخص'}</td>
-                                            </tr>
-                                        `;
-                                        tableBody.append(row);
-                                    });
-                                    $('#noResults').hide();
-                                } else {
-                                    $('#noResults').show();
-                                    Swal.fire({
-                                        icon: 'info',
-                                        title: 'توجه',
-                                        text: 'نتیجه‌ای یافت نشد'
-                                    });
-                                }
-                            } else {
-                                $('#noResults').show();
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'خطا',
-                                    text: response.Message || 'خطا در ساختار پاسخ سرور'
-                                });
-                            }
-                        } catch (e) {
-                            console.error('Error:', e);
-                            $('#noResults').show();
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'خطا',
-                                text: 'خطا در پردازش نتایج'
-                            });
-                        }
-                    },
+                    if (actualData.length > 0) {
+                        $.each(actualData, function(index, letter) {
+                            var row = `
+                                <tr data-id="${letter.Id}">
+                                    <td><input type="radio" name="selectedLetter" id="letter-${letter.Id}" value="${letter.Id}"></td>
+                                    <td>${letter.LetterNumber || '-'}</td>
+                                    <td>${letter.Subject || 'بدون موضوع'}</td>
+                                    <td>${letter.RegistrationDate || 'نامشخص'}</td>
+                                </tr>
+                            `;
+                            tableBody.append(row);
+                        });
+                        $('#noResults').hide();
+                    } else {
+                        $('#noResults').show();
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'توجه',
+                            text: 'نتیجه‌ای یافت نشد'
+                        });
+                    }
+                } else {
+                    $('#noResults').show();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'خطا',
+                        text: response.Message || 'خطا در ساختار پاسخ سرور'
+                    });
+                }
+            } catch (e) {
+                console.error('Error:', e);
+                $('#noResults').show();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'خطا در پردازش نتایج'
+                });
+            }
+        },
                     error: function(xhr) {
                         $('#searchLoading').hide();
                         console.error("AJAX Error:", xhr.responseText);
@@ -1616,6 +1654,14 @@
                             text: 'خطا در ارتباط با سرور'
                         });
                     },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطا',
+                            text: 'خطا در دریافت اطلاعات از سرور: ' + xhr.responseText
+                        });
+                        console.error(xhr.responseText);
+                    },
                     complete: function() {
                         $('#searchLoading').hide();
                     }
@@ -1623,8 +1669,7 @@
             });
         });
     </script>
-
-    <!-- اسکریپت مدیریت فیلد نامه مرتبط و Datepickerها -->
+  
     <script>
         // Show/hide related letter field based on letter relation type
         function toggleRelatedLetterField(value) {
@@ -1655,253 +1700,81 @@
             disableMobile: true,
             maxDate:'today'        });
     </script>
-
-    <!-- اسکریپت ابتدایی‌سازی Quill Editor و شمارنده کاراکترها -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // بررسی وجود المان‌های مورد نیاز
-            const editorElement = document.getElementById('editor');
-            const counterElement = document.getElementById('counter');
-            const form = document.querySelector('form.needs-validation');
+               document.addEventListener('DOMContentLoaded', function() {
+          // بررسی وجود المان‌های مورد نیاز
+          const editorElement = document.getElementById('editor');
+          const counterElement = document.getElementById('counter');
+          const form = document.querySelector('form.needs-validation');
 
-            if (!editorElement) {
-                console.error('Editor element not found!');
-                return;
-            }
+          if (!editorElement) {
+            console.error('Editor element not found!');
+            return;
+          }
 
-            // Initialize Quill editor
-            var quill = new Quill('#editor', {
-                modules: {
-                    toolbar: [
-                        [{ 'font': [] }, { 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'script': 'super' }, { 'script': 'sub' }],
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                        [{ 'indent': '-1' }, { 'indent': '+1' }],
-                        [{ 'align': [] }],
-                        ['blockquote', 'code-block'],
-                        ['clean']
-                    ],
-                    history: {
-                        delay: 1000,
-                        maxStack: 200,
-                        userOnly: false
-                    },
-                    clipboard: { matchVisual: true }
-                },
-                placeholder: 'متن خود را اینجا وارد کنید...',
-                theme: 'snow'
+          // Initialize Quill editor
+          var quill = new Quill('#editor', {
+            modules: {
+              toolbar: [
+                [{ 'font': [] }, { 'header': [1, 2, 3, 4, 5, 6, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'super' }, { 'script': 'sub' }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'indent': '-1' }, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                ['blockquote', 'code-block'],
+                ['clean']
+              ],
+              history: {
+                delay: 1000,
+                maxStack: 200,
+                userOnly: false
+              },
+              clipboard: { matchVisual: true }
+            },
+            placeholder: 'متن خود را اینجا وارد کنید...',
+            theme: 'snow'
+          });
+
+
+
+          // Update character and line counter
+          function updateCounter() {
+            if (!counterElement) return;
+
+            const text = quill.getText().trim();
+            const lines = text.split('\n').filter(line => line.trim() !== '').length;
+
+            counterElement.textContent = `تعداد کاراکتر: ${text.length} | تعداد خطوط: ${lines}`;
+          }
+
+          quill.on('text-change', updateCounter);
+
+          // Update hidden input before form submission
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              // Form validation
+              if (form.checkValidity() === false) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+
+              form.classList.add('was-validated');
+
+              // Set Quill content to hidden input
+              const contentInput = document.getElementById('letterContent');
+              if (contentInput) {
+                contentInput.value = quill.root.innerHTML;
+              }
             });
-            // expose for other scripts
-            window.quillEditor = quill;
-            window.quill = quill;
+          }
 
-            // Header AI button opens modal
-            try {
-                var btnOpenAi = document.getElementById('btnOpenAi');
-                if (btnOpenAi && window.bootstrap && bootstrap.Modal) {
-                    btnOpenAi.addEventListener('click', function(){
-                        var modalEl = document.getElementById('aiModal');
-                        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
-                    });
-                }
-            } catch (e) { console.warn('AI header button bind failed', e); }
-
-            // Update character and line counter
-            function updateCounter() {
-                if (!counterElement) return;
-
-                const text = quill.getText().trim();
-                const lines = text.split('\n').filter(line => line.trim() !== '').length;
-
-                counterElement.textContent = `تعداد کاراکتر: ${text.length} | تعداد خطوط: ${lines}`;
-            }
-
-            quill.on('text-change', updateCounter);
-
-            // Update hidden input before form submission
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    // Set Quill content to hidden input first
-                    const contentInput = document.getElementById('letterContent');
-                    if (contentInput) {
-                        contentInput.value = quill.root.innerHTML;
-                    }
-
-                    // Check if content is empty
-                    const text = quill.getText().trim();
-                    if (text.length === 0) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        alert('لطفاً محتوای نامه را وارد کنید.');
-                        return false;
-                    }
-
-                    // Form validation
-                    if (form.checkValidity() === false) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    form.classList.add('was-validated');
-                });
-            }
-
-            // Initial counter update
-            updateCounter();
+          // Initial counter update
+          updateCounter();
         });
-    </script>
 
-    <!-- AI Generate/Refine Script -->
-    <script>
-        (function(){
-            const aiPromptEl = document.getElementById('aiPrompt');
-            const aiSubjectEl = document.getElementById('aiSubject');
-            const aiToneEl = document.getElementById('aiTone');
-            const aiProviderEl = document.getElementById('aiProvider');
-            const aiModelEl = document.getElementById('aiModel');
-            // Map model IDs to Persian display names (per request)
-            function getModelDisplayName(id){
-                const map = {
-                    'x-ai/grok-4-fast:free': 'Grok 4 Fast (رایگان)',
-                    'deepseek/deepseek-chat-v3.1:free': 'DeepSeek v3.1 (رایگان)',
-                    'openai/gpt-oss-120b:free': 'GPT-OSS (رایگان)',
-                    'qwen/qwen3-coder:free': 'Qwen3 (رایگان)'
-                };
-                if (map[id]) return map[id];
-                try {
-                    // Fallback: prettify id
-                    let label = id;
-                    label = label.replace(/\//g, ' — ');
-                    label = label.replace(/:/g, ' ');
-                    return label;
-                } catch (e) { return id; }
-            }
 
-            // Load available providers/models (only those with configured API keys)
-            function loadModels(){
-                $.get('/Letter/Models', function(res){
-                    if (!res || res.success !== true) return;
-                    const data = res.data || [];
-                    aiProviderEl.innerHTML = '';
-                    aiModelEl.innerHTML = '';
-                    if (data.length === 0){
-                        aiProviderEl.innerHTML = '<option value="">— بدون کلید فعال —</option>';
-                        aiModelEl.innerHTML = '<option value="">—</option>';
-                        return;
-                    }
-                    // Prefer OpenRouter as default if present
-                    var ordered = data.slice();
-                    var openrouterIndex = ordered.findIndex(function(x){ return x.provider === 'openrouter'; });
-                    if (openrouterIndex > 0) {
-                        var orItem = ordered.splice(openrouterIndex, 1)[0];
-                        ordered.unshift(orItem);
-                    }
-
-                    ordered.forEach(function(p, idx){
-                        const opt = document.createElement('option');
-                        opt.value = p.provider;
-                        opt.textContent = p.display;
-                        aiProviderEl.appendChild(opt);
-                        if (idx === 0){
-                            aiModelEl.innerHTML = '';
-                            (p.models || []).forEach(function(m, i){
-                                const om = document.createElement('option');
-                                om.value = m; om.textContent = getModelDisplayName(m); aiModelEl.appendChild(om);
-                            });
-                            aiProviderEl.value = p.provider; // ensure selection
-                        }
-                    });
-
-                    aiProviderEl.addEventListener('change', function(){
-                        const sel = data.find(x => x.provider === aiProviderEl.value);
-                        aiModelEl.innerHTML = '';
-                        (sel && sel.models || []).forEach(function(m){
-                            const om = document.createElement('option'); om.value = m; om.textContent = getModelDisplayName(m); aiModelEl.appendChild(om);
-                        });
-                    });
-                });
-            }
-
-            loadModels();
-            const aiRefineEl = document.getElementById('aiRefine');
-            const aiPreview = document.getElementById('aiPreview');
-            const btnGenerate = document.getElementById('btnAiGenerate');
-            const btnApply = document.getElementById('btnAiApply');
-
-            function setLoading(isLoading){
-                btnGenerate.disabled = isLoading;
-                btnGenerate.innerHTML = isLoading ? '<i class="fas fa-spinner fa-spin me-1"></i>در حال تولید...' : '<i class="fas fa-wand-magic-sparkles me-1"></i>تولید متن';
-            }
-
-            if (btnGenerate) { btnGenerate.addEventListener('click', function(){
-                const prompt = ((aiPromptEl && aiPromptEl.value) ? aiPromptEl.value : '').trim();
-                const subject = ((aiSubjectEl && aiSubjectEl.value) ? aiSubjectEl.value : '').trim();
-                const tone = ((aiToneEl && aiToneEl.value) ? aiToneEl.value : '').trim();
-                const refine = !!(aiRefineEl && aiRefineEl.checked);
-                const currentHtml = window.quillEditor ? window.quillEditor.root.innerHTML : '';
-                const currentText = window.quillEditor ? window.quillEditor.getText().trim() : '';
-
-                if (!prompt && !(refine && currentText.length > 0)){
-                    Swal.fire({ icon:'warning', title:'توجه', text:'لطفاً شرح درخواست را وارد کنید یا گزینه بهبود متن فعلی را فعال کنید.'});
-                    return;
-                }
-
-                setLoading(true);
-                aiPreview.textContent = '';
-                btnApply.disabled = true;
-
-                $.ajax({
-                    url: '/Letter/GenerateContent',
-                    type: 'POST',
-                    headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
-                    contentType: 'application/json; charset=utf-8',
-                    data: JSON.stringify({
-                        prompt: prompt,
-                        subject: subject,
-                        tone: tone,
-                        refine: refine,
-                        provider: (aiProviderEl && aiProviderEl.value) ? aiProviderEl.value : null,
-                        model: (aiModelEl && aiModelEl.value) ? aiModelEl.value : null,
-                        currentContent: refine ? currentHtml : null
-                    }),
-                    success: function(res){
-                        const ok = (res && (res.success === true || res.Success === true));
-                        const content = res && (res.content || res.Content);
-                        if (ok && content){
-                            aiPreview.textContent = content;
-                            btnApply.disabled = false;
-                        } else {
-                            const msg = res && (res.message || res.Message) || 'پاسخی دریافت نشد.';
-                            Swal.fire({ icon:'error', title:'خطا', text: msg});
-                        }
-                    },
-                    error: function(xhr){
-                        Swal.fire({ icon:'error', title:'خطا', text:'اشکال در ارتباط با سرور.'});
-                    },
-                    complete: function(){ setLoading(false); }
-                });
-            }); }
-
-            if (btnApply) { btnApply.addEventListener('click', function(){
-                const text = aiPreview.textContent || '';
-                if (!text) return;
-                // Insert as paragraphs; preserve line breaks
-                const html = text.split(/\n\n+/).map(p => `<p>${$('<div>').text(p).html()}</p>`).join('');
-                if (window.quillEditor){
-                    window.quillEditor.clipboard.dangerouslyPasteHTML(html);
-                }
-                const modalEl = document.getElementById('aiModal');
-                if (modalEl && window.bootstrap){
-                    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-                }
-            }); }
-        })();
-    </script>
-
-    <!-- اسکریپت مدیریت ارسال فرم، Validation و نمایش خطاها با SweetAlert -->
-    <script>
         // Update hidden input before form submission
         $('form').on('submit', function(e) {
             var content = quill.root.innerHTML;
@@ -2011,9 +1884,8 @@
                 }
             }
         });
-    </script>
 
-    <!-- اسکریپت مدیریت آپلود فایل‌ها و پیوست‌ها -->
+    </script>
     <script>
         // متغیرهای سراسری برای مدیریت فایل‌ها
         let selectedFiles = [];
@@ -2105,22 +1977,379 @@
                 if (!isValidFileType(file)) {
                     Swal.fire({
                         title: 'خطا!',
-                        text: `فرمت فایل ${file.name} مجاز نیست.`,
+                        text: 'فرمت فایل مجاز نیست.',
                         icon: 'error',
                         confirmButtonText: 'باشه'
                     });
                     return;
                 }
 
-                if (!isValidFileSize(file)) {
+                if (file.size > 50 * 1024 * 1024) { // 50 MB per file
                     Swal.fire({
                         title: 'خطا!',
-                        text: `حجم فایل ${file.name} بیش از حد مجاز است.`,
+                        text: 'حجم فایل نباید بیش از 50 مگابایت باشد.',
                         icon: 'error',
                         confirmButtonText: 'باشه'
                     });
                     return;
                 }
+
+                selectedFiles.push(file);
+            });
+
+            updateFilesList();
+            updateUploadButton();
+        }
+
+        function isValidFileType(file) {
+            const extension = '.' + file.name.split('.').pop().toLowerCase();
+            return Object.values(allowedTypes).flat().includes(extension);
+        }
+
+        function updateFilesList() {
+            const filesContainer = document.getElementById('filesContainer');
+            const filesCount = document.getElementById('filesCount');
+            const totalSize = document.getElementById('totalSize');
+
+            filesContainer.innerHTML = '';
+            const totalSizeBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+
+            filesCount.textContent = selectedFiles.length;
+            totalSize.textContent = (totalSizeBytes / (1024 * 1024)).toFixed(2);
+
+            selectedFiles.forEach((file, index) => {
+                const fileIcon = getFileIcon(file);
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon" style="background-color: ${fileIcon.color}">
+                            <i class="${fileIcon.icon}"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                filesContainer.appendChild(fileItem);
+            });
+        }
+
+        function updateUploadButton() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+            updateUploadButton();
+        }
+
+        function uploadFiles() {
+            if (selectedFiles.length === 0) return;
+
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال آپلود...';
+
+            let processedCount = 0;
+            const totalFiles = selectedFiles.length;
+
+            selectedFiles.forEach((file, index) => {
+                uploadSingleFile(file, index, () => {
+                    processedCount++;
+                    if (processedCount === totalFiles) {
+                        updateFilesList();
+                        updateUploadButton();
+                        updateMainForm();
+                        
+                        // مخفی کردن مودال قبل از نمایش پیام
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
+                        modal.hide();
+                        
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: 'موفقیت!',
+                                text: `${uploadedFiles.length} فایل با موفقیت آپلود شد.`,
+                                icon: 'success',
+                                confirmButtonText: 'باشه',
+                                customClass: {
+                                    popup: 'swal2-popup-custom',
+                                    title: 'swal2-title-custom',
+                                    content: 'swal2-content-custom'
+                                }
+                            });
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        function uploadSingleFile(file, index, callback) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Letter/UploadFile', true);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        uploadedFiles.push({
+                            id: response.filePath, // استفاده از filePath به عنوان id یکتا
+                            name: file.name,
+                            path: response.filePath,
+                            size: file.size
+                        });
+                    }
+                }
+                callback();
+            };
+
+            xhr.onerror = function() {
+                callback();
+            };
+
+            xhr.send(formData);
+        }
+
+        function getFileIcon(file) {
+            const extension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (allowedTypes.image.includes(extension)) {
+                return { icon: 'fas fa-image', color: '#28a745' };
+            } else if (allowedTypes.document.includes(extension)) {
+                return { icon: 'fas fa-file-alt', color: '#007bff' };
+            } else if (allowedTypes.archive.includes(extension)) {
+                return { icon: 'fas fa-file-archive', color: '#6f42c1' };
+            } else if (allowedTypes.media.includes(extension)) {
+                return { icon: 'fas fa-file-video', color: '#fd7e14' };
+            } else if (allowedTypes.text.includes(extension)) {
+                return { icon: 'fas fa-file-text', color: '#20c997' };
+            } else {
+                return { icon: 'fas fa-file', color: '#6c757d' };
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function updateMainForm() {
+            const attachmentInput = document.getElementById('attachmentFiles');
+            const selectedFilesList = document.getElementById('selectedFilesList');
+            const filesContainer = document.getElementById('filesContainer');
+            const filesCount = document.getElementById('filesCount');
+            const totalSize = document.getElementById('totalSize');
+            const fileAddressField = document.getElementById('fileaddress');
+
+            if (uploadedFiles.length > 0) {
+                attachmentInput.value = `${uploadedFiles.length} فایل انتخاب شده`;
+                selectedFilesList.style.display = 'block';
+
+                filesContainer.innerHTML = '';
+                const totalSizeBytes = uploadedFiles.reduce((sum, file) => sum + file.size, 0);
+
+                filesCount.textContent = uploadedFiles.length;
+                totalSize.textContent = (totalSizeBytes / (1024 * 1024)).toFixed(2);
+
+                uploadedFiles.forEach(file => {
+                    const fileIcon = getFileIcon({ name: file.name });
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item success';
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-icon" style="background-color: ${fileIcon.color}">
+                                <i class="${fileIcon.icon}"></i>
+                            </div>
+                            <div class="file-details">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${formatFileSize(file.size)}</div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <span class="file-status success">آپلود شد</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="deleteUploadedFile('${file.id}', '${file.name}')">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    `;
+                    filesContainer.appendChild(fileItem);
+                });
+
+                // فقط اسامی فایل‌ها را با کاما جدا کن (حداکثر 255 کاراکتر)
+                const fileNames = uploadedFiles.map(file => file.name).join(',');
+                if (fileNames.length > 255) {
+                    // اگر بیش از 255 کاراکتر شد، فقط تعداد فایل‌ها را ذخیره کن
+                    fileAddressField.value = `${uploadedFiles.length} فایل آپلود شده`;
+                } else {
+                    fileAddressField.value = fileNames;
+                }
+
+                // اطلاعات کامل فایل‌ها را در فیلد مخفی ذخیره کن
+                document.getElementById('attachmentsData').value = JSON.stringify(uploadedFiles);
+            }
+        }
+
+        // تابع حذف فایل آپلود شده
+        window.deleteUploadedFile = function(fileId, fileName) {
+            Swal.fire({
+                title: 'حذف فایل',
+                text: `آیا مطمئن هستید که می‌خواهید فایل "${fileName}" را حذف کنید؟`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'انصراف',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // حذف فایل از سرور
+                    fetch('@Url.Action("DeleteFile", "Letter")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: JSON.stringify({ 
+                            fileId: fileId,
+                            fileName: fileId // استفاده از fileId که همان uniqueFileName است
+                        })
+                    })
+                    .then(response => {
+                        console.log('Delete response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Delete response data:', data);
+                        if (data.success) {
+                            // حذف فایل از لیست uploadedFiles
+                            uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
+                            
+                            // بروزرسانی نمایش
+                            updateFileUploadDisplay();
+                            
+                            Swal.fire({
+                                title: 'حذف شد!',
+                                text: 'فایل با موفقیت حذف شد.',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'خطا!',
+                                text: data.message || 'خطا در حذف فایل.',
+                                icon: 'error',
+                                confirmButtonText: 'باشه'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'خطا!',
+                            text: 'خطا در ارتباط با سرور.',
+                            icon: 'error',
+                            confirmButtonText: 'باشه'
+                        });
+                    });
+                }
+            });
+        };
+
+        // راه‌اندازی صفحه ایجاد نامه
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileUpload();
+        });
+
+
+        // هایلایت کردن منطقه کشیدن
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // مدیریت رها کردن فایل‌ها
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // مدیریت انتخاب فایل‌ها
+        fileInput.addEventListener('change', handleFiles);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files } });
+        }
+
+        function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            files.forEach(file => {
+                if (selectedFiles.length >= maxFiles) {
+                Swal.fire({
+                    title: 'خطا!',
+                        text: `حداکثر ${maxFiles} فایل می‌توانید انتخاب کنید.`,
+                        icon: 'warning',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                if (!isValidFileType(file)) {
+                    Swal.fire({
+                        title: 'خطا!',
+                        text: `فرمت فایل ${file.name} مجاز نیست.`,
+                    icon: 'error',
+                        confirmButtonText: 'باشه'
+                });
+                return;
+            }
+
+                if (!isValidFileSize(file)) {
+                Swal.fire({
+                    title: 'خطا!',
+                        text: `حجم فایل ${file.name} بیش از حد مجاز است.`,
+                    icon: 'error',
+                        confirmButtonText: 'باشه'
+                });
+                return;
+            }
 
                 // بررسی حجم کل
                 const currentTotalSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
@@ -2150,6 +2379,8 @@
             return file.size <= 100 * 1024 * 1024; // 100 MB per file
         }
 
+
+
         function getFileIcon(file) {
             const extension = '.' + file.name.split('.').pop().toLowerCase();
 
@@ -2162,10 +2393,9 @@
             } else if (allowedTypes.media.includes(extension)) {
                 return { icon: 'fas fa-file-video', color: '#fd7e14' };
             } else if (allowedTypes.text.includes(extension)) {
-                return { icon: 'fas fa-file-text', color: '#20c997' };
-            } else {
-                return { icon: 'fas fa-file', color: '#6c757d' };
+                return { icon: 'fas fa-file-text', color: '#6c757d' };
             }
+            return { icon: 'fas fa-file', color: '#6c757d' };
         }
 
         function formatFileSize(bytes) {
@@ -2268,31 +2498,31 @@
 
                             // نمایش پیام موفقیت بعد از بسته شدن مودال
                             setTimeout(() => {
-                                Swal.fire({
-                                    title: 'موفقیت‌آمیز!',
+                        Swal.fire({
+                            title: 'موفقیت‌آمیز!',
                                     text: `${uploadedFiles.length} فایل با موفقیت آپلود شد.`,
-                                    icon: 'success',
-                                    confirmButtonText: 'باشه',
-                                    customClass: {
+                            icon: 'success',
+                            confirmButtonText: 'باشه',
+                            customClass: {
                                         popup: 'swal2-popup-custom',
                                         title: 'swal2-title-custom',
                                         content: 'swal2-content-custom'
                                     }
                                 });
                             }, 300);
-                        } else {
+                    } else {
                             // بستن مودال قبل از نمایش پیام خطا
                             const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
                             modal.hide();
 
                             // نمایش پیام خطا بعد از بسته شدن مودال
                             setTimeout(() => {
-                                Swal.fire({
-                                    title: 'خطا!',
+                        Swal.fire({
+                            title: 'خطا!',
                                     text: 'هیچ فایلی آپلود نشد.',
-                                    icon: 'error',
-                                    confirmButtonText: 'باشه',
-                                    customClass: {
+                            icon: 'error',
+                            confirmButtonText: 'باشه',
+                            customClass: {
                                         popup: 'swal2-popup-custom',
                                         title: 'swal2-title-custom',
                                         content: 'swal2-content-custom'
@@ -2305,46 +2535,6 @@
                 });
             });
         });
-
-        function uploadFiles() {
-            if (selectedFiles.length === 0) return;
-
-            const uploadBtn = document.getElementById('uploadBtn');
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال آپلود...';
-
-            let processedCount = 0;
-            const totalFiles = selectedFiles.length;
-
-            selectedFiles.forEach((file, index) => {
-                uploadSingleFile(file, index, () => {
-                    processedCount++;
-                    if (processedCount === totalFiles) {
-                        updateFilesList();
-                        updateUploadButton();
-                        updateMainForm();
-
-                        // مخفی کردن مودال قبل از نمایش پیام
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('attachmentModal'));
-                        modal.hide();
-
-                        setTimeout(() => {
-                            Swal.fire({
-                                title: 'موفقیت!',
-                                text: `${uploadedFiles.length} فایل با موفقیت آپلود شد.`,
-                                icon: 'success',
-                                confirmButtonText: 'باشه',
-                                customClass: {
-                                    popup: 'swal2-popup-custom',
-                                    title: 'swal2-title-custom',
-                                    content: 'swal2-content-custom'
-                                }
-                            });
-                        }, 300);
-                    }
-                });
-            });
-        }
 
         function uploadSingleFile(file, index, callback) {
             const formData = new FormData();
@@ -2370,7 +2560,7 @@
                             size: file.size
                         });
                         callback(true);
-                    } else {
+                } else {
                         fileItem.classList.add('error');
                         statusSpan.textContent = 'خطا';
                         statusSpan.className = 'file-status error';
@@ -2439,7 +2629,7 @@
                 });
 
                 // فقط اسامی فایل‌ها را با کاما جدا کن (حداکثر 255 کاراکتر)
-                const fileNames = uploadedFiles.map(file => file.id).join(',');
+                const fileNames = uploadedFiles.map(file => file.name).join(',');
                 if (fileNames.length > 255) {
                     // اگر بیش از 255 کاراکتر شد، فقط تعداد فایل‌ها را ذخیره کن
                     fileAddressField.value = `${uploadedFiles.length} فایل آپلود شده`;
@@ -2449,96 +2639,9 @@
 
                 // اطلاعات کامل فایل‌ها را در فیلد مخفی ذخیره کن
                 document.getElementById('attachmentsData').value = JSON.stringify(uploadedFiles);
-            } else {
-                // اگر هیچ فایلی وجود نداشته باشد، نمایش را به حالت اولیه برگردان
-                attachmentInput.value = '';
-                selectedFilesList.style.display = 'none';
-                filesContainer.innerHTML = '';
-                filesCount.textContent = '0';
-                totalSize.textContent = '0';
-                fileAddressField.value = '';
-                document.getElementById('attachmentsData').value = '';
             }
         }
 
-        // تابع حذف فایل آپلود شده
-        window.deleteUploadedFile = function(fileId, fileName) {
-            Swal.fire({
-                title: 'حذف فایل',
-                text: `آیا مطمئن هستید که می‌خواهید فایل "${fileName}" را حذف کنید؟`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'بله، حذف کن',
-                cancelButtonText: 'انصراف',
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // حذف فایل از سرور
-                    fetch('@Url.Action("DeleteFile", "Letter")', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                        },
-                        body: JSON.stringify({
-                            fileId: fileId,
-                            fileName: fileId // استفاده از fileId که همان uniqueFileName است
-                        })
-                    })
-                    .then(response => {
-                        console.log('Delete response status:', response.status);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Delete response data:', data);
-                        if (data.success) {
-                            // حذف فایل از لیست uploadedFiles
-                            uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
-
-                            // بروزرسانی نمایش
-                            updateMainForm();
-
-                            Swal.fire({
-                                title: 'حذف شد!',
-                                text: 'فایل با موفقیت حذف شد.',
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'خطا!',
-                                text: data.message || 'خطا در حذف فایل.',
-                                icon: 'error',
-                                confirmButtonText: 'باشه'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'خطا!',
-                            text: 'خطا در ارتباط با سرور.',
-                            icon: 'error',
-                            confirmButtonText: 'باشه'
-                        });
-                    });
-                }
-            });
-        };
-
-        // راه‌اندازی صفحه ایجاد نامه
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeFileUpload();
-        });
-    </script>
-
-    <!-- اسکریپت مدیریت جستجوی نامه‌ها در مودال (جدا از آپلود فایل‌ها) -->
-    <script>
         // جستجوی نامه و مدیریت انتخاب
         document.getElementById('searchLetterBtn').addEventListener('click', function() {
             performLetterSearch();
@@ -2659,13 +2762,13 @@
             const selectedCheckboxes = document.querySelectorAll('.letter-checkbox:checked');
             if (selectedCheckboxes.length > 0) {
                 let selectedLetters = [];
-
+                
                 selectedCheckboxes.forEach(function(checkbox) {
                     const letterNumber = checkbox.getAttribute('data-number');
                     const letterSubject = checkbox.getAttribute('data-subject');
                     selectedLetters.push(`${letterNumber} - ${letterSubject}`);
                 });
-
+                
                 // پر کردن فیلد نامه سابقه
                 const letterHistoryField = document.getElementById('LetterHistory');
                 if (letterHistoryField) {
@@ -2697,10 +2800,6 @@
             document.getElementById('noResults').style.display = 'none';
             document.getElementById('selectLetterBtn').disabled = true;
         }
+
     </script>
-
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
 }

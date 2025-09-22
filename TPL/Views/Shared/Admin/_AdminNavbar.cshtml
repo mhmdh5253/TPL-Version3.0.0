@@ -16,25 +16,22 @@
     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
                  <!-- Admin Message Slider -->
-         @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
-         {
-             <div class="admin-message-slider me-3" id="adminMessageSlider" style="display: none;">
-                 <div class="message-container">
-                     <div class="message-content">
-                         <i class="fas fa-bullhorn me-2 text-warning"></i>
-                         <span class="message-title">اعلان مدیریتی:</span>
-                         <span id="adminMessageText"></span>
-                     </div>
+         <div class="admin-message-slider me-3" id="adminMessageSlider" data-fetch-url='@Url.Action("LastMonthTicker","Notifications")'>
+             <div class="message-container">
+                 <div class="message-content">
+                     <i class="fas fa-bullhorn me-2 text-warning"></i>
+                     <span class="message-title">اعلان‌ها:</span>
+                     <span id="adminMessageText" class="message-text"></span>
                  </div>
              </div>
-         }
+         </div>
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <!-- Notifications -->
             <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-2 me-xl-1">
-                <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow waves-effect waves-light" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="notifBell">
+                <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow waves-effect waves-light notification-bell" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="notifBell">
                     <i class="fas fa-bell"></i>
-                    <span class="position-absolute top-0 start-50 translate-middle-y badge badge-dot bg-danger mt-2 border d-none" id="notifDot"></span>
+                    <span class="notification-dot bg-danger d-none" id="notifDot"></span>
                 </a>
                                  <ul class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="notifBell" style="min-width:360px; max-height:400px;">
                      <li class="dropdown-menu-header border-bottom">
@@ -171,29 +168,56 @@
 
 <style>
     .admin-message-slider {
-        max-width: 400px;
+        max-width: 65rem;
         overflow: hidden;
         position: relative;
+        display: block;
+        flex: 0 0 auto;
     }
 
     .message-container {
         background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        color: white;
+        color: #fff;
         padding: 0.5rem 1rem;
         border-radius: 2rem;
         box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-        animation: slideIn 0.5s ease-out;
     }
 
     .message-content {
         display: flex;
         align-items: center;
+        gap: .5rem;
         font-size: 0.875rem;
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
+
+    .message-text {
+        display: block;
+        flex: 1 1 auto;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+        direction: initial;
+    }
+
+    .ticker-track {
+        display: inline-block;
+        padding-inline-start: 1rem;
+        will-change: transform;
+        animation: ticker-move-ltr var(--ticker-duration, 30s) linear infinite;
+        direction: ltr;
+    }
+
+    .separator {
+        display: inline-block;
+        margin: 0 .75rem;
+        color: rgba(255,255,255,0.9);
+        font-weight: 700;
+    }
+
+    /* keep original element order and alignment */
 
          .message-content i {
          animation: pulse 2s infinite;
@@ -205,15 +229,9 @@
          margin-right: 0.5rem;
      }
 
-    @@keyframes slideIn {
-        from {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+    @@keyframes ticker-move-ltr {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
     }
 
     @@keyframes pulse {
@@ -223,67 +241,170 @@
     }
 
     @@media (max-width: 1200px) {
-        .admin-message-slider {
-            max-width: 300px;
-        }
+        /* keep default 70rem cap */
     }
 
     @@media (max-width: 992px) {
-        .admin-message-slider {
-            display: none !important;
+        .admin-message-slider { display: none !important; }
+    }
+
+    /* Notification dot styles for responsive design */
+    .notification-bell {
+        position: relative;
+        display: inline-block;
+    }
+
+    .notification-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        z-index: 10;
+        animation: pulse-dot 2s infinite;
+    }
+
+    /* Responsive adjustments for notification dot */
+    @@media (max-width: 576px) {
+        .notification-dot {
+            width: 6px;
+            height: 6px;
+            top: 1px;
+            right: 1px;
+        }
+    }
+
+    @@media (min-width: 577px) and (max-width: 768px) {
+        .notification-dot {
+            width: 7px;
+            height: 7px;
+            top: 1.5px;
+            right: 1.5px;
+        }
+    }
+
+    @@media (min-width: 769px) {
+        .notification-dot {
+            width: 8px;
+            height: 8px;
+            top: 2px;
+            right: 2px;
+        }
+    }
+
+    @@keyframes pulse-dot {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
         }
     }
 </style>
 
 <script>
-    // Admin Message Slider functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const messageSlider = document.getElementById('adminMessageSlider');
-        const messageText = document.getElementById('adminMessageText');
-        
-        if (messageSlider && messageText) {
-            // Sample admin messages - you can replace these with dynamic content from your backend
-            const adminMessages = [
-                "به سیستم مدیریت تقویم خوش آمدید!",
-                "لطفاً رویدادهای مهم را در تقویم ثبت کنید",
-                "برای ایجاد اعلان مدیریتی از بخش تقویم استفاده کنید",
-                "سیستم اعلان‌ها به‌روزرسانی شده است",
-                "از ویژگی‌های جدید تقویم استفاده کنید"
-            ];
-            
-            let currentMessageIndex = 0;
-            
-            function showMessage() {
-                if (messageSlider.style.display === 'none') {
-                    messageSlider.style.display = 'block';
-                }
-                
-                messageText.textContent = adminMessages[currentMessageIndex];
-                
-                // Auto-hide after 8 seconds
-                setTimeout(() => {
-                    messageSlider.style.display = 'none';
-                    
-                    // Show next message after a delay
-                    setTimeout(() => {
-                        currentMessageIndex = (currentMessageIndex + 1) % adminMessages.length;
-                        showMessage();
-                    }, 3000);
-                }, 8000);
+    // Persistent notifications ticker (admin/user) — last month
+    document.addEventListener('DOMContentLoaded', function () {
+        const slider = document.getElementById('adminMessageSlider');
+        const messageTextHost = document.getElementById('adminMessageText');
+        if (!slider || !messageTextHost) return;
+
+        // Ensure visible and sized
+        slider.style.display = 'block';
+
+        const fallbackMessages = [
+            'به سیستم خوش آمدید',
+            'اعلان‌های یک ماه گذشته در اینجا نشان داده می‌شوند'
+        ];
+
+        const tryExtractText = (item) => {
+            if (!item) return '';
+            if (typeof item === 'string') return item;
+            return item.message || item.text || item.title || '';
+        };
+
+        async function fetchLastMonthMessages() {
+            const urls = [];
+            const dataUrl = slider.getAttribute('data-fetch-url');
+            if (dataUrl) urls.push(dataUrl);
+            urls.push('/Notifications/LastMonthTicker');
+            urls.push('/Notifications/LastMonth');
+
+            for (const url of urls) {
+                try {
+                    const res = await fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length) {
+                        const msgs = data.map(tryExtractText).filter(Boolean);
+                        if (msgs.length) return msgs;
+                    }
+                } catch (e) { /* ignore and try next */ }
             }
-            
-            // Start showing messages
-            showMessage();
-            
-            // You can also trigger messages manually from other parts of your application
-            window.showAdminMessage = function(message) {
-                messageText.textContent = message;
-                messageSlider.style.display = 'block';
-                
-                setTimeout(() => {
-                    messageSlider.style.display = 'none';
-                }, 8000);
-            };
+            return fallbackMessages;
         }
+
+        function buildTicker(messages) {
+            const makeNodes = (arr) => {
+                const frag = document.createDocumentFragment();
+                arr.forEach((msg, idx) => {
+                    const span = document.createElement('span');
+                    span.textContent = msg;
+                    frag.appendChild(span);
+                    if (idx !== arr.length - 1) {
+                        const sep = document.createElement('span');
+                        sep.className = 'separator';
+                        sep.textContent = '|';
+                        frag.appendChild(sep);
+                    }
+                });
+                return frag;
+            };
+
+            messageTextHost.innerHTML = '';
+            const track = document.createElement('span');
+            track.className = 'ticker-track';
+
+            // Build one loop
+            track.appendChild(makeNodes(messages));
+            // Separator between loops
+            const sepBetween = document.createElement('span');
+            sepBetween.className = 'separator';
+            sepBetween.textContent = '|';
+            track.appendChild(sepBetween);
+            // Duplicate for seamless loop
+            track.appendChild(makeNodes(messages));
+
+            messageTextHost.appendChild(track);
+
+            // Compute duration based on half width (one loop)
+            requestAnimationFrame(() => {
+                const halfWidth = track.scrollWidth / 2;
+                const speed = 70; // px/s
+                const durationSec = Math.max(20, Math.round(halfWidth / speed));
+                track.style.setProperty('--ticker-duration', durationSec + 's');
+            });
+        }
+
+        // Initial load
+        fetchLastMonthMessages().then(buildTicker);
+
+        // Optional: refresh periodically (e.g., every 5 minutes)
+        setInterval(() => {
+            fetchLastMonthMessages().then(buildTicker);
+        }, 5 * 60 * 1000);
+
+        // Manual trigger hook
+        window.showAdminMessage = function (message) {
+            buildTicker([message]);
+        };
     });
 </script>

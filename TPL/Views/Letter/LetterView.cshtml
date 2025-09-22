@@ -15,8 +15,7 @@
 }
 
 @section pagecss {
-    <link href="~/modified/letterview.css" rel="stylesheet" />
-    <link href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" rel="stylesheet">
+    <link href="~/modified/Letterview.css" rel="stylesheet" />
 }
 
 <div class="container-fluid">
@@ -25,14 +24,14 @@
         <div class="letter-wrapper">
             <!-- محتوای نامه (بدون تغییر) -->
             <header class="official-header">
-                <div>
+                <div class="logo-container">
                     <img src="~/CompanyVariables/favicon/logo.png" alt="لوگوی شرکت" class="company-logo">
                 </div>
                 <div class="company-title">
                     <h1>شرکت شیلنگ های مسلح قم</h1>
                     <p>سامانه مکاتبات اداری</p>
                 </div>
-                <div>
+                <div class="logo-container">
                     <img src="~/CompanyVariables/favicon/logo2.png" alt="لوگوی شرکت" class="company-logo">
                 </div>
             </header>
@@ -40,37 +39,49 @@
             <div class="letter-content-container">
                 <div class="letter-meta-container">
                     <div class="letter-meta-right">
-                        <p><strong>فرستنده:</strong>@await BlRecivers.GetReceiverFullPath(Model.Sender!)
-                        </p>
-                        <p><strong>گیرنده:</strong> @await BlRecivers.GetReceiverFullPath(Model.Receiver!)
-                        </p>
+                        <div class="meta-item">
+                            <span class="meta-label">فرستنده:</span>
+                            <span class="meta-value">@await BlRecivers.GetReceiverFullPath(Model.Sender!)</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">گیرنده:</span>
+                            <span class="meta-value">@await BlRecivers.GetReceiverFullPath(Model.Receiver!)</span>
+                        </div>
                     </div>
                     <div class="letter-meta-left">
-                        <div><strong>تاریخ:</strong> @Model.RegistrationDate.ToString("yyyy/MM/dd")</div>
-                        <div><strong>اولویت:</strong> @Model.Priority</div>
-                        <div><strong>محرمانگی:</strong> @Model.Classification</div>
-                        <div><strong>شماره:</strong> @Model.LetterNumber</div>
+                        <div class="meta-item">
+                            <span class="meta-label">تاریخ:</span>
+                            <span class="meta-value">@Model.RegistrationDate.ToString("yyyy/MM/dd")</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">شماره:</span>
+                            <span class="meta-value letter-number">@Model.LetterNumber</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="letter-subject-container">
-                    <div class="letter-subject-right">
-                        <h2>موضوع: @Model.Subject</h2>
+                    <div class="subject-wrapper">
+                        <h2 class="letter-subject">موضوع: @Model.Subject</h2>
                     </div>
                 </div>
 
                 <div class="content-frame">
-                    @Html.Raw(content)
+                    <div class="content-wrapper">
+                        @Html.Raw(content)
+                    </div>
                 </div>
 
                 <div class="letter-signature">
                     <div class="signature-box">
-                        <p class="signer-name">@Model.SignerName</p>
-                        <p class="signer-position">@Model.SignerPosition</p>
+                        <div class="signature-content">
+                            <p class="signer-position">@Model.SignerPosition</p>
+                            <p class="signer-name">@Model.SignerName</p>
+                        </div>
                         <div class="signature-image">
                             @if (signer != null && Model.Status == LetterStatus.Approved)
                             {
-                                <img src="~/CompanyVariables/signatures/@signer!.Emza" alt="امضا" width="120">
+                                <img src="~/CompanyVariables/signatures/@signer!.Emza" alt="امضا" class="signature-img">
                             }
                         </div>
                     </div>
@@ -197,6 +208,10 @@
                         تولید فایل PDF
                     </a>
 
+                    <button class="action-btn attachment-btn" onclick="showAttachmentsModal(@Model.Id)">
+                        <i class="fas fa-paperclip"></i> پیوست‌ها
+                    </button>
+
                     <a href="@Url.Action("KartableVaredeh", "Letter")" class="action-btn list-btn">
                         <i class="fas fa-list-ol"></i> لیست نامه ها
                     </a>
@@ -229,8 +244,6 @@
     </div>
 </div>
 @section pagejs {
-    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-    <script src="~/modified/letterviewjs.js"></script>
     <script>
         async function generatePdfFile(id, event) {
                 event.preventDefault();
@@ -469,31 +482,90 @@
                 const treeHtml = generateTreeHtml(result.Data, 0);
 
                 // نمایش مدال
-                const { value: formValues } = await Swal.fire({
+                const swalRes = await Swal.fire({
                     title: 'ارجاع نامه',
                     html: `
-                <div id="orgTree" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;">
-                    ${treeHtml}
-                </div>
-                <textarea id="referralComment" class="swal2-textarea" placeholder="توضیحات ارجاع"></textarea>
-            `,
+                        <style>
+                            .org-modal-wrap { display:flex; flex-direction:column; gap:10px; }
+                            .org-search { position:relative; }
+                            .org-search input { width:100%; padding:10px 36px 10px 10px; border:1px solid #e3e6ea; border-radius:8px; font-size:.95rem; }
+                            .org-search .icon { position:absolute; right:10px; top:50%; transform:translateY(-50%); opacity:.6; }
+                            #orgTree { max-height:420px; overflow:auto; border:1px solid #eef2f6; border-radius:10px; padding:8px; background:#fafbfc; }
+                            .org-node { margin:6px 0; }
+                            .org-node-header { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; padding:6px 10px; border-radius:6px; color:#34495e; }
+                            .org-node-header:hover { background:#f1f6ff; }
+                            .org-caret { width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; transition:transform .2s; color:#6c7a89; }
+                            .org-node.collapsed > .org-children { display:none; }
+                            .org-node.collapsed > .org-node-header .org-caret { transform:rotate(-90deg); }
+                            .org-users { margin:6px 0 6px 28px; }
+                            .org-user-item { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; margin:4px 0; background:#fff; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+                            .org-user-item:hover { box-shadow:0 2px 8px rgba(0,0,0,.08); transform:translateX(2px); }
+                            .org-user-info { display:flex; align-items:center; gap:10px; }
+                            .org-user-name { font-weight:600; }
+                            .org-user-pos { color:#7f8c8d; font-size:.85em; }
+                            .org-badge { background:linear-gradient(135deg,#ff6b6b,#ff8e8e); color:#fff; font-size:.72em; padding:2px 8px; border-radius:10px; }
+                            .org-empty { display:none; }
+                        </style>
+                        <div class="org-modal-wrap">
+                            <div class="org-search"><input id="orgSearch" placeholder="جستجو کاربر/واحد..." /><span class="icon">🔎</span></div>
+                            <div id="orgTree">${treeHtml}</div>
+                            <textarea id="referralComment" class="swal2-textarea" placeholder="توضیحات ارجاع"></textarea>
+                        </div>
+                    `,
                     focusConfirm: false,
                     showCancelButton: true,
                     confirmButtonText: 'ارجاع',
                     cancelButtonText: 'انصراف',
+                    didOpen: () => {
+                        // toggle for nodes with children
+                        document.querySelectorAll('#orgTree .org-node-header').forEach(h => {
+                            h.addEventListener('click', (e) => {
+                                // avoid toggling when clicking radio
+                                if ((e.target).tagName && e.target.tagName.toLowerCase() === 'input') return;
+                                const node = h.parentElement;
+                                if (node && node.classList.contains('org-node')) node.classList.toggle('collapsed');
+                            });
+                        });
+
+                        // search filter
+                        const searchEl = document.getElementById('orgSearch');
+                        const filter = () => {
+                            const term = (searchEl && searchEl.value ? searchEl.value : '').trim().toLowerCase();
+                            document.querySelectorAll('#orgTree .org-user-item').forEach(function (el) {
+                                var nameEl = el.querySelector('.org-user-name');
+                                var posEl = el.querySelector('.org-user-pos');
+                                var name = nameEl && nameEl.textContent ? nameEl.textContent.toLowerCase() : '';
+                                var pos = posEl && posEl.textContent ? posEl.textContent.toLowerCase() : '';
+                                el.style.display = (!term || name.indexOf(term) > -1 || pos.indexOf(term) > -1) ? 'flex' : 'none';
+                            });
+                            // hide nodes with no visible users and no visible child nodes
+                            document.querySelectorAll('#orgTree .org-node').forEach(function (node) {
+                                var userItems = Array.from(node.querySelectorAll(':scope .org-users > .org-user-item'));
+                                var hasVisibleUser = userItems.some(function (x) { return x.style && x.style.display !== 'none'; });
+                                var childNodes = Array.from(node.querySelectorAll(':scope > .org-children > .org-node'));
+                                var hasVisibleChild = childNodes.some(function (n) { return n.style && n.style.display !== 'none'; });
+                                node.style.display = (hasVisibleUser || hasVisibleChild || term === '') ? '' : 'none';
+                                // expand nodes when searching to reveal matches
+                                if (term && (hasVisibleUser || hasVisibleChild)) node.classList.remove('collapsed');
+                            });
+                        };
+                        if (searchEl) searchEl.addEventListener('input', filter);
+                    },
                     preConfirm: () => {
                         const selectedUser = document.querySelector('input[name="selectedUser"]:checked');
                         if (!selectedUser) {
                             Swal.showValidationMessage('لطفاً گیرنده را انتخاب کنید');
                             return false;
                         }
+                        var ta = document.getElementById('referralComment');
                         return {
                             receiverId: selectedUser.value,
-                            comment: document.getElementById('referralComment').value
+                            comment: (ta && ta.value) ? ta.value : ''
                         };
                     }
                 });
 
+                const formValues = swalRes && swalRes.value ? swalRes.value : null;
                 if (formValues) {
                     // ارسال درخواست ارجاع
                     const referralResponse = await fetch('@Url.Action("ReferLetter", "LetterApprovalFlow")',
@@ -537,105 +609,58 @@
 
         function generateTreeHtml(node, level = 0) {
             const isRoot = level === 0;
+            const hasChildren = (node.Children && node.Children.length > 0) || false;
+            const hasUsers = (node.Users && node.Users.length > 0) || false;
 
-            let html = `
-        <div style="
-            margin-left: ${level * 24}px;
-            ${!isRoot ? 'border-left: 2px dashed rgba(0, 150, 255, 0.3);' : ''}
-            padding-left: ${isRoot ? '0' : '16px'};
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        ">
-            <div style="
-                font-weight: 700;
-                font-size: ${isRoot ? '1.1em' : '1em'};
-                color: ${isRoot ? '#2c3e50' : '#34495e'};
-                background: ${isRoot ? 'linear-gradient(90deg, rgba(0,150,255,0.1) 0%, transparent 100%)' : 'transparent'};
-                padding: 8px 12px;
-                border-radius: 6px;
-                margin: 6px 0;
-                display: inline-block;
-                box-shadow: ${isRoot ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'};
-            ">
-                📌 ${node.Name}
-            </div>
-    `;
+            // اگر هیچ کاربر و هیچ زیرمجموعه‌ای ندارد، نمایش نده
+            if (!hasChildren && !hasUsers) return '';
+
+            const indent = Math.max(0, level - 0) * 18;
+            let html = '';
+
+            html += `<div class="org-node${hasChildren ? '' : ''}" style="margin-left:${indent}px;">`;
+
+            // نمایش عنوان واحد فقط اگر ریشه است یا زیرمجموعه دارد
+            if (isRoot || hasChildren) {
+                html += `
+                    <div class="org-node-header">
+                        ${hasChildren ? '<span class="org-caret">▶</span>' : '<span style="width:14px"></span>'}
+                        <div style="font-weight:700;">📌 ${node.Name}</div>
+                    </div>
+                `;
+            }
 
             // کاربران واحد
-            if (node.Users?.length > 0) {
-                html += `
-            <div style="
-                margin-left: 12px;
-                border-radius: 8px;
-                background: rgba(245, 245, 245, 0.5);
-                padding: 8px;
-                backdrop-filter: blur(2px);
-            ">
-        `;
-
+            if (hasUsers) {
+                html += `<div class="org-users">`;
                 node.Users.forEach(user => {
-                    const headBadge = user.IsHead
-                        ? `
-                <span style="
-                    display: inline-block;
-                    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-                    color: white;
-                    font-size: 0.75em;
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    margin-right: 8px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                ">
-                    مسئول
-                </span>
-            `
-                        : '';
-
+                    const headBadge = user.IsHead ? `<span class="org-badge">مسئول</span>` : '';
                     html += `
-                <div style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 6px 12px;
-                    margin: 4px 0;
-                    background: white;
-                    border-radius: 6px;
-                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                    transition: transform 0.2s, box-shadow 0.2s;
-                " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" 
-                   onmouseout="this.style.transform=''; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'">
-                    <label style="
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        cursor: pointer;
-                        flex-grow: 1;
-                    ">
-                        <input type="radio" 
-                               name="selectedUser" 
-                               value="${user.Id}"
-                               style="accent-color: #0096ff; transform: scale(1.1);">
-                        <span style="font-weight: 500;">${user.Name}</span>
-                        <span style="color: #7f8c8d; font-size: 0.9em;">${user.Position}</span>
-                    </label>
-                    ${headBadge}
-                </div>
-            `;
+                        <div class="org-user-item">
+                            <label class="org-user-info" style="cursor:pointer;flex-grow:1;">
+                                <input type="radio" name="selectedUser" value="${user.Id}" style="accent-color:#0096ff;transform:scale(1.1);">
+                                <span class="org-user-name">${user.Name}</span>
+                                <span class="org-user-pos">${user.Position || ''}</span>
+                            </label>
+                            ${headBadge}
+                        </div>
+                    `;
                 });
-
                 html += `</div>`;
             }
 
-            // واحدهای فرزند
-            if (node.Children?.length > 0) {
+            // زیرواحدها
+            if (hasChildren) {
+                html += `<div class="org-children" style="margin-right:14px;">`;
                 node.Children.forEach(child => {
                     html += generateTreeHtml(child, level + 1);
                 });
+                html += `</div>`;
             }
 
             html += `</div>`;
             return html;
         }
-
     </script>
     <script>
 
@@ -652,31 +677,55 @@
 
                 // ساختار HTML زیبا و منظم
                 let usersHtml = `
-        <div class="referral-modal-container">
-            <div class="referral-header">
-                <div class="header-title">
+        <style>
+            .custom-swal-popup-new { border-radius:14px; padding:0; overflow:hidden; }
+            .referral-modal-container-new { display:flex; flex-direction:column; gap:12px; }
+            .referral-header-new { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:#f8fafc; border-bottom:1px solid #eef2f7; }
+            .header-title-new { display:flex; align-items:center; gap:10px; color:#2c3e50; }
+            .header-title-new .icon { font-size:18px; }
+            .search-box-new { position:relative; width:280px; }
+            .search-box-new input { width:100%; padding:10px 36px 10px 10px; border:1px solid #e3e6ea; border-radius:8px; }
+            .search-icon-new { position:absolute; right:10px; top:50%; transform:translateY(-50%); opacity:.6; }
+            .referral-body-new { display:grid; grid-template-columns: 1fr; gap:12px; padding:0 16px 12px; }
+            .users-list-container-new { background:#fff; border:1px solid #eef2f6; border-radius:10px; overflow:hidden; }
+            .list-header-new { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#f9fbff; border-bottom:1px solid #eef2f6; }
+            .users-list-new { max-height:420px; overflow:auto; padding:10px; }
+            .user-item-new { border:1px solid #f0f3f7; border-radius:8px; padding:10px; margin:8px 0; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+            .user-item-new:hover { box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+            .user-info-new { display:flex; align-items:center; gap:12px; }
+            .user-avatar-new { width:36px; height:36px; background:#e9f3ff; color:#006ad6; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; }
+            .user-details-new { display:flex; flex-direction:column; }
+            .user-name-new { font-weight:700; color:#2c3e50; }
+            .user-meta-new { color:#7f8c8d; font-size:.85em; display:flex; gap:10px; }
+            .personal-comment-box-new { margin-top:8px; }
+            .personal-comment-box-new textarea { width:100%; min-height:60px; border:1px solid #e6e9ee; border-radius:8px; padding:8px; }
+            .char-counter-new { text-align:left; font-size:.8em; color:#7f8c8d; margin-top:4px; }
+            .common-comment-box-new { background:#fff; border:1px dashed #dfe6ef; border-radius:10px; padding:12px; }
+            .input-label-new { display:flex; align-items:center; gap:8px; margin-bottom:6px; color:#2c3e50; font-weight:600; }
+            .common-comment-box-new textarea { width:100%; min-height:80px; border:1px solid #e6e9ee; border-radius:8px; padding:8px; }
+            .referral-footer-new { display:flex; justify-content:flex-end; gap:10px; padding:12px 16px; border-top:1px solid #eef2f7; background:#f8fafc; }
+            .btn-new { border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+            .cancel-btn-new { background:#eef2f6; color:#2c3e50; }
+            .submit-btn-new { background:#1f75fe; color:#fff; }
+            .success-message { display:flex; align-items:center; gap:10px; }
+            .success-icon { font-size:22px; }
+        </style>
+        <div class="referral-modal-container-new">
+            <div class="referral-header-new">
+                <div class="header-title-new">
                     <i class="icon">📤</i>
                     <h3>ارجاع گروهی نامه</h3>
                 </div>
-                <div class="search-box">
+                <div class="search-box-new">
                     <input type="text" id="userSearch" placeholder="جستجو کاربران...">
-                    <i class="search-icon">🔍</i>
+                    <i class="search-icon-new">🔍</i>
                 </div>
             </div>
 
-            <div class="referral-body">
-                <div class="common-comment-box">
-                    <label class="input-label">
-                        <i class="icon">📢</i>
-                        پیام عمومی (برای همه گیرندگان)
-                    </label>
-                    <textarea id="commonComment" placeholder="متن پیام عمومی..."></textarea>
-                    <div class="char-counter">0/500</div>
-                </div>
-
-                <div class="users-list-container">
-                    <div class="list-header">
-                        <div class="select-all">
+            <div class="referral-body-new">
+                <div class="users-list-container-new">
+                    <div class="list-header-new">
+                        <div class="select-all-new">
                             <input type="checkbox" id="selectAllUsers">
                             <label for="selectAllUsers">انتخاب همه</label>
                         </div>
@@ -685,32 +734,35 @@
                         </div>
                     </div>
 
-                    <div class="users-list" id="usersList">
+                    <div class="users-list-new" id="usersList">
         `;
 
                 // آیتم‌های کاربران با طراحی حرفه‌ای
                 result.Data.forEach(user => {
+                    const nameParts = (user.Name || '').split(' ');
+                    const firstInitial = nameParts.length > 0 && nameParts[0] ? nameParts[0].charAt(0) : '';
+                    const secondInitial = nameParts.length > 1 && nameParts[1] ? nameParts[1].charAt(0) : '';
                     usersHtml += `
-            <div class="user-item" data-user-id="${user.Id}">
-                <div class="user-info">
+            <div class="user-item-new" data-user-id="${user.Id}">
+                <div class="user-info-new">
                     <input type="checkbox" class="user-checkbox" id="user_${user.Id}" value="${user.Id}">
-                    <label for="user_${user.Id}" class="user-avatar">
-                        ${user.Name.charAt(0)}${user.Name.split(' ')[1]?.charAt(0) || ''}
+                    <label for="user_${user.Id}" class="user-avatar-new">
+                        ${firstInitial}${secondInitial}
                     </label>
-                    <div class="user-details">
-                        <div class="user-name">${user.Name}</div>
-                        <div class="user-meta">
+                    <div class="user-details-new">
+                        <div class="user-name-new">${user.Name}</div>
+                        <div class="user-meta-new">
                             <span class="user-position">${user.Position}</span>
                             <span class="user-org">${user.Organization}</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="personal-comment-box">
+                <div class="personal-comment-box-new">
                     <textarea class="personal-comment" 
                               placeholder="پیام شخصی برای ${user.Name}..."
                               data-user-id="${user.Id}"></textarea>
-                    <div class="char-counter">0/200</div>
+                    <div class="char-counter-new">0/200</div>
                 </div>
             </div>
             `;
@@ -719,13 +771,22 @@
                 usersHtml += `
                     </div>
                 </div>
+
+                <div class="common-comment-box-new">
+                    <label class="input-label-new">
+                        <i class="icon">📢</i>
+                        پیام عمومی (برای همه گیرندگان)
+                    </label>
+                    <textarea id="commonComment" placeholder="متن پیام عمومی..."></textarea>
+                    <div class="char-counter-new">0/500</div>
+                </div>
             </div>
 
-            <div class="referral-footer">
-                <button class="btn cancel-btn" id="cancelBtn">
+            <div class="referral-footer-new">
+                <button class="btn-new cancel-btn-new" id="cancelBtn">
                     <i class="icon">✖</i> انصراف
                 </button>
-                <button class="btn submit-btn" id="submitBtn">
+                <button class="btn-new submit-btn-new" id="submitBtn">
                     <i class="icon">📨</i> ارجاع نامه
                 </button>
             </div>
@@ -738,7 +799,7 @@
                     width: 900,
                     showConfirmButton: false,
                     customClass: {
-                        popup: 'custom-swal-popup',
+                        popup: 'custom-swal-popup-new',
                         container: 'custom-swal-container'
                     },
                     didOpen: () => {
@@ -754,17 +815,33 @@
                                 updateSelectedCount();
                             });
 
-                        // جستجوی کاربران
-                        document.getElementById('userSearch').addEventListener('input',
-                            (e) => {
-                                const term = e.target.value.toLowerCase();
-                                document.querySelectorAll('.user-item').forEach(item => {
-                                    const name = item.querySelector('.user-name').textContent.toLowerCase();
-                                    const position = item.querySelector('.user-position').textContent.toLowerCase();
-                                    item.style.display = (name.includes(term) || (position.includes(term))) ? 'flex' : 'none';
+                        // جستجوی کاربران با نرمال‌سازی حروف فارسی/عربی
+                        function normalizeFa(str) {
+                            var s = (str || '').toString().toLowerCase();
+                            // تبدیل ی/ک عربی به فارسی و حذف نیم‌فاصله و اعراب
+                            s = s.replace(/\u200c/g, ' ')
+                                 .replace(/[ي]/g, 'ی')
+                                 .replace(/[ك]/g, 'ک')
+                                 .replace(/[\u064B-\u0652\u0670\u0640]/g, '');
+                            return s.trim();
+                        }
 
+                        var userSearchInput = document.getElementById('userSearch');
+                        if (userSearchInput) {
+                            userSearchInput.addEventListener('input', function (e) {
+                                var term = normalizeFa(e.target.value);
+                                document.querySelectorAll('.user-item-new').forEach(function (item) {
+                                    var nameEl = item.querySelector('.user-name-new');
+                                    var posEl = item.querySelector('.user-position');
+                                    var orgEl = item.querySelector('.user-org');
+                                    var name = nameEl && nameEl.textContent ? normalizeFa(nameEl.textContent) : '';
+                                    var position = posEl && posEl.textContent ? normalizeFa(posEl.textContent) : '';
+                                    var org = orgEl && orgEl.textContent ? normalizeFa(orgEl.textContent) : '';
+                                    var matched = !term || name.indexOf(term) > -1 || position.indexOf(term) > -1 || org.indexOf(term) > -1;
+                                    item.style.display = matched ? '' : 'none';
                                 });
                             });
+                        }
 
                         // شمارنده انتخاب‌ها
                         function updateSelectedCount() {
@@ -881,7 +958,7 @@
         async function rejectLetter(letterId) {
             try {
                 // نمایش مدال زیبا برای دریافت دلیل رد
-                const { value: reason, isConfirmed } = await Swal.fire({
+                const rejectRes = await Swal.fire({
                     title: '',
                     html: `
                 <div class="reject-modal">
@@ -937,6 +1014,8 @@
                 });
 
                 // اگر کاربر انصراف داد
+                const reason = rejectRes && rejectRes.value ? rejectRes.value : null;
+                const isConfirmed = !!rejectRes && !!rejectRes.isConfirmed;
                 if (!isConfirmed) return;
 
                 const response = await sendRequestWithCredentials(
@@ -1351,7 +1430,7 @@
                 if (result.Success) {
                     // نمایش پیام موفقیت با انیمیشن
                     await Swal.fire({
-                        title: '<span style="color: #2ecc71">اقدام ثبت شد</span>',
+                        title: '',
                         html: `
                     <div class="success-action">
                         <div class="success-animation">
@@ -1362,14 +1441,12 @@
                         </div>
                         <div class="success-message">
                             <p>اقدام شما با موفقیت ثبت شد</p>
-                            <div class="action-id">
-                                کد رهگیری: <span>${result.ActionId}</span>
-                            </div>
                         </div>
                     </div>
                 `,
-                        icon: 'success',
+                        showConfirmButton: true,
                         confirmButtonText: '<i class="fas fa-thumbs-up"></i> متوجه شدم',
+                        confirmButtonColor: '#8e44ad',
                         timer: 3000,
                         timerProgressBar: true,
                         showClass: {
@@ -1736,6 +1813,231 @@
                     icon: 'error'
                 });
             }
+        }
+
+        // تابع نمایش مودال پیوست‌ها
+        async function showAttachmentsModal(letterId) {
+            try {
+                // نمایش لودر
+                const loadingSwal = Swal.fire({
+                    title: 'در حال دریافت پیوست‌ها',
+                    html: 'لطفاً منتظر بمانید...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                // ارسال درخواست برای دریافت پیوست‌ها
+                const response = await fetch(`@Url.Action("GetLetterAttachments", "Letter", new { })?letterId=${letterId}`);
+                const result = await response.json();
+
+                loadingSwal.close();
+
+                if (result.success && result.data) {
+                    displayAttachmentsModal(result.data, letterId);
+                } else {
+                    // نمایش پیام خالی بودن
+                    displayEmptyAttachmentsModal();
+                }
+            } catch (error) {
+                console.error('Error loading attachments:', error);
+                Swal.fire({
+                    title: 'خطا',
+                    text: 'خطا در دریافت پیوست‌ها',
+                    icon: 'error',
+                    confirmButtonText: 'متوجه شدم'
+                });
+            }
+        }
+
+        // تابع نمایش مودال پیوست‌ها
+    function displayAttachmentsModal(attachments, letterId) {
+            let attachmentsHtml = `
+                <div class="attachments-container">
+                    <div class="attachments-header">
+                        <div class="attachments-title">
+                            <i class="fas fa-paperclip"></i>
+                            <span>پیوست‌های نامه</span>
+                        </div>
+                        <div class="attachments-count">
+                            ${attachments.length} فایل
+                        </div>
+                    </div>
+                    <div class="attachments-body">
+                        <div class="attachments-list">
+            `;
+
+            attachments.forEach(attachment => {
+                const isImage = isImageFile(attachment.fileName);
+                const fileSize = formatFileSize(attachment.fileSize);
+                const fileIcon = getFileIcon(attachment.fileName);
+
+                if (isImage) {
+                    attachmentsHtml += `
+                        <div class="attachment-item" onclick="viewImage('${attachment.filePath}', '${attachment.fileName}')">
+                            <img src="${attachment.filePath}" alt="${attachment.fileName}" class="attachment-thumbnail" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="attachment-icon" style="display: none;">
+                                <i class="${fileIcon}"></i>
+                            </div>
+                            <div class="attachment-info">
+                                <div class="attachment-name">${attachment.fileName}</div>
+                                <div class="attachment-size">${fileSize}</div>
+                                <div class="attachment-actions">
+                                    <button class="attachment-view-btn" onclick="event.stopPropagation(); viewImage('${attachment.filePath}', '${attachment.fileName}')">
+                                        <i class="fas fa-eye"></i> مشاهده
+                                    </button>
+                                    <button class="attachment-download-btn" onclick="event.stopPropagation(); downloadFile(${letterId}, '${attachment.fileId}', '${attachment.fileName}')">
+                                        <i class="fas fa-download"></i> دانلود
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    attachmentsHtml += `
+                        <div class="attachment-item">
+                            <div class="attachment-icon">
+                                <i class="${fileIcon}"></i>
+                            </div>
+                            <div class="attachment-info">
+                                <div class="attachment-name">${attachment.fileName}</div>
+                                <div class="attachment-size">${fileSize}</div>
+                                <div class="attachment-actions">
+                                    <button class="attachment-download-btn" onclick="downloadFile(${letterId}, '${attachment.fileId}', '${attachment.fileName}')">
+                                        <i class="fas fa-download"></i> دانلود
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            attachmentsHtml += `
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                html: attachmentsHtml,
+                width: '800px',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'attachments-modal'
+                }
+            });
+        }
+
+        // تابع نمایش مودال خالی
+        function displayEmptyAttachmentsModal() {
+            const emptyHtml = `
+                <div class="attachments-container">
+                    <div class="attachments-header">
+                        <div class="attachments-title">
+                            <i class="fas fa-paperclip"></i>
+                            <span>پیوست‌های نامه</span>
+                        </div>
+                        <div class="attachments-count">0 فایل</div>
+                    </div>
+                    <div class="attachments-body">
+                        <div class="empty-attachments">
+                            <i class="fas fa-file-upload"></i>
+                            <p>هیچ پیوستی برای این نامه وجود ندارد</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                html: emptyHtml,
+                width: '500px',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'attachments-modal'
+                }
+            });
+        }
+
+        // تابع تشخیص نوع فایل تصویری
+        function isImageFile(fileName) {
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+            const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+            return imageExtensions.includes(extension);
+        }
+
+        // تابع دریافت آیکون فایل
+        function getFileIcon(fileName) {
+            const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+            const iconMap = {
+                '.pdf': 'fas fa-file-pdf',
+                '.doc': 'fas fa-file-word',
+                '.docx': 'fas fa-file-word',
+                '.xls': 'fas fa-file-excel',
+                '.xlsx': 'fas fa-file-excel',
+                '.ppt': 'fas fa-file-powerpoint',
+                '.pptx': 'fas fa-file-powerpoint',
+                '.txt': 'fas fa-file-alt',
+                '.zip': 'fas fa-file-archive',
+                '.rar': 'fas fa-file-archive',
+                '.7z': 'fas fa-file-archive',
+                '.mp4': 'fas fa-file-video',
+                '.avi': 'fas fa-file-video',
+                '.mov': 'fas fa-file-video',
+                '.mp3': 'fas fa-file-audio',
+                '.wav': 'fas fa-file-audio'
+            };
+            return iconMap[extension] || 'fas fa-file';
+        }
+
+        // تابع فرمت کردن اندازه فایل
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 بایت';
+            const k = 1024;
+            const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // تابع مشاهده تصویر
+    function viewImage(imagePath, fileName) {
+            const imageHtml = `
+                <div class="image-preview-container">
+                    <img src="${imagePath}" alt="${fileName}" class="image-preview">
+                    <div class="image-preview-actions">
+                        <button class="image-download-btn" onclick="downloadFile(@Model.Id, getFileIdFromPath('${imagePath}'), '${fileName}')">
+                            <i class="fas fa-download"></i> دانلود تصویر
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                html: imageHtml,
+                width: '90vw',
+                maxWidth: '800px',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'image-preview-modal'
+                }
+            });
+        }
+
+        // تابع دانلود فایل
+        function getFileIdFromPath(path) {
+            const idx = path.lastIndexOf('/');
+            return idx >= 0 ? path.substring(idx + 1) : path;
+        }
+
+        function downloadFile(letterId, fileId, downloadName) {
+            const url = `@Url.Action("DownloadAttachment", "Letter", new { })?letterId=${letterId}&fileId=${encodeURIComponent(fileId)}&downloadName=${encodeURIComponent(downloadName)}`;
+            const link = document.createElement('a');
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 }

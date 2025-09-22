@@ -1,0 +1,1767 @@
+﻿#girandeganselect {
+    width: -webkit-fill-available !important;
+}
+
+#btnOpenFileCodeModal {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+}
+
+.org-group {
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 2px solid #007bff;
+}
+
+.sub-orgs {
+    margin-left: 20px;
+    margin-top: 5px;
+}
+
+.child-orgs {
+    margin-left: 20px;
+}
+
+.grandchild-orgs {
+    margin-left: 20px;
+}
+
+.main-org {
+    font-weight: bold;
+    color: #007bff;
+}
+
+label {
+    display: block;
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+input[type="checkbox"] {
+    margin-left: 5px;
+}
+
+.input-group-text {
+    color: blue !important;
+}
+
+.form-group {
+    margin-top: 20px;
+}
+
+/* استایل‌های درخت سایر گیرندگان */
+.copy-tree-node {
+    margin-bottom: 5px;
+}
+
+.copy-node-row {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.copy-node-row:hover {
+    background-color: #f8f9fa;
+}
+
+.copy-node-row.selected {
+    background-color: #e7f3ff;
+    border-color: #007bff;
+}
+
+.node-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.node-expand {
+    width: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.copy-expand-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: #666;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.copy-expand-btn:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+}
+
+.copy-expand-btn.expanded i {
+    transform: rotate(90deg);
+}
+
+.expand-placeholder {
+    width: 16px;
+    height: 16px;
+}
+
+.node-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.copy-node-checkbox {
+    margin: 0;
+    cursor: pointer;
+}
+
+.node-name {
+    font-weight: 500;
+    color: #333;
+    flex: 1;
+}
+
+.node-message {
+    flex: 2;
+    margin-right: 10px;
+}
+
+.copy-message-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: border-color 0.2s;
+}
+
+.copy-message-input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.copy-node-counter {
+    font-size: 11px;
+    color: #666;
+    text-align: left;
+    min-width: 50px;
+}
+
+.copy-node-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+.copy-node-counter.text-danger {
+    color: #dc3545 !important;
+}
+
+.copy-children-container {
+    margin-right: 20px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+}
+
+.copy-children-container.hidden {
+    display: none;
+}
+
+/* استایل‌های tree-container */
+#treeContainer, #receiverTreeContainer {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* استایل‌های درخت گیرنده اصلی */
+.receiver-tree-node {
+    margin-bottom: 5px;
+}
+
+.receiver-node-row {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.receiver-node-row:hover {
+    background-color: #f8f9fa;
+}
+
+.receiver-node-row.selected {
+    background-color: #e7f3ff;
+    border-color: #007bff;
+}
+
+.receiver-expand-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: #666;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.receiver-expand-btn:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+}
+
+.receiver-expand-btn.expanded i {
+    transform: rotate(90deg);
+}
+
+.receiver-node-radio {
+    margin: 0;
+    cursor: pointer;
+}
+
+.receiver-children-container {
+    margin-right: 20px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+}
+
+.receiver-children-container.hidden {
+    display: none;
+}
+
+/* استایل‌های responsive برای درخت */
+@media (max-width: 767px) {
+    .copy-node-row {
+        padding: 6px;
+        flex-wrap: wrap;
+    }
+    
+    .node-content {
+        gap: 5px;
+    }
+    
+    .node-message {
+        flex: 100%;
+        margin-top: 5px;
+        margin-right: 0;
+    }
+    
+    .copy-message-input {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .copy-node-counter {
+        font-size: 10px;
+    }
+    
+    .copy-children-container {
+        margin-right: 15px;
+    }
+}
+
+button.btn-success, a.btn-secondary {
+    min-width: 120px; /* اندازه عرض دکمه‌ها */
+    text-align: center;
+}
+
+.d-flex {
+    display: flex; /* چینش Flexbox */
+}
+
+.justify-content-between {
+    justify-content: space-between; /* دکمه‌ها به چپ و راست کشیده شوند */
+}
+
+.form-control {
+    appearance: revert !important;
+}
+/* نمایش در تابلو اعلانات: آبی با متن سفید و هم‌ارتفاع */
+.dashboard-badge {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.input-group-text .form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+/* ویرایشگر و متن فارسی */
+#editor .ql-editor {
+    font-family: 'IRANSans', sans-serif;
+    line-height: 2;
+}
+/* یادداشت‌های گیرندگان انتخاب شده */
+#selectedNotes .note-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+    #selectedNotes .note-item label {
+        margin: 0;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    #selectedNotes .note-item input.org-note {
+        flex: 1;
+        height: 38px;
+        padding: 6px 10px;
+    }
+/* تنظیمات نوار پیشرفت */
+.progress-bar {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #007bff;
+    transition: width 0.3s ease-in-out;
+    border-radius: 2px;
+}
+
+/* استایل دکمه‌ها و ورودی‌ها */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+
+.form-control-sm {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    font-size: 0.85rem;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.control-label {
+}
+
+/* بهبود فاصله بین آیتم‌های درخت گیرندگان و جلوگیری از شکست نام‌ها */
+#ReceiverTree .jstree-anchor,
+#organizationTreeJs .jstree-anchor {
+    padding: 6px 10px;
+    line-height: 1.8;
+    white-space: nowrap;
+}
+
+#ReceiverTree .jstree-node,
+#organizationTreeJs .jstree-node {
+    margin: 4px 0;
+}
+
+/* افزایش عرض مودال‌ها و فعال کردن اسکرول داخلی در صورت نیاز */
+#Copyreciversmodal .modal-dialog {
+    max-width: 50%;
+}
+
+#Copyreciversmodal .modal-body {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+/* استایل‌های دکمه expand */
+.expand-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+    .expand-btn:hover {
+        background-color: #e9ecef;
+    }
+
+    .expand-btn i {
+        font-size: 12px;
+        color: #6c757d;
+        transition: transform 0.2s ease;
+    }
+
+    .expand-btn.expanded i {
+        transform: rotate(90deg);
+    }
+
+.expand-placeholder {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}
+
+#ReceiverSelectModal .modal-dialog {
+    max-width: 60%;
+}
+
+/* استایل‌های مودال فایل پیوست */
+#attachmentModal .modal-dialog {
+    max-width: 90%;
+}
+
+#dropZone {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    #dropZone:hover {
+        background-color: #f8f9fa;
+        border-color: #0d6efd !important;
+    }
+
+    #dropZone.dragover {
+        background-color: #e3f2fd;
+        border-color: #1976d2 !important;
+        transform: scale(1.02);
+    }
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+    .file-item:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .file-item.error {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+    }
+
+    .file-item.success {
+        border-color: #28a745;
+        background-color: #d4edda;
+    }
+
+.file-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.file-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    border-radius: 6px;
+    color: white;
+    font-size: 18px;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.file-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.file-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+    .file-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .file-status.uploading {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .file-status.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .file-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* بهبود ویرایشگر Quill */
+#editor .ql-editor {
+    font-family: 'IRANSans', 'Tahoma', sans-serif;
+    line-height: 1.8;
+    font-size: 14px;
+    direction: rtl;
+    text-align: right;
+}
+
+#editor .ql-container {
+    border: none;
+    font-family: 'IRANSans', 'Tahoma', sans-serif;
+}
+
+#editor .ql-editor.ql-blank::before {
+    content: 'متن نامه خود را اینجا وارد کنید...';
+    color: #6c757d;
+    font-style: normal;
+    direction: rtl;
+    text-align: right;
+}
+
+/* استایل‌های اضافی برای محتوای ویرایشگر */
+#editor .ql-editor h1,
+#editor .ql-editor h2,
+#editor .ql-editor h3 {
+    font-weight: bold;
+    margin: 1em 0 0.5em 0;
+    color: #495057;
+}
+
+#editor .ql-editor h1 {
+    font-size: 1.5em;
+}
+
+#editor .ql-editor h2 {
+    font-size: 1.3em;
+}
+
+#editor .ql-editor h3 {
+    font-size: 1.1em;
+}
+
+#editor .ql-editor blockquote {
+    border-right: 4px solid #007bff;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background-color: #f8f9fa;
+    font-style: italic;
+}
+
+#editor .ql-editor ul,
+#editor .ql-editor ol {
+    padding-right: 1.5em;
+}
+
+#editor .ql-editor li {
+    margin: 0.25em 0;
+}
+
+/* بهبود نمایش SweetAlert */
+.swal2-popup-custom {
+    z-index: 9999 !important;
+    font-family: 'IRANSans', 'Tahoma', sans-serif !important;
+}
+
+.swal2-title-custom {
+    font-family: 'IRANSans', 'Tahoma', sans-serif !important;
+    font-weight: bold !important;
+}
+
+.swal2-content-custom {
+    font-family: 'IRANSans', 'Tahoma', sans-serif !important;
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.swal2-confirm {
+    font-family: 'IRANSans', 'Tahoma', sans-serif !important;
+}
+
+/* بهبود ظاهر درخت گیرنده اصلی */
+#ReceiverTree .jstree-anchor {
+    padding: 8px 12px !important;
+    line-height: 1.6 !important;
+    white-space: nowrap !important;
+    border-radius: 6px !important;
+    margin: 2px 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+    #ReceiverTree .jstree-anchor:hover {
+        background-color: #e3f2fd !important;
+        color: #1976d2 !important;
+    }
+
+#ReceiverTree .jstree-clicked {
+    background-color: #bbdefb !important;
+    color: #0d47a1 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+
+
+#ReceiverTree .jstree-node {
+    margin: 4px 0 !important;
+}
+
+/* حذف سایه‌های خاکستری */
+#ReceiverTree .jstree-anchor,
+#ReceiverTree .jstree-node {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+/* بهبود ظاهر مودال گیرنده اصلی */
+#ReceiverSelectModal .modal-content {
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+#ReceiverSelectModal .modal-header {
+    border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+/* بهبود ظاهر مودال سایر گیرندگان */
+#Copyreciversmodal .modal-content {
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+#Copyreciversmodal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-bottom: none !important;
+}
+
+    #Copyreciversmodal .modal-header .modal-title {
+        color: white !important;
+    }
+
+    #Copyreciversmodal .modal-header .btn-close {
+        filter: invert(1) !important;
+    }
+
+/* بهبود ظاهر درخت سایر گیرندگان */
+#organizationTreeJs .jstree-anchor {
+    padding: 12px 15px !important;
+    line-height: 1.8 !important;
+    white-space: nowrap !important;
+    border-radius: 6px !important;
+    margin: 3px 0 !important;
+    transition: all 0.2s ease !important;
+    min-height: 45px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* استایل برای D3.js درخت سازمانی */
+.modal-content {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: none;
+}
+
+.modal-header {
+    background: linear-gradient(45deg, #007bff, #00b4d8);
+    color: white;
+    border-bottom: none;
+}
+
+.modal-title {
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #00b4d8);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #0056b3, #0096c7);
+    }
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+    border-radius: 20px;
+}
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: #fff;
+    }
+
+#treeSearch {
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+    #treeSearch:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    }
+
+/* استایل درخت ساده */
+.tree-node {
+    margin: 5px 0;
+}
+
+.node-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+    .node-row:hover {
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+    }
+
+    .node-row.selected {
+        background-color: #e8f5e8;
+        border-color: #28a745;
+    }
+
+.node-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    position: relative;
+}
+
+.node-indent {
+    flex-shrink: 0;
+}
+
+.node-expand {
+    flex-shrink: 0;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* حذف تعریف تکراری expand-btn */
+
+.expand-placeholder {
+    width: 16px;
+    height: 16px;
+}
+
+.children-container {
+    margin-right: 25px;
+    position: relative;
+}
+
+.tree-node {
+    position: relative;
+    margin: 2px 0;
+}
+
+    .tree-node::after {
+        content: '──┤ ';
+        position: absolute;
+        right: 0;
+        top: 0;
+        color: #6c757d;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        font-weight: bold;
+    }
+
+    .tree-node:last-child::after {
+        content: '──┘ ';
+    }
+
+    .tree-node:first-child::after {
+        content: '──┤ ';
+    }
+
+    /* برای سازمان‌های اصلی */
+    .tree-node[data-level="0"]::after {
+        content: '*';
+        color: #007bff;
+    }
+
+    /* برای زیرمجموعه‌ها */
+    .tree-node[data-level="1"]::after {
+        content: '──┤ ';
+    }
+
+    .tree-node[data-level="2"]::after {
+        content: '──┤   │ ';
+    }
+
+    .tree-node[data-level="3"]::after {
+        content: '──┤   │   │ ';
+    }
+
+/* خطوط عمودی حذف شد */
+
+/* خطوط عمودی حذف شد */
+
+/* خطوط عمودی حذف شد */
+
+/* خطوط عمودی حذف شد */
+
+/* خطوط عمودی حذف شد */
+
+.node-toggle {
+    flex-shrink: 0;
+}
+
+.node-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.node-radio {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.node-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+    min-width: 150px;
+}
+
+.node-message {
+    flex: 2;
+    min-width: 200px;
+}
+
+.message-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: border-color 0.2s ease;
+}
+
+    .message-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+.node-counter {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #6c757d;
+    min-width: 50px;
+    text-align: center;
+}
+
+.note-container {
+    display: none;
+    margin-top: 5px;
+}
+
+.note-input {
+    width: 200px;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+    .note-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    }
+
+.note-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+.note-counter.text-danger {
+    color: #dc3545 !important;
+}
+
+.toggle-note {
+    cursor: pointer;
+}
+
+#organizationTreeJs .jstree-anchor:hover {
+    background-color: #f0f8ff !important;
+    color: #1976d2 !important;
+}
+
+#organizationTreeJs .jstree-clicked {
+    background-color: #e1f5fe !important;
+    color: #0277bd !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+#organizationTreeJs .jstree-checkbox {
+    margin-left: 8px !important;
+}
+
+#organizationTreeJs .jstree-node {
+    margin: 4px 0 !important;
+}
+
+/* حذف سایه‌های خاکستری از سایر گیرندگان */
+#organizationTreeJs .jstree-anchor,
+#organizationTreeJs .jstree-node {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+/* بهبود ظاهر مودال جستجوی نامه */
+#letterSearchModal .modal-dialog {
+    max-width: 800px;
+}
+
+#letterSearchModal .modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#letterSearchModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+    #letterSearchModal .modal-header .modal-title {
+        color: white;
+    }
+
+    #letterSearchModal .modal-header .btn-close {
+        filter: invert(1);
+    }
+
+#letterSearchModal .card {
+    border-radius: 10px;
+}
+
+#letterSearchModal .table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#letterSearchModal .table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+#letterSearchModal .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+#letterSearchModal .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+
+    #letterSearchModal .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+
+#letterSearchModal .btn-outline-secondary {
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+
+.receiver-tree-node {
+    margin-bottom: 5px;
+}
+
+.receiver-node-row {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.receiver-children-container {
+    margin-right: 25px;
+}
+
+.receiver-expand-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.receiver-expand-btn i {
+    transition: transform 0.2s;
+}
+
+.receiver-expand-btn.expanded i {
+    transform: rotate(90deg);
+}
+
+/* استایل‌های جداگانه برای درخت سایر گیرندگان */
+.copy-tree-node {
+    margin-bottom: 5px;
+}
+
+.copy-node-row {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.copy-node-row.selected {
+    background-color: #f0f8ff;
+}
+
+.copy-children-container {
+    margin-right: 25px;
+}
+
+.copy-expand-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.copy-expand-btn i {
+    transition: transform 0.2s;
+}
+
+.copy-expand-btn.expanded i {
+    transform: rotate(90deg) !important;
+}
+
+/* استایل‌های مشترک */
+.hidden {
+    display: none !important;
+}
+
+.expand-placeholder {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.node-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.node-name {
+    flex: 1;
+}
+
+.node-message {
+    flex: 2;
+}
+
+.copy-message-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.copy-node-counter {
+    font-size: 12px;
+    color: #6c757d;
+    min-width: 50px;
+    text-align: left;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+/* استایل‌های چرخش فلش برای expand button ها */
+.copy-expand-btn svg,
+.receiver-expand-btn svg {
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
+}
+
+.copy-expand-btn.expanded svg,
+.receiver-expand-btn.expanded svg {
+    transform: rotate(-90deg);
+}
+
+.copy-expand-btn,
+.receiver-expand-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .copy-expand-btn:hover,
+    .receiver-expand-btn:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+/* =================== قوانین ریسپانسیو - فقط اندازه‌ها =================== */
+
+/* تنظیمات کلی برای همه دستگاه‌ها */
+.container-fluid, .card, .form-group {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* تنظیمات برای تبلت‌ها (768px تا 1024px) */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .col-md-4, .col-md-6, .col-md-8, .col-md-12 {
+        margin-bottom: 15px;
+    }
+    
+    .input-group-lg {
+        font-size: 14px;
+    }
+    
+    .input-group-text {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .form-control {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    /* مودال‌ها در تبلت */
+    .modal-dialog {
+        max-width: 95% !important;
+        margin: 20px auto;
+    }
+    
+    #Copyreciversmodal .modal-dialog {
+        max-width: 90% !important;
+    }
+    
+    #ReceiverSelectModal .modal-dialog {
+        max-width: 85% !important;
+    }
+    
+    /* ویرایشگر متن */
+    #editor {
+        min-height: 250px;
+    }
+    
+    /* درخت سازمان‌ها */
+    #ReceiverTree .jstree-anchor,
+    #organizationTreeJs .jstree-anchor {
+        padding: 10px 8px !important;
+        font-size: 13px;
+    }
+}
+
+/* تنظیمات برای موبایل‌های بزرگ (481px تا 767px) */
+@media (max-width: 767px) and (min-width: 481px) {
+    /* تبدیل layout به عمودی */
+    .col-md-4, .col-md-6, .col-md-8, .col-md-12 {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    /* کاهش سایز input group */
+    .input-group-lg {
+        font-size: 13px;
+    }
+    
+    .input-group-text {
+        padding: 10px;
+        font-size: 12px;
+    }
+    
+    .form-control {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    /* دکمه‌ها */
+    .btn {
+        padding: 10px 15px;
+        font-size: 13px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .d-flex .btn {
+        width: 48%;
+        margin: 0 1%;
+    }
+    
+    /* مودال‌ها در موبایل */
+    .modal-dialog {
+        max-width: 98% !important;
+        margin: 10px auto;
+    }
+    
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    /* ویرایشگر متن */
+    #editor {
+        min-height: 200px;
+    }
+    
+    /* درخت سازمان‌ها */
+    #ReceiverTree .jstree-anchor,
+    #organizationTreeJs .jstree-anchor {
+        padding: 12px 8px !important;
+        font-size: 14px;
+    }
+    
+    /* تنظیمات جدول */
+    .table-responsive {
+        font-size: 12px;
+    }
+    
+    .table th, .table td {
+        padding: 8px 4px;
+    }
+}
+
+/* تنظیمات برای موبایل‌های کوچک (تا 480px) */
+@media (max-width: 480px) {
+    /* همه ستون‌ها تمام عرض */
+    .col-md-4, .col-md-6, .col-md-8, .col-md-12,
+    .col-sm-6, .col-lg-4, .col-lg-6, .col-lg-8 {
+        width: 100% !important;
+        margin-bottom: 15px;
+    }
+    
+    /* Input group کوچکتر */
+    .input-group-lg {
+        font-size: 12px;
+    }
+    
+    .input-group-text {
+        padding: 8px;
+        font-size: 11px;
+    }
+    
+    .form-control {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    /* دکمه‌ها */
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .d-flex .btn {
+        width: 48%;
+        margin: 0 1%;
+        font-size: 11px;
+    }
+    
+    /* مودال‌ها در موبایل کوچک */
+    .modal-dialog {
+        max-width: 100% !important;
+        margin: 0;
+        height: 100vh;
+    }
+    
+    .modal-content {
+        height: 100vh;
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+    
+    /* ویرایشگر متن */
+    #editor {
+        min-height: 150px;
+    }
+    
+    #editor .ql-editor {
+        font-size: 12px;
+        padding: 8px;
+        line-height: 1.4;
+    }
+    
+    /* درخت سازمان‌ها */
+    #ReceiverTree .jstree-anchor,
+    #organizationTreeJs .jstree-anchor {
+        padding: 10px 6px !important;
+        font-size: 13px;
+    }
+    
+    /* جدول‌ها */
+    .table-responsive {
+        font-size: 11px;
+    }
+    
+    .table th, .table td {
+        padding: 6px 2px;
+        font-size: 11px;
+    }
+}
+
+/* تنظیمات ویژه برای landscape موبایل */
+@media (max-width: 767px) and (orientation: landscape) {
+    .modal-dialog {
+        max-width: 95% !important;
+        margin: 5px auto;
+    }
+    
+    .modal-body {
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+    
+    #editor {
+        min-height: 120px;
+    }
+}
+
+/* بهبود touch targets برای موبایل */
+@media (max-width: 767px) {
+    button, .btn, input[type="button"], input[type="submit"] {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+    }
+    
+    /* کاهش اندازه checkbox و radio در مودال‌ها */
+    .modal input[type="checkbox"], 
+    .modal input[type="radio"] {
+        transform: scale(1);
+        margin: 4px;
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* تنظیم اندازه عادی checkbox و radio در فرم اصلی */
+    input[type="checkbox"]:not(.modal input[type="checkbox"]), 
+    input[type="radio"]:not(.modal input[type="radio"]) {
+        transform: scale(1.1);
+        margin: 6px;
+    }
+}
+
+/* اطمینان از عدم overflow در المان‌ها */
+* {
+    box-sizing: border-box;
+}
+
+.container-fluid, .row, .col-md-4, .col-md-6, .col-md-8, .col-md-12 {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* تنظیمات اضافی برای responsive grid */
+@media (max-width: 991px) {
+    .row > * {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+/* تنظیمات ویژه برای iPad و تبلت های مشابه */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .col-md-4 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+    
+    .col-md-6 {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+    
+    .col-md-8 {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+/* تنظیمات ویژه برای موبایل های کوچک (iPhone SE و مشابه) */
+@media (max-width: 375px) {
+    .input-group-text {
+        padding: 6px;
+        font-size: 10px;
+    }
+    
+    .form-control {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    /* کاهش اندازه المان‌های مودال در موبایل کوچک */
+    .modal input[type="checkbox"], 
+    .modal input[type="radio"] {
+        width: 14px;
+        height: 14px;
+        margin: 2px;
+    }
+    
+    .modal select,
+    .modal .form-control {
+        padding: 4px 6px;
+        font-size: 11px;
+        min-height: 32px;
+    }
+}
+
+/* تنظیمات ویژه برای مودال انتخاب سایر گیرندگان در موبایل */
+@media (max-width: 767px) {
+    /* کاهش padding در مودال */
+    #Copyreciversmodal .modal-body,
+    #ReceiverSelectModal .modal-body {
+        padding: 10px;
+    }
+    
+    /* تنظیم اندازه المان‌های درخت سازمان */
+    .node-row {
+        padding: 6px 8px;
+        margin: 2px 0;
+    }
+    
+    .node-content {
+        gap: 6px;
+    }
+    
+    /* کاهش اندازه dropdown ها در درخت */
+    .node-row select {
+        font-size: 11px;
+        padding: 2px 4px;
+        min-height: 28px;
+        max-width: 80px;
+    }
+    
+    /* تنظیم checkbox ها در درخت */
+    .node-checkbox,
+    .node-radio {
+        width: 14px;
+        height: 14px;
+        margin: 2px;
+    }
+    
+    /* کاهش فاصله بین المان‌ها */
+    .tree-node {
+        margin: 1px 0;
+    }
+    
+    .children-container {
+        margin-right: 15px;
+    }
+    
+    /* تنظیم اندازه متن در درخت */
+    .node-name {
+        font-size: 12px;
+        min-width: 100px;
+    }
+    
+    /* کاهش اندازه input پیام */
+    .message-input {
+        padding: 3px 6px;
+        font-size: 11px;
+        min-height: 26px;
+    }
+    
+    /* تنظیم counter */
+    .node-counter {
+        font-size: 10px;
+        min-width: 30px;
+    }
+}
+
+/* تنظیمات ویژه برای موبایل کوچک در مودال */
+@media (max-width: 480px) {
+    #Copyreciversmodal .modal-body,
+    #ReceiverSelectModal .modal-body {
+        padding: 8px;
+    }
+    
+    .node-row {
+        padding: 4px 6px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .node-content {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .node-name {
+        font-size: 11px;
+        min-width: auto;
+        width: 100%;
+        margin-bottom: 4px;
+    }
+    
+    .node-row select {
+        font-size: 10px;
+        max-width: 70px;
+        min-height: 24px;
+    }
+    
+    .message-input {
+        font-size: 10px;
+        padding: 2px 4px;
+        min-height: 24px;
+        width: 100%;
+        margin-top: 4px;
+    }
+    
+    .node-checkbox,
+    .node-radio {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* تنظیمات ویژه برای ویرایشگر Quill در موبایل */
+@media (max-width: 767px) {
+    /* کاهش اندازه toolbar */
+    #editor .ql-toolbar {
+        border: 1px solid #ccc;
+        font-size: 8px;
+        padding: 4px;
+    }
+    
+    #editor .ql-toolbar .ql-formats {
+        margin-right: 4px;
+    }
+    
+    /* کاهش اندازه دکمه‌های toolbar */
+    #editor .ql-toolbar button {
+        width: 20px;
+        height: 20px;
+        padding: 1px;
+        margin: 1px;
+    }
+    
+    #editor .ql-toolbar button svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    /* تنظیم dropdown ها در toolbar */
+    #editor .ql-toolbar .ql-picker {
+        font-size: 9px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-label {
+        padding: 2px 4px;
+        font-size: 9px;
+        min-height: 18px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-options {
+        font-size: 9px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-item {
+        padding: 2px 4px;
+    }
+    
+    /* تنظیم container ویرایشگر */
+    #editor .ql-container {
+        font-size: 11px;
+    }
+    
+    /* تنظیم placeholder */
+    #editor .ql-editor.ql-blank::before {
+        font-size: 11px;
+        font-style: italic;
+        color: #999;
+    }
+}
+
+/* تنظیمات ویژه برای موبایل کوچک Quill */
+@media (max-width: 480px) {
+    #editor .ql-toolbar {
+        padding: 3px;
+        font-size: 9px;
+    }
+    
+    #editor .ql-toolbar button {
+        width: 18px;
+        height: 18px;
+        margin: 0.5px;
+        padding: 1px;
+    }
+    
+    #editor .ql-toolbar button svg {
+        width: 10px;
+        height: 10px;
+    }
+    
+    #editor .ql-toolbar .ql-formats {
+        margin-right: 3px;
+    }
+    
+    #editor .ql-toolbar .ql-picker {
+        font-size: 8px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-label {
+        padding: 1px 3px;
+        font-size: 8px;
+        min-height: 16px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-options {
+        font-size: 8px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-item {
+        padding: 1px 3px;
+    }
+    
+    #editor .ql-editor {
+        font-size: 10px;
+        padding: 5px;
+        line-height: 1.3;
+    }
+    
+    #editor .ql-editor.ql-blank::before {
+        font-size: 10px;
+    }
+}
+
+/* تنظیمات ویژه برای موبایل خیلی کوچک Quill */
+@media (max-width: 375px) {
+    #editor .ql-toolbar {
+        padding: 2px;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 8px;
+    }
+    
+    #editor .ql-toolbar button {
+        width: 16px;
+        height: 16px;
+        padding: 0;
+        margin: 0.5px;
+    }
+    
+    #editor .ql-toolbar button svg {
+        width: 8px;
+        height: 8px;
+    }
+    
+    #editor .ql-toolbar .ql-formats {
+        margin-right: 2px;
+    }
+    
+    #editor .ql-toolbar .ql-picker {
+        font-size: 7px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-label {
+        font-size: 7px;
+        padding: 1px 2px;
+        min-height: 14px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-options {
+        font-size: 7px;
+    }
+    
+    #editor .ql-toolbar .ql-picker-item {
+        padding: 1px 2px;
+    }
+    
+    #editor .ql-editor {
+        font-size: 9px;
+        padding: 4px;
+        line-height: 1.2;
+    }
+    
+    #editor .ql-editor.ql-blank::before {
+        font-size: 9px;
+    }
+    
+    #editor {
+        min-height: 100px;
+    }
+}

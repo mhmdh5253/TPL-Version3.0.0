@@ -97,7 +97,8 @@ namespace TPLWeb
 
             // پیکربندی کنترلرها و ویوها با قابلیت کامپایل در زمان اجرا
             services.AddControllersWithViews()
-                .AddRazorRuntimeCompilation();
+                .AddRazorRuntimeCompilation()
+                .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
             // ====================================================================================
             // پیکربندی سرویس‌های اصلی
@@ -125,8 +126,7 @@ namespace TPLWeb
             // اضافه کردن Serilog برای لاگینگ
             services.AddSerilog();
 
-            // پیکربندی MVC با تنظیمات JSON
-            services.AddMvc().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+            // پیکربندی MVC: از AddControllersWithViews بالا استفاده شده است
 
             // اضافه کردن سرویس HTTP Client
             services.AddHttpClient();
@@ -346,6 +346,12 @@ namespace TPLWeb
             // ====================================================================================
 
             services.AddScoped<ISmsSender, SmsSender>(); // سرویس ارسال پیامک
+
+            // ====================================================================================
+            // سرویس‌های پس‌زمینه (Background Services)
+            // ====================================================================================
+
+            services.AddHostedService<TPLWeb.Services.ReminderBackgroundService>(); // سرویس ارسال یادآوری‌ها
 
             // ====================================================================================
             // سرویس‌های ارتباطی و سیگنال
