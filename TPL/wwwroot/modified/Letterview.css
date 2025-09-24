@@ -1901,7 +1901,7 @@
 
 /* Image Preview Modal */
 .image-preview-modal {
-    max-width: 90vw !important;
+    max-width: 50vw !important;
     max-height: 90vh !important;
 }
 

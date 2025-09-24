@@ -695,6 +695,13 @@
                                                title="ویرایش">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                            @* نمایش علت عودت، در صورت Returned *@
+                                            @if (item.Status == LetterStatus.Returned)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-warning waves-effect" title="علت عودت" onclick="showReturnReason(@item.Id)">
+                                                    <i class="fas fa-undo-alt"></i>
+                                                </button>
+                                            }
                                             <a href="#" onclick="generateWordFile(@item.Id, event)"
                                                class="btn btn-sm btn-outline-primary waves-effect"
                                                data-bs-toggle="tooltip"
@@ -1043,6 +1050,30 @@
             setTimeout(function() {
                 notification.alert('close');
             }, 4000);
+        }
+
+        async function showReturnReason(letterId) {
+            try {
+                const res = await fetch('@Url.Action("GetActions", "LetterApprovalFlow")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value },
+                    body: JSON.stringify(letterId),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (!data || data.Success === false) throw new Error(data?.Message || 'خطا در دریافت اقدامات');
+                const actions = data.Data?.Actions || [];
+                const ret = actions.find(a => (a.ActionDescription||'').includes('عودت')) || actions[0];
+                const desc = ret ? ret.ActionDescription : 'علت عودت ثبت نشده است';
+                await Swal.fire({
+                    title: 'علت/شرح عودت',
+                    text: desc,
+                    icon: 'info',
+                    confirmButtonText: 'بستن'
+                });
+            } catch (e) {
+                showNotification(e.message || 'خطا', 'error');
+            }
         }
 
         $(document).on('click', '.mark-dashboard-read', function(){

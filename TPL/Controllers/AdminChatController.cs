@@ -1,27 +1,33 @@
 // AdminChatController.cs (اصلاح شده برای افزودن ویژگی‌های شبیه تلگرام مانند ریپلای، فوروارد، ادیت، پین، و غیره)
-using BLL.Chat;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
-using TPLWeb.Models.Chat;
+using BLL.Chat; // سرویس‌های دامنه چت
+using Microsoft.AspNetCore.Authorization; // مجوز دسترسی ادمین
+using Microsoft.AspNetCore.Http; // آپلود فایل و صدا
+using Microsoft.AspNetCore.Mvc; // زیرساخت MVC
+using System.Linq; // تبدیل‌ها و کوئری‌ها
+using System.Threading.Tasks; // عملیات ناهمگام
+using TPLWeb.Models.Chat; // مدل‌های View برای چت
 
 namespace TPLWeb.Controllers
 {
-    [Authorize(Roles = "Admin")]
-    [Route("Admin/Chat")]
+    #region Controller & Routing
+    [Authorize(Roles = "Admin")] // فقط مدیر مجاز است
+    [Route("Admin/Chat")] // مسیر پایه مدیریت چت
     public class AdminChatController : Controller
     {
-        private readonly IChatService _chatService;
+        #region Fields
+        private readonly IChatService _chatService; // سرویس چت
+        #endregion
 
-        public AdminChatController(IChatService chatService)
+        #region Ctor
+        public AdminChatController(IChatService chatService) // سازنده با تزریق سرویس
         {
             _chatService = chatService;
         }
+        #endregion
 
+        #region Pages
         [HttpGet("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index() // لیست روم‌ها برای ادمین
         {
             var result = await _chatService.GetAllChatRoomsAsync();
             if (!result.Success)
@@ -56,11 +62,11 @@ namespace TPLWeb.Controllers
                 }).ToList()
             }).ToList();
 
-            return View(viewModels);
+            return View(viewModels); // نمایش لیست روم‌ها
         }
 
         [HttpGet("Room/{id}")]
-        public async Task<IActionResult> ChatRoom(int id)
+        public async Task<IActionResult> ChatRoom(int id) // صفحه یک روم مشخص
         {
             var result = await _chatService.GetAdminChatViewAsync(id);
             if (!result.Success)
@@ -111,11 +117,12 @@ namespace TPLWeb.Controllers
                 })?.ToList() ?? new List<ChatParticipantViewModel>()
             };
 
-            return View(viewModel);
+            return View(viewModel); // نمایش روم و پیام‌ها
         }
+        #endregion
 
         [HttpGet("Monitoring")]
-        public IActionResult Monitoring()
+        public IActionResult Monitoring() // صفحه ساده مانیتورینگ
         {
             // Redirect to main admin panel or show a simple message
             return Content(@"
@@ -141,7 +148,7 @@ namespace TPLWeb.Controllers
         }
 
         [HttpPost("SendFileMessage")]
-        public async Task<IActionResult> SendFileMessage(IFormFile file, int chatRoomId)
+        public async Task<IActionResult> SendFileMessage(IFormFile file, int chatRoomId) // ارسال فایل
         {
             var result = await _chatService.SendFileMessageAsync(file, User.Identity?.Name ?? "Unknown", chatRoomId);
             if (!result.Success)
@@ -153,7 +160,7 @@ namespace TPLWeb.Controllers
         }
 
         [HttpPost("SendVoiceMessage")]
-        public async Task<IActionResult> SendVoiceMessage(IFormFile audioFile, int chatRoomId)
+        public async Task<IActionResult> SendVoiceMessage(IFormFile audioFile, int chatRoomId) // ارسال ویس
         {
             var result = await _chatService.SendVoiceMessageAsync(audioFile, User.Identity?.Name ?? "Unknown", chatRoomId);
             if (!result.Success)
@@ -166,7 +173,7 @@ namespace TPLWeb.Controllers
 
         // ویژگی جدید: ادیت پیام
         [HttpPost("EditMessage")]
-        public async Task<IActionResult> EditMessage(int messageId, string newContent)
+        public async Task<IActionResult> EditMessage(int messageId, string newContent) // ادیت پیام
         {
             var result = await _chatService.EditMessageAsync(messageId, newContent, User.Identity?.Name ?? "Unknown");
             if (!result.Success)
@@ -179,7 +186,7 @@ namespace TPLWeb.Controllers
 
         // ویژگی جدید: فوروارد پیام
         [HttpPost("ForwardMessage")]
-        public async Task<IActionResult> ForwardMessage(int messageId, int targetChatRoomId)
+        public async Task<IActionResult> ForwardMessage(int messageId, int targetChatRoomId) // فوروارد پیام
         {
             var result = await _chatService.ForwardMessageAsync(messageId, targetChatRoomId, User.Identity?.Name ?? "Unknown");
             if (!result.Success)
@@ -192,15 +199,15 @@ namespace TPLWeb.Controllers
 
         // ویژگی جدید: پین پیام
         [HttpPost("PinMessage")]
-        public async Task<IActionResult> PinMessage(int messageId, int chatRoomId)
+        public async Task<IActionResult> PinMessage(int messageId, int chatRoomId) // پین پیام
         {
             var result = await _chatService.PinMessageAsync(messageId, chatRoomId);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
             }
-
             return Json(new { success = true });
         }
     }
+    #endregion
 }

@@ -129,6 +129,22 @@
                             }
                             break;
 
+                        case LetterStatus.Returned:
+                            <!-- وضعیت: عودت خورده - امکان شروع مجدد فرآیند تایید/امضا -->
+                            @if (currentUser!.HaqEmza || currentUser.Semat == Model.SignerName)
+                            {
+                                <button class="action-btn approve-btn" onclick="startApprovalProcess(@Model.Id)">
+                                    <i class="fas fa-file-signature"></i> تایید و امضا
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="action-btn command-btn" onclick="startApprovalProcess(@Model.Id)">
+                                    <i class="fas fa-check-double"></i> تایید
+                                </button>
+                            }
+                            break;
+
                         case LetterStatus.Approved:
                             <!-- وضعیت: تایید شده -->
                             <button class="action-btn btn-info" onclick="showReferralModal(@Model.Id)">
@@ -156,19 +172,19 @@
                                 <i class="fas fa-play-circle"></i> لیست اقدامات
                             </button>
 
-                            @if (Model.Status != LetterStatus.Approved && Model.Status != LetterStatus.Archived)
-                            {
-                                <button class="action-btn return-btn" onclick="returnLetter(@Model.Id)">
-                                    <i class="fas fa-undo-alt"></i> عودت
-                                </button>
-                            }
-
                             <a class="action-btn reply-btn" href="@Url.Action("AnswerLetter", "Letter")?letterid=@Model.Id">
                                 <i class="fas fa-reply-all"></i> پاسخ
                             </a>
                             <a class="action-btn track-btn" href="@Url.Action("Followup", "Letter")?letterid=@Model.Id">
                                 <i class="fas fa-search-plus"></i> پیگیری
                             </a>
+                        }
+
+                        @if (Model.Status != LetterStatus.Archived && Model.Status != LetterStatus.Deleted)
+                        {
+                            <button class="action-btn return-btn" onclick="returnLetter(@Model.Id)">
+                                <i class="fas fa-undo-alt"></i> عودت
+                            </button>
                         }
 
                         @if (Model.Status != LetterStatus.Archived)
@@ -1642,62 +1658,137 @@
         });
     </script>
     <script>
-       async function returnLetter(letterId) {
+         async function returnLetter(letterId, defaultDestType = 'user') {
     try {
-        const { value: returnData, isConfirmed } = await Swal.fire({
+        // دریافت لیست کاربران و سازمان‌ها برای انتخاب مقصد عودت
+        const usersResponse = await fetch('@Url.Action("GetEligibleReturnDestinations", "LetterApprovalFlow", new { letterId = Model.Id })');
+        const usersResult = await usersResponse.json();
+        let eligibleUsers = [];
+        let eligibleOrgs = [];
+        if (usersResult && usersResult.Success === true) {
+            eligibleUsers = Array.isArray(usersResult.Data?.Users) ? usersResult.Data.Users : [];
+            eligibleOrgs = Array.isArray(usersResult.Data?.Organizations) ? usersResult.Data.Organizations : [];
+        }
+        if (!Array.isArray(eligibleUsers)) {
+            throw new Error('خطا در دریافت لیست کاربران مقصد');
+        }
+        const userOptions = [`<option value="">— انتخاب کاربر —</option>`]
+            .concat(eligibleUsers.map(u => `<option value="${u.Id}">${(u.Name || u.UserName || u.Id)}</option>`))
+            .join('');
+        const orgOptions = [`<option value="">— انتخاب واحد / دپارتمان —</option>`]
+            .concat(eligibleOrgs.map(o => `<option value="${o.Id}">${o.FullName || o.Name}${o.OrgType ? ' ('+o.OrgType+')' : ''}</option>`))
+            .join('');
+
+        if (eligibleUsers.length === 0 && eligibleOrgs.length === 0) {
+            await Swal.fire({ icon: 'warning', title: 'مقصدی برای عودت یافت نشد', text: 'هیچ کاربر یا واحد مجاز در زنجیره دریافت/تایید یافت نشد.' });
+            return;
+        }
+
+        const { value: formValues, isConfirmed } = await Swal.fire({
             title: 'عودت نامه',
+            width: '48rem',
+            customClass: { popup: 'swal2-rtl return-letter-popup', confirmButton: 'btn btn-primary', cancelButton: 'btn btn-secondary' },
             html: `
-                <div class="reject-modal">
-                    <div class="reject-icon">
-                        <svg viewBox="0 0 24 24" width="64" height="64" stroke="#3498db" fill="none">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" stroke-width="2"/>
-                            <path d="M19 10l-7-7m0 0L5 17m7-7l7 7" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                <div dir="rtl" style="text-align:right;">
+                    <div style="margin-bottom:12px;color:#6c757d;font-size:0.9rem">لطفاً مقصد عودت، دلیل و توضیحات را مشخص کنید.</div>
+                    <div class="mb-3">
+                        <label class="form-label d-block">نوع مقصد</label>
+                        <div class="btn-group" role="group" aria-label="dest-type">
+                            <input type="radio" class="btn-check" name="destType" id="destUser" value="user" ${defaultDestType==='user' ? 'checked' : ''}>
+                            <label class="btn btn-outline-primary" for="destUser"><i class="fa fa-user ms-1"></i> کاربر</label>
+                            <input type="radio" class="btn-check" name="destType" id="destOrg" value="org" ${defaultDestType==='org' ? 'checked' : ''}>
+                            <label class="btn btn-outline-primary" for="destOrg"><i class="fa fa-sitemap ms-1"></i> واحد / دپارتمان</label>
+                        </div>
                     </div>
-                    <div class="reject-message">
-                        لطفاً دلیل عودت این نامه را وارد نمایید
+                    <div class="row g-3">
+                        <div class="col-12" id="userDestContainer">
+                            <label for="destinationUser" class="form-label">کاربر مقصد</label>
+                            <select id="destinationUser" class="form-select">${userOptions}</select>
+                        </div>
+                        <div class="col-12" id="orgDestContainer" style="display:none">
+                            <label for="destinationOrg" class="form-label">سازمان مقصد</label>
+                            <select id="destinationOrg" class="form-select">${orgOptions}</select>
+                        </div>
+                        <div class="col-12">
+                            <label for="returnReason" class="form-label">دلیل عودت</label>
+                            <textarea id="returnReason" class="form-control" rows="3" placeholder="دلیل عودت نامه..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="returnDescription" class="form-label">شرح عودت (اختیاری)</label>
+                            <textarea id="returnDescription" class="form-control" rows="3" placeholder="شرح یا توضیحات تکمیلی..."></textarea>
+                        </div>
                     </div>
-                    <textarea id="returnReason" 
-                              class="reject-reason-input" 
-                              placeholder="دلیل عودت نامه..."
-                              rows="4"></textarea>
-                    <div class="char-counter">0/500</div>
                 </div>
             `,
             confirmButtonText: 'تایید عودت',
             cancelButtonText: 'انصراف',
-            confirmButtonColor: '#3498db',
             showCancelButton: true,
+            focusConfirm: false,
             preConfirm: () => {
-                const reason = document.getElementById('returnReason').value.trim();
-                if (!reason) {
-                    Swal.showValidationMessage('لطفاً دلیل عودت را وارد کنید');
+                const destType = document.querySelector('input[name="destType"]:checked')?.value || 'user';
+                const destinationUserId = (document.getElementById('destinationUser')?.value || '').trim();
+                const destinationOrgId = (document.getElementById('destinationOrg')?.value || '').trim();
+                const reason = (document.getElementById('returnReason')?.value || '').trim();
+                const description = (document.getElementById('returnDescription')?.value || '').trim();
+                if (destType === 'user' && !destinationUserId) {
+                    Swal.showValidationMessage('لطفاً کاربر مقصد را انتخاب کنید');
                     return false;
                 }
-                return { 
-                    LetterId: letterId,
-                    Description: reason 
+                if (destType === 'org' && !destinationOrgId) {
+                    Swal.showValidationMessage('لطفاً سازمان مقصد را انتخاب کنید');
+                    return false;
+                }
+                if (!reason) {
+                    Swal.showValidationMessage('وارد کردن دلیل عودت الزامی است');
+                    return false;
+                }
+                const payload = { LetterId: letterId, Reason: reason, Description: description };
+                if (destType === 'user') payload.DestinationUserId = destinationUserId;
+                if (destType === 'org') payload.DestinationOrganizationId = parseInt(destinationOrgId);
+                return payload;
+            },
+            didOpen: () => {
+                const userRadio = document.querySelector('input[name="destType"][value="user"]');
+                const orgRadio = document.querySelector('input[name="destType"][value="org"]');
+                const userSel = document.getElementById('destinationUser');
+                const orgContainer = document.getElementById('orgDestContainer');
+                const userContainer = document.getElementById('userDestContainer');
+                const applyToggle = () => {
+                    if (userRadio.checked) { orgContainer.style.display = 'none'; userContainer.style.display = ''; }
+                    if (orgRadio.checked) { orgContainer.style.display = ''; userContainer.style.display = 'none'; }
                 };
+                userRadio?.addEventListener('change', applyToggle);
+                orgRadio?.addEventListener('change', applyToggle);
+                applyToggle();
+
+                // پیش‌انتخاب اولین گزینه معتبر بر اساس نوع مقصد
+                if (userRadio.checked && userSel && userSel.options.length > 1) {
+                    userSel.selectedIndex = 1;
+                }
+                const orgSel = document.getElementById('destinationOrg');
+                if (orgRadio.checked && orgSel && orgSel.options.length > 1) {
+                    orgSel.selectedIndex = 1;
+                }
             }
         });
 
         if (!isConfirmed) return;
-        
+
         const result = await sendRequestWithCredentials(
             `@Url.Action("ReturnLetter", "LetterApprovalFlow")`,
             'POST',
-            returnData // استفاده از داده‌های بازگشتی از preConfirm
+            formValues
         );
 
         if (result.Success) {
             await Swal.fire({
                 title: 'موفقیت',
-                text: result.Message,
+                text: result.Message || 'نامه با موفقیت عودت شد',
                 icon: 'success'
             });
             location.reload();
         } else {
-            throw new Error(result.Message);
+            throw new Error(result.Message || 'خطا در عودت نامه');
         }
     } catch (error) {
         Swal.fire({
@@ -1827,7 +1918,7 @@
                 });
 
                 // ارسال درخواست برای دریافت پیوست‌ها
-                const response = await fetch(`@Url.Action("GetLetterAttachments", "Letter", new { })?letterId=${letterId}`);
+                const response = await fetch(`@Url.Content("~/Letter/Attachment/List")?letterId=${letterId}`);
                 const result = await response.json();
 
                 loadingSwal.close();
@@ -2027,17 +2118,38 @@
 
         // تابع دانلود فایل
         function getFileIdFromPath(path) {
-            const idx = path.lastIndexOf('/');
-            return idx >= 0 ? path.substring(idx + 1) : path;
+            if (!path) return path;
+            const lastSlash = path.lastIndexOf('/');
+            const filePart = lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
+            const lastDot = filePart.lastIndexOf('.');
+            return lastDot > 0 ? filePart.substring(0, lastDot) : filePart;
         }
 
-        function downloadFile(letterId, fileId, downloadName) {
-            const url = `@Url.Action("DownloadAttachment", "Letter", new { })?letterId=${letterId}&fileId=${encodeURIComponent(fileId)}&downloadName=${encodeURIComponent(downloadName)}`;
-            const link = document.createElement('a');
-            link.href = url;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        async function downloadFile(letterId, fileId, downloadName) {
+            try {
+                const checkUrl = `@Url.Content("~/Letter/Attachment/Download")?letterId=${letterId}&fileId=${encodeURIComponent(fileId)}&downloadName=${encodeURIComponent(downloadName)}`;
+                const resp = await fetch(checkUrl);
+                const data = await resp.json();
+                if (data.success && data.exists && data.downloadUrl) {
+                    const a = document.createElement('a');
+                    a.href = data.downloadUrl;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    await Swal.fire({
+                        icon: 'warning',
+                        title: 'دانلود ناممکن',
+                        text: data.message || 'فایل یافت نشد یا حذف شده است.'
+                    });
+                }
+            } catch (e) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'خطا در بررسی و دانلود پیوست.'
+                });
+            }
         }
     </script>
 }

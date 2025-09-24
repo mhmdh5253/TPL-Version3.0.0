@@ -1,21 +1,26 @@
-﻿using BE;
-using BLL.Tokening;
-using BLL.Wallet;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using BE; // موجودیت‌های پایه پروژه
+using BLL.Tokening; // سرویس‌های دامنه توکن
+using BLL.Wallet; // سرویس‌های کیف پول
+using Microsoft.AspNetCore.Authorization; // احراز هویت و دسترسی
+using Microsoft.AspNetCore.Identity; // مدیریت کاربران
+using Microsoft.AspNetCore.Mvc; // زیرساخت MVC
+using System.ComponentModel.DataAnnotations; // اعتبارسنجی مدل‌ها
 
-namespace TPLWeb.Controllers
+namespace TPLWeb.Controllers // فضای نام کنترلرها
 {
-    [Authorize]
-    [Route("TokenManagement")]
-    public class TokenController : Controller
+    #region Controller & Routing
+    [Authorize] // نیازمند ورود کاربر
+    [Route("TokenManagement")] // روت پایه برای همه اکشن‌ها
+    public class TokenController : Controller // کنترلر مدیریت توکن
     {
-        private readonly BlToken _tokenRepository;
-        private readonly ILogger<TokenController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly BlWallet _wallet;
+        #region Fields
+        private readonly BlToken _tokenRepository; // سرویس عملیات توکن
+        private readonly ILogger<TokenController> _logger; // ثبت لاگ خطا/اطلاعات
+        private readonly UserManager<ApplicationUser> _userManager; // مدیریت کاربر جاری
+        private readonly BlWallet _wallet; // سرویس کیف پول
+        #endregion
+
+        #region Ctor
         public TokenController(BlToken tokenRepository, ILogger<TokenController> logger, UserManager<ApplicationUser> userManager, BlWallet wallet)
         {
             _tokenRepository = tokenRepository;
@@ -23,7 +28,9 @@ namespace TPLWeb.Controllers
             _userManager = userManager;
             _wallet = wallet;
         }
+        #endregion
 
+        #region Actions
         // GET: Token
         [HttpGet("Tokens")]
         public async Task<IActionResult> Index()
@@ -52,7 +59,7 @@ namespace TPLWeb.Controllers
         [HttpGet("CreateNewToken")]
         public IActionResult Create()
         {
-            return View();
+            return View(); // فقط نمایش فرم ایجاد توکن
         }
 
         // POST: Token/Create
@@ -131,7 +138,7 @@ namespace TPLWeb.Controllers
         [HttpGet("ValidateToken")]
         public IActionResult Validate()
         {
-            return View();
+            return View(); // نمایش فرم اعتبارسنجی توکن
         }
 
         // POST: Token/Validate
@@ -160,8 +167,12 @@ namespace TPLWeb.Controllers
                 return View();
             }
         }
+        #endregion
     }
 
+    #endregion
+
+    #region DTOs
     public class TokenGenerationDto
     {
         [Required(ErrorMessage = "شناسه کاربر الزامی است")]
@@ -169,10 +180,11 @@ namespace TPLWeb.Controllers
 
         [Required(ErrorMessage = "مدت اعتبار الزامی است")]
         [Range(1, 365, ErrorMessage = "مدت اعتبار باید بین 1 تا 365 روز باشد")]
-        public int ExpiresInDays { get; set; } = 30;
+        public int ExpiresInDays { get; set; } = 30; // تعداد روزهای اعتبار توکن
         [Display(Name = "توضیحات")]
         [MaxLength(250, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد .")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? Description { get; set; }
     }
+    #endregion
 }

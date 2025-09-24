@@ -30,6 +30,8 @@ using TPLWeb.Services.Sms;
 using TPLWeb.Tools;
 using WebMarkupMin.AspNetCore3;
 using static TPLWeb.Tools.RenderViewToString;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 namespace TPLWeb
 {
@@ -44,7 +46,25 @@ namespace TPLWeb
         /// <param name="args">پارامترهای ورودی برنامه</param>
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            // Apply EF Core migrations on startup (code-first create/update)
+            using (var scope = host.Services.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<Db>();
+                    db.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    // Log and rethrow or continue based on policy; here we log to console
+                    Console.WriteLine($"Database migration failed: {ex.Message}");
+                    throw;
+                }
+            }
+
+            host.Run();
         }
 
         /// <summary>
@@ -96,7 +116,11 @@ namespace TPLWeb
             services.AddScoped<ILetterService, BlLetter>();
 
             // پیکربندی کنترلرها و ویوها با قابلیت کامپایل در زمان اجرا
-            services.AddControllersWithViews()
+            services.AddControllersWithViews(options =>
+                {
+                    // Persian date binder for DateTime/DateOnly
+                    options.ModelBinderProviders.Insert(0, new PersianDateModelBinderProvider());
+                })
                 .AddRazorRuntimeCompilation()
                 .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
@@ -144,6 +168,15 @@ namespace TPLWeb
 
             // پیکربندی سایر سرویس‌ها
             ConfigureAdditionalServices(services);
+
+            // فرهنگ پیش‌فرض برنامه: fa-IR
+            var supportedCultures = new[] { new CultureInfo("fa-IR") };
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.DefaultRequestCulture = new RequestCulture("fa-IR");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
         }
 
         /// <summary>
@@ -370,7 +403,7 @@ namespace TPLWeb
         /// <param name="app">سازنده اپلیکیشن</param>
         /// <param name="env">محیط اجرا</param>
         /// <param name="dbContext">کانتکست دیتابیس</param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Db dbContext)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Db dbContext)
         {
             // ====================================================================================
             // پیکربندی محیط اجرا
@@ -388,12 +421,16 @@ namespace TPLWeb
                 app.UseHsts(); // HTTP Strict Transport Security
             }
 
-            // اجرای میگریشن‌های دیتابیس برای ثبت تغییرات
+            // اجرای میگریشن‌های دیتابیس برای ثبت تغییرات (اضافی؛ Main نیز انجام می‌دهد)
             dbContext.Database.Migrate();
 
             // ====================================================================================
             // پیکربندی میدلورهای امنیتی و عملکرد
             // ====================================================================================
+
+            // Localization (fa-IR)
+            var locOptions = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>();
+            app.UseRequestLocalization(locOptions.Value);
 
             // ریدایرکت HTTPS
             app.UseHttpsRedirection();

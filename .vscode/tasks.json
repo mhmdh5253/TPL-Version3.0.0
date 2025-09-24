@@ -10,6 +10,83 @@
 				"$msCompile"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build TPL (Debug)",
+			"type": "shell",
+			"command": "dotnet build d:\\tpl\\TPL\\TPL\\TPLWeb.csproj -c Debug",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

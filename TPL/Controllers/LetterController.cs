@@ -22,8 +22,10 @@ namespace TPLWeb.Controllers
 {
     [Authorize]
     [Route("Letter")]
+    [SupportedOSPlatform("windows")] // این کنترلر وابسته به API های فقط-ویندوز است
     public class LetterController : Controller
     {
+        #region Fields
         private readonly ILetterService _letterService;
         private readonly Db _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -33,7 +35,9 @@ namespace TPLWeb.Controllers
         private readonly BlRecivers _recivers;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        #endregion
 
+        #region Ctor
         public LetterController(ILetterService letterService, Db context, UserManager<ApplicationUser> userManager,
             IWebHostEnvironment environment, ILogger<LetterController> logger, BlRecivers recivers, BlNotification notificationService,
             IHttpClientFactory httpClientFactory, IConfiguration configuration)
@@ -48,6 +52,7 @@ namespace TPLWeb.Controllers
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
         }
+        #endregion
 
         /// <summary>
         /// Populates the IsRead property for letters based on LetterAction table
@@ -68,10 +73,15 @@ namespace TPLWeb.Controllers
             }
         }
 
-        [HttpGet("letterviewpdf")]
-        [SupportedOSPlatform("windows")]
+    [HttpGet("letterviewpdf")]
+    [SupportedOSPlatform("windows")] // تولید فایل Word/PDF فقط در ویندوز پشتیبانی می‌شود
         public async Task<IActionResult> ViewLetterPdf(int id)
         {
+            string mainpath = Path.Combine(_environment.WebRootPath, "wordfiles");
+            if (!Directory.Exists(mainpath))
+            {
+                Directory.CreateDirectory(mainpath);
+            }
             await LetterGenerate(id);
             //Validate the file name/ path here for security
             var WordfilePath = Path.Combine(_environment.WebRootPath, "wordfiles", $"{id}.docx");
@@ -87,13 +97,14 @@ namespace TPLWeb.Controllers
             return View();
         }
 
-        [HttpGet("lettergenerate")]
-        [SupportedOSPlatform("windows")]
+    [HttpGet("lettergenerate")]
+    [SupportedOSPlatform("windows")] // استفاده از موتور قالب و System.Drawing فقط ویندوز
         public async Task<IActionResult> LetterGenerate(int id)
         {
             var model = await _letterService.GetLetterByIdAsync(id);
             var res = (Letter)model.Data!;
-            var engine = new LetterTemplateEngine();
+            #pragma warning disable CA1416 // استفاده از APIهای فقط-ویندوز
+            var engine = new LetterTemplateEngine(); // کلاس ویندوز-محور
             // 1. آماده‌سازی داده‌های جایگزین
             var textReplacements = new Dictionary<string, string>
             {
@@ -137,6 +148,11 @@ namespace TPLWeb.Controllers
             tableReplacements.Add("{LETTERINFO}", letterInfoTable);
             var letterpath = res.LetterNumber?.Replace("-", "")?.ToString()! ?? res.Id.ToString();
             string pathtemplatePath = Path.Combine(_environment.WebRootPath, "CompanyVariables", "WordTemplate", "Doc1.docx");
+            string mainpath = Path.Combine(_environment.WebRootPath, "wordfiles");
+            if (!Directory.Exists(mainpath))
+            {
+                Directory.CreateDirectory(mainpath);
+            }
             string pathfinalCombine = Path.Combine(_environment.WebRootPath, "wordfiles", letterpath);
             // 4. تولید سند نهایی
             engine.GenerateLetterFromTemplate(
@@ -147,6 +163,7 @@ namespace TPLWeb.Controllers
                 imageReplacements: imageReplacements
 
             );
+            #pragma warning restore CA1416
 
             Console.WriteLine($"doc is created {letterpath}!");
             TempData["LetterDownloadLink"] = letterpath + ".docx";
@@ -1044,51 +1061,174 @@ namespace TPLWeb.Controllers
             {
                 if (string.IsNullOrEmpty(fileId))
                 {
-                    return BadRequest("نام فایل معتبر نیست.");
+                    return Ok(new { success = false, exists = false, message = "شناسه فایل معتبر نیست." });
                 }
 
-                // دریافت نامه از دیتابیس
+                var letter = await _context.Letters.FindAsync(letterId);
+                if (letter == null)
+                {
+                    return Ok(new { success = false, exists = false, message = "نامه یافت نشد." });
+                }
+
+                // بررسی وجود توکن فایل در پیوست‌های نامه (پشتیبانی از هر دو قالب: fileId|displayName یا displayName|fileId)
+                var hasToken = !string.IsNullOrEmpty(letter.AttachmentName) &&
+                               letter.AttachmentName
+                                   .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(t => t.Trim())
+                                   .Any(t =>
+                                   {
+                                       var parts = t.Split('|');
+                                       if (parts.Length == 1)
+                                       {
+                                           return parts[0].Equals(fileId, StringComparison.OrdinalIgnoreCase) ||
+                                                  parts[0].StartsWith(fileId, StringComparison.OrdinalIgnoreCase);
+                                       }
+                                       var p0 = parts[0].Trim();
+                                       var p1 = parts[1].Trim();
+                                       return p0.Equals(fileId, StringComparison.OrdinalIgnoreCase) ||
+                                              p1.Equals(fileId, StringComparison.OrdinalIgnoreCase);
+                                   });
+                if (!hasToken)
+                {
+                    return Ok(new { success = false, exists = false, message = "فایل در پیوست‌های این نامه یافت نشد یا حذف شده است." });
+                }
+
+                // بررسی وجود فیزیکی فایل
+                var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", fileId);
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return Ok(new { success = false, exists = false, message = "این فایل در سرور موجود نیست یا حذف شده است." });
+                }
+
+                // موفق: لینک دانلود استریم را برگردان
+                var url = Url.Action(nameof(DownloadAttachmentFile), new { letterId, fileId, downloadName });
+                return Ok(new { success = true, exists = true, message = "فایل آماده دانلود است.", downloadUrl = url });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error preparing attachment download {FileId} for letter {LetterId}", fileId, letterId);
+                return Ok(new { success = false, exists = false, message = "خطا در آماده‌سازی دانلود فایل." });
+            }
+        }
+
+        [HttpGet("Attachment/File")]
+        public async Task<IActionResult> DownloadAttachmentFile(int letterId, string fileId, string? downloadName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fileId))
+                {
+                    return BadRequest("شناسه فایل نامعتبر است.");
+                }
+
                 var letter = await _context.Letters.FindAsync(letterId);
                 if (letter == null)
                 {
                     return NotFound("نامه یافت نشد.");
                 }
 
-                // بررسی اینکه فایل در لیست پیوست‌های نامه موجود است (بر اساس fileId)
-                if (string.IsNullOrEmpty(letter.AttachmentName) ||
-                    !letter.AttachmentName.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Any(t => t.Trim().StartsWith(fileId, StringComparison.OrdinalIgnoreCase)))
+                var hasToken = !string.IsNullOrEmpty(letter.AttachmentName) &&
+                               letter.AttachmentName
+                                   .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(t => t.Trim())
+                                   .Any(t =>
+                                   {
+                                       var parts = t.Split('|');
+                                       if (parts.Length == 1)
+                                       {
+                                           return parts[0].Equals(fileId, StringComparison.OrdinalIgnoreCase) ||
+                                                  parts[0].StartsWith(fileId, StringComparison.OrdinalIgnoreCase);
+                                       }
+                                       var p0 = parts[0].Trim();
+                                       var p1 = parts[1].Trim();
+                                       return p0.Equals(fileId, StringComparison.OrdinalIgnoreCase) ||
+                                              p1.Equals(fileId, StringComparison.OrdinalIgnoreCase);
+                                   });
+                if (!hasToken)
                 {
-                    return NotFound("فایل در پیوست‌های این نامه یافت نشد.");
+                    return NotFound("فایل در پیوست‌های این نامه یافت نشد یا حذف شده است.");
                 }
 
-                // مسیر فایل
                 var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", fileId);
-
-                // بررسی وجود فایل
                 if (!System.IO.File.Exists(filePath))
                 {
-                    return NotFound("فایل یافت نشد.");
+                    return NotFound("این فایل در سرور موجود نیست یا حذف شده است.");
                 }
 
-                // دریافت نوع فایل
                 var contentType = GetContentType(fileId);
-
-                // خواندن فایل و بازگرداندن آن
                 var memory = new MemoryStream();
-                using (var stream = new FileStream(filePath, FileMode.Open))
+                await using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     await stream.CopyToAsync(memory);
                 }
                 memory.Position = 0;
-
                 var downloadFileName = string.IsNullOrWhiteSpace(downloadName) ? fileId : downloadName;
                 return File(memory, contentType, downloadFileName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error downloading attachment: {fileId} for letter: {letterId}");
-                return StatusCode(500, "خطا در دانلود فایل.");
+                _logger.LogError(ex, "Error streaming attachment {FileId} for letter {LetterId}", fileId, letterId);
+                return StatusCode(500, "خطای داخلی هنگام دانلود فایل");
+            }
+        }
+
+        // دانلود پیوست در حالت ایجاد نامه (بدون وابستگی به LetterId)
+        [HttpGet("Attachment/DownloadTemp")]
+        public IActionResult DownloadAttachmentTemp(string fileId, string? downloadName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fileId))
+                {
+                    return Ok(new { success = false, exists = false, message = "شناسه فایل معتبر نیست." });
+                }
+
+                var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", fileId);
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return Ok(new { success = false, exists = false, message = "این فایل در سرور موجود نیست یا حذف شده است." });
+                }
+
+                var url = Url.Action(nameof(DownloadAttachmentFileTemp), new { fileId, downloadName });
+                return Ok(new { success = true, exists = true, message = "فایل آماده دانلود است.", downloadUrl = url });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error preparing temp attachment download {FileId}", fileId);
+                return Ok(new { success = false, exists = false, message = "خطا در آماده‌سازی دانلود فایل." });
+            }
+        }
+
+        [HttpGet("Attachment/FileTemp")]
+        public IActionResult DownloadAttachmentFileTemp(string fileId, string? downloadName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fileId))
+                {
+                    return BadRequest("شناسه فایل نامعتبر است.");
+                }
+
+                var filePath = Path.Combine(_environment.WebRootPath, "PeyvastNameha", fileId);
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("این فایل در سرور موجود نیست یا حذف شده است.");
+                }
+
+                var contentType = GetContentType(fileId);
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    stream.CopyTo(memory);
+                }
+                memory.Position = 0;
+                var downloadFileName = string.IsNullOrWhiteSpace(downloadName) ? fileId : downloadName;
+                return File(memory, contentType, downloadFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error streaming temp attachment {FileId}", fileId);
+                return StatusCode(500, "خطای داخلی هنگام دانلود فایل");
             }
         }
 

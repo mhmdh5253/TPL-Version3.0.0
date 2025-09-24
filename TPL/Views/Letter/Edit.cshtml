@@ -2587,9 +2587,6 @@
                     
                     // آیا فایل قبلی است یا جدید آپلود شده
                     const isExistingFile = file.isExisting;
-                    const downloadUrl = isExistingFile 
-                        ? `/Letter/DownloadAttachment?letterId=@Model.Id&fileName=${encodeURIComponent(file.id)}`
-                        : `/Letter/DownloadAttachment?letterId=@Model.Id&fileName=${encodeURIComponent(file.id)}`;
                     
                     fileItem.innerHTML = `
                         <div class="file-info">
@@ -2598,7 +2595,7 @@
                             </div>
                             <div class="file-details">
                                 <div class="file-name">
-                                    <a href="${downloadUrl}" download="${file.name}" style="text-decoration: none; color: inherit;">
+                                    <a href="#" class="download-link" data-file-id="${file.id}" data-file-name="${file.name}" style="text-decoration: none; color: inherit;">
                                         <i class="fas fa-paperclip me-1"></i>${file.name}
                                     </a>
                                 </div>
@@ -2607,7 +2604,7 @@
                         </div>
                         <div class="file-actions">
                             <span class="file-status success">${isExistingFile ? 'فایل موجود' : 'آپلود شد'}</span>
-                            <a href="${downloadUrl}" download="${file.name}" class="btn btn-sm btn-outline-primary me-2" title="دانلود فایل">
+                            <a href="#" class="btn btn-sm btn-outline-primary download-link" data-file-id="${file.id}" data-file-name="${file.name}" title="دانلود فایل">
                                 <i class="fas fa-download"></i> دانلود
                             </a>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteUploadedFile('${file.id}', '${file.name.replace(/'/g, '\\\'').replace(/"/g, '\\"')}')" title="حذف فایل">
@@ -2616,6 +2613,16 @@
                         </div>
                     `;
                     filesContainer.appendChild(fileItem);
+
+                    // اتصال رویداد دانلود با بررسی JSON
+                    fileItem.querySelectorAll('.download-link').forEach(a => {
+                        a.addEventListener('click', async (ev) => {
+                            ev.preventDefault();
+                            const fid = a.getAttribute('data-file-id');
+                            const fname = a.getAttribute('data-file-name');
+                            await downloadAttachmentFromEdit(@Model.Id, fid, fname);
+                        });
+                    });
                 });
 
                 // فقط اسامی فایل‌ها را با کاما جدا کن (حداکثر 255 کاراکتر)
@@ -2727,11 +2734,13 @@
                             let fileName, uniqueId;
                             if (entry.includes('|')) {
                                 const parts = entry.trim().split('|');
-                                fileName = parts[0];
-                                uniqueId = parts[1] || fileName;
+                                // Token format: fileId|displayName
+                                uniqueId = parts[0];
+                                fileName = parts[1] || parts[0];
                             } else {
-                                fileName = entry.trim();
-                                uniqueId = fileName;
+                                // Backward compatibility: single value treated as fileId
+                                uniqueId = entry.trim();
+                                fileName = uniqueId;
                             }
                             uploadedFiles.push({
                                 id: uniqueId,
@@ -2751,6 +2760,30 @@
                 </text>
             }
         });
+
+        // دانلود پیوست با بررسی JSON
+        async function downloadAttachmentFromEdit(letterId, fileId, fileName) {
+            try {
+                const checkUrl = `@Url.Content("~/Letter/Attachment/Download")?letterId=${letterId}&fileId=${encodeURIComponent(fileId)}&downloadName=${encodeURIComponent(fileName)}`;
+                const resp = await fetch(checkUrl);
+                const data = await resp.json();
+                if (data.success && data.exists && data.downloadUrl) {
+                    window.open(data.downloadUrl, '_blank');
+                } else {
+                    await Swal.fire({
+                        icon: 'warning',
+                        title: 'دانلود ناممکن',
+                        text: data.message || 'فایل یافت نشد یا حذف شده است.'
+                    });
+                }
+            } catch (err) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'خطا در بررسی و دانلود پیوست.'
+                });
+            }
+        }
     </script>
 
 

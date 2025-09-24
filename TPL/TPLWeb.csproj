@@ -108,6 +108,7 @@
 	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\tr\System.CommandLine.resources.dll" />
 	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll" />
 	  <Content Remove="C:\Users\Gamer\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
+	  <Content Remove="wwwroot\js\bundle.min.js" />
 	</ItemGroup>
 	<!--Pre-build events for frontend assets-->
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
@@ -172,8 +173,8 @@
 		<Folder Include="wwwroot\CompanyVariables\Chat\" />
 		<Folder Include="wwwroot\CompanyVariables\files\" />
 		<Folder Include="wwwroot\CompanyVariables\voices\" />
-		<Folder Include="wwwroot\PeyvastNameha\" />
 		<Folder Include="wwwroot\wordfiles\" />
+		<Folder Include="wwwroot\PeyvastNameha\" />
 	</ItemGroup>
 
 	<ItemGroup>

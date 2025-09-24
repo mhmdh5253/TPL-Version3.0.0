@@ -1,27 +1,31 @@
-﻿using BE;
-using BLL.Wallet;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
+﻿using BE; // موجودیت‌های پروژه
+using BLL.Wallet; // سرویس کیف پول
+using Microsoft.AspNetCore.Authorization; // مجوز دسترسی
+using Microsoft.AspNetCore.DataProtection; // حفاظت از داده‌ها
+using Microsoft.AspNetCore.Identity; // مدیریت کاربر
+using Microsoft.AspNetCore.Mvc; // MVC
+using Newtonsoft.Json; // کار با JSON
+using System.ComponentModel.DataAnnotations; // اعتبارسنجی‌ها
+using System.Net; // ابزارهای شبکه
+using System.Security.Claims; // Claims کاربر
+using System.Text; // کدگذاری متون
 
 namespace TPLWeb.Controllers
 {
-    [Route("ManageWallet")]
-    [Authorize]
+    #region Controller & Routing
+    [Route("ManageWallet")] // مسیر پایه مدیریت کیف پول
+    [Authorize] // نیازمند ورود کاربر
     public class WalletController : Controller
     {
-        private readonly BlWallet _walletRepository;
-        private readonly ILogger<WalletController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IConfiguration _configuration;
-        private readonly IDataProtector _protector;
-        private readonly BLL.Ticketing.BlNotification _notificationService;
+        #region Fields
+        private readonly BlWallet _walletRepository; // سرویس عملیات کیف پول
+        private readonly ILogger<WalletController> _logger; // لاگر
+        private readonly UserManager<ApplicationUser> _userManager; // مدیریت کاربر
+        private readonly IConfiguration _configuration; // تنظیمات سیستم
+        private readonly IDataProtector _protector; // رمزنگاری داده‌های حساس
+        private readonly BLL.Ticketing.BlNotification _notificationService; // اعلان‌ها
+        #endregion
+        #region Ctor
         public WalletController(
             BlWallet walletRepository,
             ILogger<WalletController> logger,
@@ -35,9 +39,10 @@ namespace TPLWeb.Controllers
             _protector = provider.CreateProtector("WalletController.PaymentData");
             _notificationService = notificationService;
         }
+        #endregion
 
         [HttpGet("balance")]
-        public async Task<IActionResult> GetBalance()
+        public async Task<IActionResult> GetBalance() // دریافت موجودی کیف پول
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var balance = await _walletRepository.GetBalanceAsync(userId!);
@@ -46,14 +51,14 @@ namespace TPLWeb.Controllers
 
 
         [HttpGet("deposit")]
-        public IActionResult Deposit()
+        public IActionResult Deposit() // صفحه شارژ کیف پول
         {
             return View();
         }
 
         [HttpPost("deposit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Deposit(DepositRequestVm request)
+        public async Task<IActionResult> Deposit(DepositRequestVm request) // ارسال درخواست پرداخت
         {
             try
             {
@@ -190,7 +195,7 @@ namespace TPLWeb.Controllers
             }
         }
 
-        private void LogSecurityAction(string action, string details, string userId)
+        private void LogSecurityAction(string action, string details, string userId) // ثبت رخدادهای امنیتی
         {
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
@@ -203,7 +208,7 @@ namespace TPLWeb.Controllers
 
 
         [HttpGet("VerifyPayment")]
-        public async Task<IActionResult> VerifyPayment([FromQuery] string authority, [FromQuery] string status)
+        public async Task<IActionResult> VerifyPayment([FromQuery] string authority, [FromQuery] string status) // تایید پرداخت برگشتی
         {
             try
             {
@@ -366,4 +371,5 @@ namespace TPLWeb.Controllers
             public string? Description { get; set; }
         }
     }
+    #endregion
 }

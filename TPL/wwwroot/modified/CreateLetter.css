@@ -360,8 +360,7 @@ button.btn-success, a.btn-secondary {
     display: none !important;
 }
 
-.control-label {
-}
+
 
 /* بهبود فاصله بین آیتم‌های درخت گیرندگان و جلوگیری از شکست نام‌ها */
 #ReceiverTree .jstree-anchor,
@@ -539,6 +538,23 @@ button.btn-success, a.btn-secondary {
 
 .progress-bar {
     transition: width 0.3s ease;
+}
+
+/* فایل‌های پیوست: بهینه‌سازی در موبایل */
+@media (max-width: 767px) {
+    .file-item { padding: 8px; }
+    .file-icon { width: 32px; height: 32px; font-size: 14px; }
+    .file-name { font-size: 13px; }
+    .file-size { font-size: 11px; }
+    .file-actions { gap: 4px; }
+    .file-actions .btn { padding: 4px 6px; font-size: 12px; line-height: 1.2; }
+}
+
+@media (max-width: 480px) {
+    .file-item { flex-direction: column; align-items: stretch; }
+    .file-info { margin-bottom: 6px; }
+    .file-actions { justify-content: flex-end; }
+    .file-actions .btn { padding: 3px 6px; font-size: 11px; }
 }
 
 /* بهبود ویرایشگر Quill */
@@ -1424,6 +1440,18 @@ button.btn-success, a.btn-secondary {
     box-sizing: border-box;
 }
 
+    /* گروه‌های ورودی جستجو/انتخاب: یک ردیف و فشرده */
+    .input-group { flex-wrap: nowrap; }
+    .input-group .input-group-text { padding: 4px 8px; }
+    .input-group .form-control { padding: 6px 8px; min-height: 34px; }
+    .input-group .btn { padding: 4px 8px; min-width: 34px; }
+    .input-group.input-group-lg .input-group-text,
+    .input-group.input-group-lg .form-control,
+    .input-group.input-group-lg .btn { border-radius: 8px; }
+    /* آیکون جستجو کوچک‌تر */
+    .input-group .btn i { font-size: 0.9rem; }
+    /* جلوگیری از بیرون زدن متن گیرنده */
+    #ReceiverText, #FileCodeText { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 .container-fluid, .row, .col-md-4, .col-md-6, .col-md-8, .col-md-12 {
     max-width: 100%;
     overflow-x: hidden;

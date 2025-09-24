@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="TPL Placeholder Image">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0a0f1a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#g)"/>
+  <g fill="none" opacity="0.15" stroke="#d4af37">
+    <circle cx="200" cy="150" r="120"/>
+    <circle cx="1000" cy="650" r="160"/>
+    <circle cx="900" cy="200" r="90"/>
+  </g>
+  <g font-family="Segoe UI, Roboto, Vazirmatn, sans-serif" text-anchor="middle">
+    <text x="600" y="380" font-size="64" fill="#d4af37">TPL</text>
+    <text x="600" y="440" font-size="28" fill="#cbd5e1">در دسترس به‌زودی یا جایگزین تصویر</text>
+  </g>
+</svg>

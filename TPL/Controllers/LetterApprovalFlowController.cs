@@ -529,6 +529,66 @@ namespace TPLWeb.Controllers
             return Ok(new { Success = true, Data = users });
         }
 
+        [HttpGet("eligible-return-destinations")]
+        public async Task<IActionResult> GetEligibleReturnDestinations([FromQuery] int letterId)
+        {
+            try
+            {
+                var letter = await _context.Letters
+                    .Include(l => l.Referrals)
+                    .FirstOrDefaultAsync(l => l.Id == letterId);
+                if (letter == null)
+                    return Ok(new { Success = false, Message = "نامه یافت نشد" });
+
+                // Previous recipients from referrals
+                var previousUserIds = await _context.LetterReferrals
+                    .Where(r => r.LetterId == letterId && r.ReferredToUserId != null)
+                    .OrderByDescending(r => r.ReferralDate)
+                    .Select(r => r.ReferredToUserId!)
+                    .Distinct()
+                    .Take(20) // limit
+                    .ToListAsync();
+
+                // Also include approvers from approval chain
+                var approverIds = await _context.LetterApprovals
+                    .Where(a => a.LetterId == letterId && a.ApproverUserId != null)
+                    .OrderByDescending(a => a.ActionDate)
+                    .Select(a => a.ApproverUserId!)
+                    .Distinct()
+                    .Take(20)
+                    .ToListAsync();
+
+                var userIds = previousUserIds
+                    .Concat(approverIds)
+                    .Distinct()
+                    .ToList();
+
+                var users = await _context.Users
+                    .Where(u => userIds.Contains(u.Id))
+                    .Select(u => new { u.Id, Name = (u.FirstName + " " + u.LastName).Trim(), UserName = u.UserName, Position = u.Semat })
+                    .ToListAsync();
+
+                // Organizations of those users
+                var orgIds = await _context.UserOrganizations
+                    .Where(uo => userIds.Contains(uo.UserId!) && uo.IsActive)
+                    .Select(uo => uo.OrganizationId)
+                    .Distinct()
+                    .ToListAsync();
+
+                var organizations = await _context.Organizations
+                    .Where(o => orgIds.Contains(o.Id))
+                    .Select(o => new { o.Id, o.Name, o.FullName, o.OrgType })
+                    .ToListAsync();
+
+                return Ok(new { Success = true, Data = new { Users = users, Organizations = organizations } });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting eligible return destinations for letter {LetterId}", letterId);
+                return StatusCode(500, new { Success = false, Message = "خطا در پردازش" });
+            }
+        }
+
         [HttpPost("delete")]
         public async Task<IActionResult> DeleteLetter([FromBody] int letterId)
         {
@@ -676,7 +736,7 @@ namespace TPLWeb.Controllers
         }
 
         [HttpPost("return")]
-        public async Task<IActionResult> ReturnLetter([FromBody] ActionModel model)
+        public async Task<IActionResult> ReturnLetter([FromBody] ReturnLetterModel model)
         {
             try
             {
@@ -693,20 +753,115 @@ namespace TPLWeb.Controllers
                 letter.LastModifiedDate = DateTime.Now;
                 letter.LastModifiedBy = currentUser.UserName;
 
+                ApplicationUser? receiver = null;
+                // Compute eligible destinations (previous recipients and approvers)
+                var previousUserIds = await _context.LetterReferrals
+                    .Where(r => r.LetterId == model.LetterId && r.ReferredToUserId != null)
+                    .OrderByDescending(r => r.ReferralDate)
+                    .Select(r => r.ReferredToUserId!)
+                    .Distinct()
+                    .ToListAsync();
+                var approverIds = await _context.LetterApprovals
+                    .Where(a => a.LetterId == model.LetterId && a.ApproverUserId != null)
+                    .OrderByDescending(a => a.ActionDate)
+                    .Select(a => a.ApproverUserId!)
+                    .Distinct()
+                    .ToListAsync();
+                var eligibleUserIds = previousUserIds.Concat(approverIds).Distinct().ToList();
+                var eligibleOrgIds = await _context.UserOrganizations
+                    .Where(uo => eligibleUserIds.Contains(uo.UserId!) && uo.IsActive)
+                    .Select(uo => uo.OrganizationId)
+                    .Distinct()
+                    .ToListAsync();
+                // Prepare reason/description text once
+                var reasonText = $"{model.Reason}";
+                var reasonWithDesc = string.IsNullOrWhiteSpace(model.Description)
+                    ? reasonText
+                    : reasonText + " - " + model.Description;
+                if (!string.IsNullOrWhiteSpace(model.DestinationUserId))
+                {
+                    if (eligibleUserIds.Count > 0 && !eligibleUserIds.Contains(model.DestinationUserId))
+                    {
+                        return BadRequest(new { Success = false, Message = "مقصد انتخاب‌شده مجاز نیست" });
+                    }
+                    receiver = await _userManager.FindByIdAsync(model.DestinationUserId);
+                    if (receiver == null)
+                        return BadRequest(new { Success = false, Message = "مقصد عودت نامعتبر است" });
+
+                    var referral = new LetterReferral
+                    {
+                        LetterId = model.LetterId,
+                        ReferredByUserId = currentUser.Id,
+                        ReferredToUserId = receiver.Id,
+                        ReferralDate = DateTime.Now,
+                        Comment = "عودت: " + reasonWithDesc,
+                        IsCompleted = false
+                    };
+                    _context.LetterReferrals.Add(referral);
+                }
+                else if (model.DestinationOrganizationId.HasValue)
+                {
+                    if (eligibleOrgIds.Count > 0 && !eligibleOrgIds.Contains(model.DestinationOrganizationId.Value))
+                    {
+                        return BadRequest(new { Success = false, Message = "سازمان مقصد مجاز نیست" });
+                    }
+                    // Create referrals for all active users in the organization (or just heads)
+                    var orgUsers = await _context.UserOrganizations
+                        .Where(uo => uo.OrganizationId == model.DestinationOrganizationId.Value && uo.IsActive)
+                        .Select(uo => uo.UserId!)
+                        .Distinct()
+                        .ToListAsync();
+
+                    foreach (var userId in orgUsers)
+                    {
+                        var referral = new LetterReferral
+                        {
+                            LetterId = model.LetterId,
+                            ReferredByUserId = currentUser.Id,
+                            ReferredToUserId = userId,
+                            ReferralDate = DateTime.Now,
+                            Comment = "عودت به سازمان: " + reasonWithDesc,
+                            IsCompleted = false
+                        };
+                        _context.LetterReferrals.Add(referral);
+                    }
+                }
+
                 var action = new LetterAction
                 {
                     LetterId = model.LetterId,
                     UserId = currentUser.Id,
-                    ActionDescription = $"عودت نامه به دلیل: {model.Description}"
+                    ActionDescription = (receiver != null)
+                        ? $"عودت نامه به {receiver.FirstName} {receiver.LastName} به دلیل: {reasonWithDesc}"
+                        : $"عودت نامه به دلیل: {reasonWithDesc}"
                 };
                 _context.LetterActions.Add(action);
 
                 await _context.SaveChangesAsync();
 
-                await _notificationService.SendNotification(
-                    letter.Username!,
-                    "عودت نامه",
-                    $"نامه شماره {letter.LetterNumber} با موضوع '{letter.Subject}' عودت داده شد.");
+                if (receiver != null)
+                {
+                    await _notificationService.SendNotification(
+                        receiver.Id,
+                        "عودت نامه",
+                        $"نامه شماره {letter.LetterNumber} با موضوع '{letter.Subject}' به شما عودت داده شد. دلیل: {model.Reason}");
+                }
+                else if (model.DestinationOrganizationId.HasValue)
+                {
+                    // notify all users in org
+                    var orgUsers = await _context.UserOrganizations
+                        .Where(uo => uo.OrganizationId == model.DestinationOrganizationId.Value && uo.IsActive)
+                        .Select(uo => uo.UserId!)
+                        .Distinct()
+                        .ToListAsync();
+                    foreach (var userId in orgUsers)
+                    {
+                        await _notificationService.SendNotification(
+                            userId,
+                            "عودت نامه",
+                            $"نامه شماره {letter.LetterNumber} با موضوع '{letter.Subject}' به سازمان شما عودت داده شد. دلیل: {model.Reason}");
+                    }
+                }
 
                 return Ok(new
                 {
@@ -913,6 +1068,37 @@ namespace TPLWeb.Controllers
     {
         public int LetterId { get; set; }
         public string? Description { get; set; }
+    }
+
+    public class ReturnLetterModel
+    {
+        public int LetterId { get; set; }
+        public string? DestinationUserId { get; set; }
+        public int? DestinationOrganizationId { get; set; }
+        public string? Reason { get; set; }
+        public string? Description { get; set; }
+    }
+
+    // لیست سازمان‌ها برای UI
+    [ApiController]
+    [Route("ApprovalFlow/Organizations")] // separate route for clarity
+    public class OrganizationsController : ControllerBase
+    {
+        private readonly Db _context;
+        public OrganizationsController(Db context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrganizations()
+        {
+            var orgs = await _context.Organizations
+                .Where(o => o.IsActive)
+                .Select(o => new { o.Id, Name = o.FullName ?? o.Name, o.OrgType, o.ParentId })
+                .ToListAsync();
+            return new JsonResult(new { Success = true, Data = orgs });
+        }
     }
 
     public class ArchiveLetterModel

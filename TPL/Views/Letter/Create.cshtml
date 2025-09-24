@@ -2430,12 +2430,25 @@
                         </div>
                         <div class="file-actions">
                             <span class="file-status success">آپلود شد</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-2 download-link" data-file-id="${file.id}" data-file-name="${file.name}">
+                                <i class="fas fa-download"></i> دانلود
+                            </button>
                             <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="deleteUploadedFile('${file.id}', '${file.name}')">
                                 <i class="fas fa-trash"></i> حذف
                             </button>
                         </div>
                     `;
                     filesContainer.appendChild(fileItem);
+
+                    // اتصال رویداد دانلود با بررسی JSON (Temp)
+                    fileItem.querySelectorAll('.download-link').forEach(a => {
+                        a.addEventListener('click', async (ev) => {
+                            ev.preventDefault();
+                            const fid = a.getAttribute('data-file-id');
+                            const fname = a.getAttribute('data-file-name');
+                            await downloadAttachmentFromCreate(fid, fname);
+                        });
+                    });
                 });
 
                 // فقط اسامی فایل‌ها را با کاما جدا کن (حداکثر 255 کاراکتر)
@@ -2539,6 +2552,29 @@
 
     <!-- اسکریپت مدیریت جستجوی نامه‌ها در مودال (جدا از آپلود فایل‌ها) -->
     <script>
+        // دانلود پیوست در صفحه ایجاد نامه با جریان JSON
+        async function downloadAttachmentFromCreate(fileId, fileName) {
+            try {
+                const checkUrl = `@Url.Content("~/Letter/Attachment/DownloadTemp")?fileId=${encodeURIComponent(fileId)}&downloadName=${encodeURIComponent(fileName)}`;
+                const resp = await fetch(checkUrl);
+                const data = await resp.json();
+                if (data.success && data.exists && data.downloadUrl) {
+                    window.open(data.downloadUrl, '_blank');
+                } else {
+                    await Swal.fire({
+                        icon: 'warning',
+                        title: 'دانلود ناممکن',
+                        text: data.message || 'فایل یافت نشد یا حذف شده است.'
+                    });
+                }
+            } catch (err) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'خطا در بررسی و دانلود پیوست.'
+                });
+            }
+        }
         // جستجوی نامه و مدیریت انتخاب
         document.getElementById('searchLetterBtn').addEventListener('click', function() {
             performLetterSearch();
