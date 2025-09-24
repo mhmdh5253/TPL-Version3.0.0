@@ -67,6 +67,11 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-medium);
 }
 
+.navbar.scrolled {
+    background: rgba(10, 15, 26, 0.95) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
 .navbar-brand {
     font-weight: 800;
     font-size: 1.5rem;
@@ -153,6 +158,11 @@ h1, h2, h3, h4, h5, h6 {
     border-color: #d97706;
     transform: translateY(-2px);
     box-shadow: var(--shadow-large);
+}
+
+.btn:focus, .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(212,175,55,0.25);
 }
 
 .btn-outline-primary {
@@ -393,7 +403,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .pricing-footer {
     padding: 2rem;
-    background: var(--background-light);
+    background: rgba(255,255,255,0.04);
 }
 
 /* Contact Section */
@@ -673,6 +683,18 @@ h1, h2, h3, h4, h5, h6 {
 .faq-section .accordion-button { background: rgba(255,255,255,0.06); color:#fff; }
 .faq-section .accordion-button:not(.collapsed) { background: rgba(212,175,55,0.12); color:#fff; }
 .faq-section .accordion-item { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#cbd5e1; }
+
+/* Carousel glass caption */
+.carousel-caption {
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+}
+
+/* Links */
+a { color: var(--secondary-color); text-decoration: none; }
+a:hover { color: #f59e0b; text-decoration: underline; text-underline-offset: 3px; }
 
 .text-gradient {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);

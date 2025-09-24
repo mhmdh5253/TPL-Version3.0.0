@@ -18,7 +18,7 @@ TPL Website Scripts v4.0
         initTypingEffect();
         initParallax();
         
-        console.log('TPL Website v4.0 - Loaded Successfully!');
+    console.log('FNMS Website v4.0 - Loaded Successfully!');
     });
     
     // Navigation Enhancement
@@ -443,7 +443,7 @@ TPL Website Scripts v4.0
         
         if (konamiCode.join(',') === konamiSequence.join(',')) {
             // Easter egg activated!
-            showNotification('🎉 شما کد مخفی را پیدا کردید! تیم TPL سلام میگه!', 'success');
+            showNotification('🎉 شما کد مخفی را پیدا کردید! تیم FNMS سلام میگه!', 'success');
             
             // Add some visual effects
             document.body.style.animation = 'rainbow 2s ease-in-out';
@@ -489,7 +489,7 @@ TPL Website Scripts v4.0
     if ('performance' in window) {
         window.addEventListener('load', function() {
             const perfData = performance.getEntriesByType('navigation')[0];
-            console.log('TPL Website Performance:');
+            console.log('FNMS Website Performance:');
             console.log(`Page Load Time: ${Math.round(perfData.loadEventEnd - perfData.fetchStart)}ms`);
             console.log(`DOM Ready Time: ${Math.round(perfData.domContentLoadedEventEnd - perfData.fetchStart)}ms`);
         });
